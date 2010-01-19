@@ -10,5 +10,5 @@ yampa:
 	cabal install
 
 clean:
-	rm *.o *.hi client server
+	rm *.o *.hi Client Server
 
