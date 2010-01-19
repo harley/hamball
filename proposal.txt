@@ -1,0 +1,47 @@
+Alexander Thomson
+David Costanzo
+Harley Trung
+Matt Sills
+
+6 April, 2009
+CS478 - Refined Project Proposal
+
+Here's the game we're planning to build:
+
+    * It will be a LAN-based first-person shooter.
+    * Each player will control a hamster in a hamster ball.
+    * The hamster balls are to be armed with lasers!
+    * Since hamster balls are clear and allow occupants to look in any direction, each
+      player will have the option to change his or her view mode to be given wider degree
+      vision. Modes should include:
+          * Normal rectangular forward view-plane.
+          * Discrete sets of flat view-planes derived from 3D polygons. For example, six
+            views representing view-planes for each side of a cube surrounding the player.
+            4, 8, 12, and 20 sided figures should also be options.
+          * Spherical and cylindrical view-planes, for which I would like to implement
+            several map projections (see http://en.wikipedia.org/wiki/Map_projection to
+            get an idea of what some of these might look like).
+    * The game will be implemented in Haskell, using the Functional Reactive Programming
+      programming model and the Yampa framework in particular.
+
+We intend to split the project into the following modules for ease of implementation and
+coordination between group members:
+
+    * Physics engine & game logic [all group members]
+    * Graphical object design:
+        Hamsters [Matt]
+        Lasers [David]
+        Terrain [Harley & Alex]
+    * Rendering engine that takes advantage of graphics hardware [Matt & Harley]
+    * Modification of the rendering engine to allow alternative projections [Alex]
+    * Network-gaming implementation [David]
+
+The advanced features we would like to implement, in order of importance are:
+    * Additional view projections using conical and spherical as well as planar view-
+      planes
+    * Complex objects & terrains (hamsters, trees, bunkers, etc.)
+    * Collision detection
+    * Complex articulated motions (hamsters running in hamster balls!)
+
+Depending how ambitious this plan proves to be, we may not get through all of the
+advanced features, and/or they might not be quite as efficient as possible.

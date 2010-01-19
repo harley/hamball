@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# need to cd so relative paths stuff work
+cd /home/accts/agt5/hamsters
+touch log/client/$(whoami)
+./Client_May4 $1
+# get out
+cd ~

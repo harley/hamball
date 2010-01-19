@@ -1,0 +1,14 @@
+#!/bin/bash
+# installing to this directory to make easy for you to remove -Harley
+HAMHASK="$HOME/yampaInstall"
+if [ ! -d "$HAMHASK" ]; then
+    mkdir $HAMHASK
+fi
+
+rm -r dist
+
+runhaskell Setup.lhs configure --user --prefix=/home/accts/agt5/hamsters #--prefix=$HAMHASK
+runhaskell Setup.lhs build
+runhaskell Setup.lhs install
+
+chmod -R 777 dist

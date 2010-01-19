@@ -1,0 +1,32 @@
+name: GLFW
+version: 0.3
+license: BSD3
+copyright:
+maintainer: Paul H. Liu <paul@thev.net>
+stability:
+homepage: http://haskell.org/haskellwiki/GLFW
+package-url:
+description: A Haskell binding for GLFW OpenGL Framework, a window
+             system independent toolkit for writing OpenGL programs. For more
+             information about the C library on which this binding is based,
+             please see: <http://glfw.sourceforge.net>
+category: Graphics
+author:
+exposed: True
+exposed-modules: Graphics.UI.GLFW
+hidden-modules:
+import-dirs: /home/accts/agt5/lib/GLFW-0.3/ghc-6.8.2
+library-dirs: /home/accts/agt5/lib/GLFW-0.3/ghc-6.8.2
+hs-libraries: HSGLFW-0.3
+extra-libraries: Xrandr X11
+extra-ghci-libraries:
+include-dirs:
+includes:
+depends: base-3.0.1.0 OpenGL-2.2.1.1
+hugs-options:
+cc-options:
+ld-options:
+framework-dirs:
+frameworks:
+haddock-interfaces: /home/accts/agt5/share/doc/GLFW-0.3/html/GLFW.haddock
+haddock-html: /home/accts/agt5/share/doc/GLFW-0.3/html
