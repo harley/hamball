@@ -1,0 +1,6 @@
+This is the draft of ideas for what to be done on this current work:
+
+1. Currently Hamball relies on a modified version of an experimental Yampa library. We modified it for our suite but it complicates the logic and we have to carry this experimental yampa code along.
+This needs to be reworked.
+2. The game is rather slow, especially when there are more people joining.  Need to do some profiling to find out where the bottleneck is.
+
