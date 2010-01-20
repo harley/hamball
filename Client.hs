@@ -29,6 +29,7 @@ main = withSocketsDo $ do -- withSocketsDo is only needed for Windows platform, 
     -- Prepare some OpenGL intialization and windows management
     glInit
 
+
     let initialObjs = [serverObject playerName, scoreboard, terrain0]
 
     -- TODO: Explain runGame

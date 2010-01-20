@@ -100,5 +100,5 @@ fetchSCMsg rch h = do
 sendCSMsg :: Handle -> CSMsg -> IO ()
 sendCSMsg h msg = do
     hPutStrLn h (stringify msg)
-    --hFlush h -- I dont think we need to flush manually here. Harley
+    hFlush h -- flushing is required here.
 

@@ -1,4 +1,4 @@
-all: server client yampa glfw
+all: yampa glfw server client
 
 server:
 	ghc --make -XMultiParamTypeClasses -XArrows -XTypeSynonymInstances -XFlexibleInstances Server.hs

@@ -32,9 +32,10 @@ collisionLP (lprev, l, p) =
     in if 0 <= u && u < 1 && len (p3 ^-^ ipt) < playerRadius p
        then Just $ Hit{player1ID=laserpID l, player2ID=playerID p, hitLaserID=laserID l, hitStr=laserStr l}
        else Nothing
-    
+
 --collisionPT :: (Player, TerrainElement) -> Maybe Vec3d
 --collisionPT (p, SimpleTerrain (Quad p1' p2' p3' p4' (Transform offset scl theta phi)) _ _) =
 --    let appT = (offset +).(scl *^).id.id -- assuming no rotated quads
 --        (p1,p2,p3,p4) = (appT p1', appT p2', appT p3', appT p4')
 --     in Nothing
+
