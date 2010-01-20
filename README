@@ -1,0 +1,8 @@
+Installation instruction
+========================
+
+1. Download source code:
+    git clone git://github.com/harleyttd/hamball.git
+    cd hamball
+    make
+

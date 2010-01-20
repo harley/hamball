@@ -1,11 +1,13 @@
 This is the draft of ideas for what to be done on this current work:
 
-1. Currently Hamball relies on a modified version of an experimental Yampa library. We modified it for our suite but it complicates the logic and we have to carry this experimental yampa code along.
-This needs to be reworked.
+1. Currently Hamball relies on a modified version of an experimental Yampa library. We needed to modify it to be threadsafe but now we have to carry this experimental yampa code along.
+This may be reworked.
 2. The game is rather slow, especially when there are more people joining.  Need to do some profiling to find out where the bottleneck is.
-3. No comments whatsoever: will add comment
-4. Random ! here and there.  Find out when is the correct time to use them
-5. Why is IL used instead of an Array
+3. There's hardly any comment in the code: will add comment
+4. Random ! here and there but not really consistent.  Find out when is the correct time to use them and whether it helps.
+5. Why is IL used instead of an Array. (Check big O time)
 6. Restructure some data types
 7. Do unit testing with QuickCheck
+8. Change the way the game was run: It used to require running from the same game instance. Should make it downloadable, compilable
+9. If server does not exist, maybe trigger server locally anyway?
 
