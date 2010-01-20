@@ -1,15 +1,15 @@
-This is pdfTeX, Version 3.141592-1.40.3 (Web2C 7.5.6) (format=latex 2008.6.7)  5 MAY 2009 01:44
+This is pdfTeX, Version 3.141592-1.40.3 (Web2C 7.5.6) (format=pdflatex 2009.8.17)  20 JAN 2010 08:18
 entering extended mode
 **paper.tex
 (./paper.tex
 LaTeX2e <2005/12/01>
 Babel <v3.8h> and hyphenation patterns for english, usenglishmax, dumylang, noh
-yphenation, arabic, basque, bulgarian, coptic, welsh, czech, slovak, german, ng
-erman, danish, esperanto, spanish, catalan, galician, estonian, farsi, finnish,
- french, greek, monogreek, ancientgreek, croatian, hungarian, interlingua, ibyc
-us, indonesian, icelandic, italian, latin, mongolian, dutch, norsk, polish, por
-tuguese, pinyin, romanian, russian, slovenian, uppersorbian, serbian, swedish, 
-turkish, ukenglish, ukrainian, loaded.
+yphenation, basque, bulgarian, coptic, welsh, czech, slovak, german, ngerman, d
+anish, esperanto, spanish, catalan, galician, estonian, finnish, french, greek,
+ monogreek, ancientgreek, croatian, hungarian, interlingua, ibycus, indonesian,
+ icelandic, italian, latin, mongolian, dutch, norsk, polish, portuguese, romani
+an, russian, slovenian, uppersorbian, serbian, swedish, turkish, ukenglish, ukr
+ainian, loaded.
 (/usr/share/texmf/tex/latex/amscls/amsart.cls
 Document Class: amsart 2004/08/06 v2.20
 \linespacing=\dimen102
@@ -179,10 +179,11 @@ Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
 (/usr/lib/texmf/tex/latex/config/graphics.cfg
 File: graphics.cfg 2007/01/18 v1.5 graphics configuration of teTeX/TeXLive
 )
-Package graphics Info: Driver file: dvips.def on input line 90.
+Package graphics Info: Driver file: pdftex.def on input line 90.
 
-(/usr/share/texmf/tex/latex/graphics/dvips.def
-File: dvips.def 1999/02/16 v3.0i Driver-dependant file (DPC,SPQR)
+(/usr/share/texmf/tex/latex/pdftex-def/pdftex.def
+File: pdftex.def 2007/01/08 v0.04d Graphics/color for pdfTeX
+\Gread@gobject=\count99
 ))
 \Gin@req@height=\dimen114
 \Gin@req@width=\dimen115
@@ -303,9 +304,9 @@ Package: fullpage 1999/02/23 1.1 (PWD)
 (/usr/share/texmf/tex/latex/moreverb/moreverb.sty
 Package: moreverb 1997/12/07 v2.2d.2 `more' verbatim facilities
 \verbatim@out=\write3
-\tab@position=\count99
-\tab@size=\count100
-\listing@line=\count101
+\tab@position=\count100
+\tab@size=\count101
+\listing@line=\count102
 )
 (/usr/share/texmf/tex/latex/graphics/color.sty
 Package: color 2005/11/14 v1.0j Standard LaTeX Color (DPC)
@@ -313,16 +314,13 @@ Package: color 2005/11/14 v1.0j Standard LaTeX Color (DPC)
 (/usr/lib/texmf/tex/latex/config/color.cfg
 File: color.cfg 2007/01/18 v1.5 color configuration of teTeX/TeXLive
 )
-Package color Info: Driver file: dvips.def on input line 130.
-
-(/usr/share/texmf/tex/latex/graphics/dvipsnam.def
-File: dvipsnam.def 1999/02/16 v3.0i Driver-dependant file (DPC,SPQR)
-)) (./paper.aux)
+Package color Info: Driver file: pdftex.def on input line 130.
+)
+No file paper.aux.
 \openout1 = `paper.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/txmi/m/it on input line 23.
 LaTeX Font Info:    Try loading font information for OML+txmi on input line 23.
-
 
 (/usr/share/texmf/tex/latex/txfonts/omltxmi.fd
 File: omltxmi.fd 2000/12/15 v3.1
@@ -391,24 +389,48 @@ LaTeX Font Info:    Try loading font information for U+txsyc on input line 23.
 (/usr/share/texmf/tex/latex/txfonts/utxsyc.fd
 File: utxsyc.fd 2000/12/15 v3.1
 )
+(/usr/share/texmf/tex/context/base/supp-pdf.tex
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count103
+\scratchdimen=\dimen118
+\scratchbox=\box29
+\nofMPsegments=\count104
+\nofMParguments=\count105
+\MPscratchCnt=\count106
+\MPscratchDim=\dimen119
+\MPnumerator=\count107
+\everyMPtoPDFconversion=\toks30
+)
 LaTeX Font Info:    Try loading font information for OT1+txtt on input line 37.
 
-
-(/usr/share/texmf/tex/latex/txfonts/ot1txtt.fd
+ (/usr/share/texmf/tex/latex/txfonts/ot1txtt.fd
 File: ot1txtt.fd 2000/12/15 v3.1
 )
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 49.
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <7.4> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 49.
- [1] (./paper.aux) ) 
+ [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] (./paper.aux)
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+ ) 
 Here is how much of TeX's memory you used:
- 3063 strings out of 94071
- 36416 string characters out of 1165733
- 77134 words of memory out of 3500000
- 6134 multiletter control sequences out of 10000+50000
- 26028 words of font info for 79 fonts, out of 1200000 for 2000
+ 3263 strings out of 94086
+ 38457 string characters out of 1167700
+ 81437 words of memory out of 3500000
+ 6317 multiletter control sequences out of 10000+50000
+ 32978 words of font info for 90 fonts, out of 1200000 for 2000
  806 hyphenation exceptions out of 8191
  34i,5n,31p,262b,196s stack positions out of 5000i,500n,6000p,200000b,5000s
+{/usr/share/texmf/fonts/enc/dvips/base/8r.enc}</usr/share/texmf/fonts/type1/p
+ublic/txfonts/rtxr.pfb></usr/share/texmf/fonts/type1/public/txfonts/rtxsc.pfb><
+/usr/share/texmf/fonts/type1/public/txfonts/txsy.pfb></usr/share/texmf/fonts/ty
+pe1/public/txfonts/txtt.pfb></usr/share/texmf/fonts/type1/urw/times/utmb8a.pfb>
+</usr/share/texmf/fonts/type1/urw/times/utmr8a.pfb>
+Output written on paper.pdf (1 page, 43819 bytes).
+PDF statistics:
+ 31 PDF objects out of 1000 (max. 8388607)
+ 0 named destinations out of 1000 (max. 131072)
+ 1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
-Output written on paper.dvi (1 page, 4208 bytes).
