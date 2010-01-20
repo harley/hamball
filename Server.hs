@@ -18,6 +18,7 @@ import Data.List
 import System.IO.Error
 import System (getArgs)
 
+-- TODO Why IL Laser? What are handles, nextID?
 data ServerState = ServerState {handles :: ![(Int, Handle)],
                                 nextID :: !Int,
                                 allPlayers :: ![Player],
@@ -31,6 +32,7 @@ data ServerInput = ServerInput {msg :: !CSMsg,
                                 handle :: !(Maybe Handle)}
     deriving (Show, Eq)
 
+-- TODO: rename dummy to empty for consistency?
 dummyServerInput :: ServerInput
 dummyServerInput = ServerInput {msg = dummyCSMsg, handle = Nothing}
 
@@ -207,3 +209,4 @@ outputs (s, esi, hits, collisions) =
                             _ -> []) esi
      in (playerUpdates ++ [(i, SCMsgHit h) | i <- allIDs, h <- hits] -- hit broadcasts
                        ++ [(i, SCMsgPlayer p) | i <- allIDs, p <- collisions]) -- collision broadcasts
+

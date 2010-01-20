@@ -1,34 +1,0 @@
-9
-
-dir
-29
-svn://mahi.its.yale.edu/redcross/hamsters/lib
-svn://mahi.its.yale.edu/redcross
-
-
-
-2009-04-13T12:41:21.396132Z
-25
-dtt22
-
-
-svn:special svn:externals svn:needs-lock
-
-
-
-
-
-
-
-
-
-
-
-27f20cb4-aa60-0410-8354-530758bb70d9
-
-GLUT-2.1.1.2
-dir
-
-Yampa-0.9.2.3
-dir
-
