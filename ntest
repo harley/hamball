@@ -1,7 +1,0 @@
-#!/bin/sh
-
-# use this to run individual ghci call nicely. -Harley
-# we can adopt this to test other parts separately too.
-ghci -XArrows -XMultiParamTypeClasses -XTypeSynonymInstances -threaded NTest.hs <<HERE
-    ntest
-HERE

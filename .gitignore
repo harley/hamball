@@ -3,4 +3,5 @@
 *.hi
 Server
 Client
+Makefile
 

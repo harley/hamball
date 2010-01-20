@@ -1,4 +1,0 @@
-chmod 777 *
-chmod 666 *.hi
-chmod 666 *.o
-chmod 666 *.hs

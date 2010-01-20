@@ -1,6 +1,0 @@
-To run the game:
-
-ghci -XArrows -XMultiParamTypeClasses -XTypeSynonymInstances Main.hs
-
-At the prompt: 
-    > playerTest
