@@ -30,11 +30,12 @@ main = withSocketsDo $ do -- withSocketsDo is only needed for Windows platform, 
                   else
                     -- Game server is specified, then use it
                     return (args !! 1)
+    let serverHostFull = serverHost ++ ".zoo.cs.yale.edu"
 
-    print ("Connecting player " ++ playerName ++ " to " ++ serverHost)
+    print ("Connecting player " ++ playerName ++ " to " ++ serverHostFull)
 
     -- Ask server to connect
-    handle <- connectTo serverHost (PortNumber 4444)
+    handle <- connectTo serverHostFull (PortNumber 4444)
 
     -- Tell server that this player is joining
     sendCSMsg handle $ (-1, CSMsgJoin playerName)
