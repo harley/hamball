@@ -22,7 +22,7 @@ import Net
 import Terrain
 import TerrainData
 import Textures -- to load TGA file into TextureObject
-import TextureFonts
+--import TextureFonts
 import Render
 
 --PLEASE run ./client playerName or ./server scripts instead
@@ -143,3 +143,4 @@ networkInit rch (Just handle) = do
         --catch (loop handle) (\e -> print "client catch" >> myThreadId >>= killThread >> hClose handle)
     printFlush $ "forked " ++ show fid
     return ()
+

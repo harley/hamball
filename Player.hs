@@ -11,7 +11,7 @@ import Graphics.Rendering.OpenGL as OpenGL
 import Data.String
 import WallRender
 import TerrainData
-import TextureFonts
+--import TextureFonts
 import Colors
 import Render
 import Graphics.UI.GLFW
@@ -175,3 +175,4 @@ instance Stringifiable Player where
                                playerEnergy = read p8,
                                playerColor = readVec3d p9,
                                playerName = read p10}
+

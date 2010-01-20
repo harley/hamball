@@ -215,10 +215,10 @@ doIOevent :: Event (IO ()) -> IO ()
 doIOevent (Event io) = io
 doIOevent NoEvent = return ()
 
-vecToColor :: Vec3d -> Color4 Float
+vecToColor :: Vec3d -> Color4 GLfloat
 vecToColor (Vec3d (x,y,z)) = Color4 x y z 1
 
-computeColor :: Player -> Color4 Float
+computeColor :: Player -> Color4 GLfloat
 computeColor (Player {playerColor = Vec3d (r,g,b),
                       playerLife = life}) = vecToColor (Vec3d ((1 - life/maxLife) * (1-r) + r, g, b))
 
@@ -231,3 +231,4 @@ selfKill e = (print "Socket closed." >> myThreadId >>= killThread >> return ())
 
 -- if you change this, also go to file ./server to change the rm script to remove this file after server closes
 hostName = ".host_name"
+

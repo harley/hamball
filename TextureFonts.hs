@@ -12,7 +12,7 @@ import Textures
 import Data.Maybe
 import Data.Char
 import Data.HashTable
-import Graphics.Rendering.OpenGL
+import Graphics.Rendering.OpenGL hiding (GLclampf)
 
 -- build a display list for the fonts
 buildFonts :: IO(Maybe TextureObject,DisplayList)
@@ -136,3 +136,4 @@ setUpOrtho func = do
 
 toDisplayList ::  GLuint -> Char -> DisplayList
 toDisplayList _ c = DisplayList (fromIntegral (ord c) - 31)
+

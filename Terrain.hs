@@ -8,7 +8,6 @@ import Graphics.Rendering.OpenGL hiding (Texture)
 -- import Graphics.UI.GLUT hiding (Texture)
 import Data.String
 import GHC.Float
-import Graphics.Rendering.OpenGL.GL.StateVar
 import Colors
 import WallRender
 import Textures
@@ -32,11 +31,11 @@ MAYBE:
 Generate commands instead of executing them (easier for textures). Then, in
 renderTerrainElement, just generate commands and execute them.
 ---------------------------------------------------------------------------------------------------------------}
-data Col = Col{cspecular :: Color4 Float,
-               cdiffuse :: Color4 Float,
-               cambient :: Color4 Float,
-               cemissive :: Color4 Float,
-               cshininess :: Float}
+data Col = Col{cspecular :: Color4 GLfloat,
+               cdiffuse :: Color4 GLfloat,
+               cambient :: Color4 GLfloat,
+               cemissive :: Color4 GLfloat,
+               cshininess :: GLfloat}
     deriving Show
 
 data Transform = Transform{toffset :: Vec3d,
@@ -312,3 +311,4 @@ renderBoundingVolume (BoundingBox v1 v2) = do
   where height = (getz v2) ^-^ (getz v1)
         transform = Transform{toffset=Vec3d(0.0,0.0,height/2),tscale=(v2 ^-^ v1), ttheta=0.0,tphi=0.0}
 -}
+

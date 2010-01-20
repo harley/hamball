@@ -8,6 +8,7 @@ Installation instruction
 
 Instroduction
 =============
+
 This game was written in Haskell, in Spring 2009, by:
 David Constanzo
 Harley Trung
@@ -15,4 +16,22 @@ Alexander Thompson
 Matthew Sills
 
 It is currently maintained by Harley Trung.  Please send a github message if you have any question/comment/suggestion.
+
+DEPENDENCIES
+============
+Yampa (our modified version)
+OpenGL-2.2.2.0 (OpenGL-2.4.0.1 will break because they define their own GLfloat data type)
+GLFW
+HTTP
+
+ISSUES
+======
+
+Currently this breaks with OpenGL-2.4.0.1 because they define GLfloat as a newtype instead of Float like before.
+Thus you may need to
+    cabal install OpenGL-2.2.2.0
+
+If GLFW installation gets error, make sure you have libxrandr-dev installed.
+Eg. For Ubuntu:
+    sudo apt-get install libxrandr-dev libghc6-opengl-dev
 
