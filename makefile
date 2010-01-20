@@ -1,6 +1,6 @@
-all: server client copyToBin
+all0: server client copyToBin
 
-all2: yampa glfw server client copyToBin
+all: yampa glfw server client copyToBin
 
 server:
 	ghc --make -XMultiParamTypeClasses -XArrows -XTypeSynonymInstances -XFlexibleInstances Server.hs

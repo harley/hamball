@@ -4,5 +4,15 @@ Installation instruction
 1. Download source code:
     git clone git://github.com/harleyttd/hamball.git
     cd hamball
-    make
+    make all
+
+Instroduction
+=============
+This game was written in Haskell, in Spring 2009, by:
+David Constanzo
+Harley Trung
+Alexander Thompson
+Matthew Sills
+
+It is currently maintained by Harley Trung.  Please send a github message if you have any question/comment/suggestion.
 
