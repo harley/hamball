@@ -1,6 +1,7 @@
 module Main where
 
 import Network (PortID(PortNumber), connectTo, withSocketsDo)
+import Network.HTTP (simpleHTTP, getRequest, getResponseBody)
 import System (getArgs)
 import Control.Monad (when)
 
@@ -11,12 +12,24 @@ import Object (serverObject, scoreboard, terrain0, renderObsObjState)
 import Net (sendCSMsg)
 
 -- Client triggers the game with:
--- ./Client <player-name> <host-name>
+-- ./Client <player-name> <optional:host-name>
+-- Use host-name only leaving it out fails.
+-- Server hostname is kept track by the remote serverTracker
 main :: IO ()
 main = withSocketsDo $ do -- withSocketsDo is only needed for Windows platform, harmless on others
     args <- getArgs
-    when (length args < 1) $ error "Wrong syntax.  Syntax: ./Client <play-name> <host-name>"
-    let (playerName:serverHost:_) = args
+    when (null args ) $ error "Wrong syntax.  Syntax: ./Client <play-name>"
+
+    let playerName = head args
+    serverHost <- if (null (tail args))
+                  then do
+                    -- Ask remote server tracker which server is on
+                    r <- simpleHTTP (getRequest "http://hamsterver.heroku.com/last")
+                    sh <- getResponseBody r
+                    if sh == "NOSERVER" then error "No server is open." else return sh
+                  else
+                    -- Game server is specified, then use it
+                    return (args !! 1)
 
     print ("Connecting player " ++ playerName ++ " to " ++ serverHost)
 
@@ -28,7 +41,6 @@ main = withSocketsDo $ do -- withSocketsDo is only needed for Windows platform, 
 
     -- Prepare some OpenGL intialization and windows management
     glInit
-
 
     let initialObjs = [serverObject playerName, scoreboard, terrain0]
 

@@ -7,6 +7,8 @@ import Collision
 import Data.Maybe
 import Net
 import Network
+import Network.BSD (getHostName)
+import Network.HTTP (getRequest, simpleHTTP, getResponseBody)
 import GameCore
 import Control.Concurrent
 import System.IO
@@ -28,6 +30,8 @@ data ServerState = ServerState {handles :: ![(Int, Handle)],
 emptyServerState :: ServerState
 emptyServerState = ServerState{handles=[],nextID=0,allPlayers=[],allLasers=emptyIL}
 
+serverTracker = "http://hamsterver.heroku.com/"
+
 data ServerInput = ServerInput {msg :: !CSMsg,
                                 handle :: !(Maybe Handle)}
     deriving (Show, Eq)
@@ -38,10 +42,18 @@ dummyServerInput = ServerInput {msg = dummyCSMsg, handle = Nothing}
 
 main :: IO ()
 main = do
-    args <- getArgs
-    when (null args) $ error "Please add the word hostname after your binary file"
-    writeFile hostName (head args)
+    -- Tell the online server tracker that I am open and able to accept request
+    hostName <- getHostName
+    putStrLn $ "Informing server tracker about host " ++ hostName
+    r <- simpleHTTP $ getRequest (serverTracker ++ "open?name=" ++ hostName)
+    txt <- getResponseBody r
+    putStrLn txt
+
     runServer (PortNumber 4444) server
+
+    r <- simpleHTTP $ getRequest (serverTracker ++ "close?name=" ++ hostName)
+    txt <- getResponseBody r
+    putStrLn txt
 
 runServer :: PortID -> SF ServerInput (IO()) -> IO ()
 runServer port sf = withSocketsDo $ do

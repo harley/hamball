@@ -10,4 +10,5 @@ This may be reworked.
 7. Do unit testing with QuickCheck
 8. Change the way the game was run: It used to require running from the same game instance. Should make it downloadable, compilable
 9. If server does not exist, maybe trigger server locally anyway?
+10. Currently server segfaults if one player quits
 
