@@ -58,7 +58,9 @@ main = do
 runServer :: PortID -> SF ServerInput (IO()) -> IO ()
 runServer port sf = withSocketsDo $ do
           sock <- listenOn port
+
           (rh,rch) <- reactInit (return dummyServerInput) (\_ sendmsgs -> sendmsgs) sf
+
           forkIO $ acceptClient rch sock
           forkIO $ do
                 let loop = do

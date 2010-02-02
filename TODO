@@ -7,8 +7,17 @@ This may be reworked.
 4. Random ! here and there but not really consistent.  Find out when is the correct time to use them and whether it helps.
 5. Why is IL used instead of an Array. (Check big O time)
 6. Restructure some data types
-7. Do unit testing with QuickCheck
+7. Do unit testing with QuickCheck?
 8. Change the way the game was run: It used to require running from the same game instance. Should make it downloadable, compilable
 9. If server does not exist, maybe trigger server locally anyway?
 10. Currently server segfaults if one player quits
+
+
+1. client network thread should notify main thread when hWaitForInput fails, exit gracefully
+2. why broke apart reactimate.  sense vs actuate should be sufficient
+3. bottleneck: how often messages sent from client to server
+4. initiatePlayer, but where is terminate Player
+5. graceful exit to avoid seg fault.
+6. test with seperation.  render vs network
+7. fix to make it work with the new OPENGL
 
