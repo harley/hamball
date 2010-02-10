@@ -15,9 +15,39 @@ This may be reworked.
 
 1. client network thread should notify main thread when hWaitForInput fails, exit gracefully
 2. why broke apart reactimate.  sense vs actuate should be sufficient
-3. bottleneck: how often messages sent from client to server
+3.  : how often messages sent from client to server
 4. initiatePlayer, but where is terminate Player
 5. graceful exit to avoid seg fault.
 6. test with seperation.  render vs network
 7. fix to make it work with the new OPENGL
 
+Yampa dependency:
+
+Client: loopPre with dpSwitch
+
+
+
+1. Bottle neck first
+    * too many messages
+    * bandwidth
+    * representation
+    * what kind of overhead
+    * Network: string comparison
+2. Start over
+3.
+
+
+
+
+YAMPA
+- structure of yampa system may evolve over time
+- structural changes are known as mode switches
+- switching primitives --> trigger changes in connectivity of a system
+- parallel switch: dynamic collections of signal functiosn connected in parallel
+
+STEPS:
+- Start with NoServer.hs
+	- make it work
+		+ hang on ESC if run in GHCi
+	- explain how things work
+	- benchmark

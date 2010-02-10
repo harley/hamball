@@ -47,7 +47,6 @@ runGame handle sf = do
         tm <- newIORef t
         quit <- newIORef False
 
-
         keyCallback $= keyboardCallback rch quit
         mouseButtonCallback $= mouseClickCallback rch
         mousePosCallback $= mouseMotionCallback rch tm yPrev

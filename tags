@@ -1,0 +1,2097 @@
+"	./BoundingVolume.hs	25
+"	./BoundingVolume.hs	25
+((5)	./TerrainData.hs	88
+((5)	./TerrainData.hs	89
+((5)	./TerrainData.hs	90
+(*^)	./Yampa/src/FRP/Yampa/VectorSpace.hs	34
+(-->)	./Yampa/src/FRP/YampaBackup.hs	1698
+(-->)	./Yampa/src/FRP/Yampa-original.hs	1694
+(-->)	./Yampa/src/FRP/Yampa.hs	1699
+(-->),		--	./Yampa/src/FRP/YampaBackup.hs	145
+(-->),		--	./Yampa/src/FRP/Yampa-original.hs	145
+(-->),		--	./Yampa/src/FRP/Yampa.hs	145
+(-90	./TextureFonts.hs	116
+(-=>)	./Yampa/src/FRP/YampaBackup.hs	1708
+(-=>)	./Yampa/src/FRP/Yampa-original.hs	1704
+(-=>)	./Yampa/src/FRP/Yampa.hs	1709
+(.*)	./Vec3d.hs	17
+(.+^)	./Yampa/src/FRP/Yampa/AffineSpace.hs	36
+(.-.)	./Yampa/src/FRP/Yampa/AffineSpace.hs	38
+(.-^)	./Yampa/src/FRP/Yampa/AffineSpace.hs	37
+(0	./spriteTest.hs	40
+(0	./spriteTest.hs	41
+(0	./Render.hs	29
+(0	./TextureFonts.hs	45
+(0	./TextureFonts.hs	47
+(0	./TextureFonts.hs	85
+(0	./TextureFonts.hs	102
+(0.05	./Player.hs	57
+(1	./Render.hs	30
+(1.0	./Sprites.hs	26
+(1/a)	./Yampa/src/FRP/Yampa/VectorSpace.hs	43
+(11	./TextureFonts.hs	54
+(14	./TextureFonts.hs	48
+(16	./TextureFonts.hs	41
+(16	./TextureFonts.hs	43
+(2.0	./Yampa/tests/AFRPTestsSwitch.hs	88
+(256	./TextureFonts.hs	20
+(32	./TextureFonts.hs	74
+(45	./TextureFonts.hs	69
+(45	./TextureFonts.hs	71
+(5	./TerrainData.hs	91
+(90.0	./TextureFonts.hs	117
+(<<^),		--	./Yampa/src/FRP/Yampa/Utilities.hs	43
+(>--)	./Yampa/src/FRP/YampaBackup.hs	1703
+(>--)	./Yampa/src/FRP/Yampa-original.hs	1699
+(>--)	./Yampa/src/FRP/Yampa.hs	1704
+(>--),		--	./Yampa/src/FRP/YampaBackup.hs	146
+(>--),		--	./Yampa/src/FRP/Yampa-original.hs	146
+(>--),		--	./Yampa/src/FRP/Yampa.hs	146
+(>=-)	./Yampa/src/FRP/YampaBackup.hs	1714
+(>=-)	./Yampa/src/FRP/Yampa-original.hs	1710
+(>=-)	./Yampa/src/FRP/Yampa.hs	1715
+(>>^),		--	./Yampa/src/FRP/Yampa/Utilities.hs	41
+(Greater,0.1	./Player.hs	97
+(Greater,0.1	./TextureFonts.hs	82
+(Greater,0.1	./TextureFonts.hs	104
+(Greater,0.1	./TextureFonts.hs	119
+(SF'	./Yampa/src/FRP/YampaBackup.hs	423
+(SF'	./Yampa/src/FRP/Yampa-original.hs	419
+(SF'	./Yampa/src/FRP/Yampa.hs	424
+(^+^)	./Yampa/src/FRP/Yampa/VectorSpace.hs	37
+(^-^)	./Yampa/src/FRP/Yampa/VectorSpace.hs	38
+(^/)	./Yampa/src/FRP/Yampa/VectorSpace.hs	35
+(^<<),		--	./Yampa/src/FRP/Yampa/Utilities.hs	42
+(^>>),		--	./Yampa/src/FRP/Yampa/Utilities.hs	40
+(fromJust	./Yampa/tests/AFRPTestsAccum.hs	35
+(fromJust	./Yampa/tests/AFRPTestsRSwitch.hs	32
+(fromJust	./Yampa/tests/AFRPTestsRPSwitch.hs	33
+(header!!1))*256	./TGA.hs	43
+(header!!3))*256	./TGA.hs	45
+(k	./Yampa/src/FRP/YampaBackup.hs	2133
+(k	./Yampa/src/FRP/Yampa-original.hs	2129
+(k	./Yampa/src/FRP/Yampa.hs	2134
+(show	./Net.hs	14
+(undefined	./ReadImage.hs	36
+(undefined	./ReadImage.hs	46
+(~+~)	./Yampa/src/FRP/Yampa/MergeableRecord.hs	77
+(~=)	./Yampa/tests/AFRPTestsCommon.hs	30
+)	./Yampa/src/FRP/Yampa/Miscellany.hs	56
+),		--	./Yampa/src/FRP/YampaBackup.hs	106
+),		--	./Yampa/src/FRP/Yampa-original.hs	106
+),		--	./Yampa/src/FRP/Yampa.hs	106
+),	--	./Yampa/src/FRP/Yampa/Miscellany.hs	23
+--collisionPT	./Collision.hs	36
+0	./TextureFonts.hs	67
+0	./TextureFonts.hs	68
+0	./TextureFonts.hs	70
+0	./TextureFonts.hs	73
+0)))	./Player.hs	45
+0.0001	./Yampa/tests/AFRPTestsCommon.hs	33
+0.001	./Yampa/tests/AFRPTestsDer.hs	24
+0.01	./Yampa/examples/Elevator/TestElevatorMain.hs	25
+0.1	./TerrainData.hs	25
+0.5	./Laser.hs	14
+1	./TextureFonts.hs	66
+1	./TextureFonts.hs	72
+100	./Particles.hs	14
+16	./spriteTest.hs	7
+16	./Player.hs	94
+6	./TGA.hs	37
+AFRPTests	./Yampa/tests/AFRPTests.hs	40
+AFRPTestsAccum	./Yampa/tests/AFRPTestsAccum.hs	15
+AFRPTestsArr	./Yampa/tests/AFRPTestsArr.hs	14
+AFRPTestsBasicSF	./Yampa/tests/AFRPTestsBasicSF.hs	14
+AFRPTestsCOC	./Yampa/tests/AFRPTestsCOC.hs	14
+AFRPTestsCommon	./Yampa/tests/AFRPTestsCommon.hs	14
+AFRPTestsComp	./Yampa/tests/AFRPTestsComp.hs	14
+AFRPTestsDelay	./Yampa/tests/AFRPTestsDelay.hs	14
+AFRPTestsDer	./Yampa/tests/AFRPTestsDer.hs	14
+AFRPTestsEmbed	./Yampa/tests/AFRPTestsEmbed.hs	14
+AFRPTestsEvSrc	./Yampa/tests/AFRPTestsEvSrc.hs	14
+AFRPTestsFirstSecond	./Yampa/tests/AFRPTestsFirstSecond.hs	14
+AFRPTestsKSwitch	./Yampa/tests/AFRPTestsKSwitch.hs	14
+AFRPTestsLaws	./Yampa/tests/AFRPTestsLaws.hs	14
+AFRPTestsLoop	./Yampa/tests/AFRPTestsLoop.hs	14
+AFRPTestsLoopIntegral	./Yampa/tests/AFRPTestsLoopIntegral.hs	14
+AFRPTestsLoopLaws	./Yampa/tests/AFRPTestsLoopLaws.hs	14
+AFRPTestsLoopPre	./Yampa/tests/AFRPTestsLoopPre.hs	14
+AFRPTestsPSwitch	./Yampa/tests/AFRPTestsPSwitch.hs	14
+AFRPTestsPre	./Yampa/tests/AFRPTestsPre.hs	16
+AFRPTestsRPSwitch	./Yampa/tests/AFRPTestsRPSwitch.hs	14
+AFRPTestsRSwitch	./Yampa/tests/AFRPTestsRSwitch.hs	14
+AFRPTestsReact	./Yampa/tests/AFRPTestsReact.hs	14
+AFRPTestsSscan	./Yampa/tests/AFRPTestsSscan.hs	15
+AFRPTestsSwitch	./Yampa/tests/AFRPTestsSwitch.hs	14
+AFRPTestsTask	./Yampa/tests/AFRPTestsTask.hs	16
+AFRPTestsUtils	./Yampa/tests/AFRPTestsUtils.hs	16
+AFRPTestsWFG	./Yampa/tests/AFRPTestsWFG.hs	14
+Acceleration	./Yampa/tests/AFRPTestsLoopIntegral.hs	44
+Acceleration3	./Common.hs	60
+AffineSpace	./Yampa/src/FRP/Yampa/AffineSpace.hs	34
+Black	./Colors.hs	21
+Blue	./Colors.hs	22
+BlueViolet	./Colors.hs	74
+BoundingBox	./BoundingVolume.hs	8
+BoundingEmpty	./BoundingVolume.hs	11
+BoundingSegment	./BoundingVolume.hs	10
+BoundingSphere	./BoundingVolume.hs	9
+BoundingVolume	./BoundingVolume.hs	1
+BoundingVolume	./BoundingVolume.hs	8
+CSMsg	./Common.hs	166
+CSMsg'	./Common.hs	156
+CSMsgDeath	./Common.hs	160
+CSMsgExit	./Common.hs	161
+CSMsgJoin	./Common.hs	162
+CSMsgKillLaser	./Common.hs	159
+CSMsgLaser	./Common.hs	158
+CSMsgPlayer	./Common.hs	156
+CSMsgUpdate	./Common.hs	157
+CadetBlue	./Colors.hs	48
+Car	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	57
+CarTracker	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	113
+Col	./Terrain.hs	34
+Collision	./Collision.hs	1
+Color	./Terrain.hs	48
+Color	./Colors.hs	19
+Color3	./Common.hs	61
+Colors	./Colors.hs	1
+Col{cspecular	./Terrain.hs	34
+Common	./Common.hs	1
+CompoundTerrain	./Terrain.hs	72
+Control.Arrow,	./Yampa/src/FRP/YampaBackup.hs	100
+Control.Arrow,	./Yampa/src/FRP/Yampa-original.hs	100
+Control.Arrow,	./Yampa/src/FRP/Yampa.hs	100
+CornflowerBlue	./Colors.hs	40
+Cube	./Terrain.hs	64
+Cyan	./Colors.hs	24
+DTime	./Yampa/src/FRP/YampaBackup.hs	357
+DTime	./Yampa/src/FRP/Yampa-original.hs	353
+DTime	./Yampa/src/FRP/Yampa.hs	358
+DarkGoldenrod	./Colors.hs	62
+DarkGreen	./Colors.hs	50
+DarkGrey	./Colors.hs	30
+DarkKhaki	./Colors.hs	58
+DarkOliveGreen	./Colors.hs	51
+DarkOrchid	./Colors.hs	73
+DarkSlateBlue	./Colors.hs	41
+DarkSlateGrey	./Colors.hs	34
+DecreaseRadius	./Common.hs	122
+DeepSkyBlue	./Colors.hs	46
+DimGrey	./Colors.hs	31
+Distance	./Yampa/examples/Elevator/Elevator.hs	26
+Distance	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	52
+Double	--	./Yampa/examples/Elevator/Elevator.hs	25
+Double	--	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	51
+Double	--	./Yampa/src/FRP/YampaBackup.hs	350
+Double	--	./Yampa/src/FRP/Yampa-original.hs	346
+Double	--	./Yampa/src/FRP/Yampa.hs	351
+Elevator	./Yampa/examples/Elevator/Elevator.hs	16
+Event	./Yampa/src/FRP/Yampa/Event.hs	98
+Event	./Yampa/src/FRP/Yampa/Event.hs	97
+FDC	./Yampa/src/FRP/YampaBackup.hs	571
+FDC	./Yampa/src/FRP/Yampa-original.hs	567
+FDC	./Yampa/src/FRP/Yampa.hs	572
+FDE	./Yampa/src/FRP/YampaBackup.hs	572
+FDE	./Yampa/src/FRP/Yampa-original.hs	568
+FDE	./Yampa/src/FRP/Yampa.hs	573
+FDG	./Yampa/src/FRP/YampaBackup.hs	573
+FDG	./Yampa/src/FRP/Yampa-original.hs	569
+FDG	./Yampa/src/FRP/Yampa.hs	574
+FDI	./Yampa/src/FRP/YampaBackup.hs	570
+FDI	./Yampa/src/FRP/Yampa-original.hs	566
+FDI	./Yampa/src/FRP/Yampa.hs	571
+FRP.Yampa	./Yampa/src/FRP/YampaBackup.hs	98
+FRP.Yampa	./Yampa/src/FRP/Yampa-original.hs	98
+FRP.Yampa	./Yampa/src/FRP/Yampa.hs	98
+FRP.Yampa.AffineSpace	./Yampa/src/FRP/Yampa/AffineSpace.hs	16
+FRP.Yampa.AffineSpace,	./Yampa/src/FRP/Yampa/Geometry.hs	16
+FRP.Yampa.Diagnostics	./Yampa/src/FRP/Yampa/Diagnostics.hs	14
+FRP.Yampa.Event	./Yampa/src/FRP/Yampa/Event.hs	74
+FRP.Yampa.Forceable	./Yampa/src/FRP/Yampa/Forceable.hs	14
+FRP.Yampa.Geometry	./Yampa/src/FRP/Yampa/Geometry.hs	14
+FRP.Yampa.Internals	./Yampa/src/FRP/Yampa/Internals.hs	21
+FRP.Yampa.MergeableRecord	./Yampa/src/FRP/Yampa/MergeableRecord.hs	54
+FRP.Yampa.Miscellany	./Yampa/src/FRP/Yampa/Miscellany.hs	21
+FRP.Yampa.Point2	./Yampa/src/FRP/Yampa/Point2.hs	18
+FRP.Yampa.Point2,	./Yampa/src/FRP/Yampa/Geometry.hs	19
+FRP.Yampa.Point3	./Yampa/src/FRP/Yampa/Geometry.hs	20
+FRP.Yampa.Point3	./Yampa/src/FRP/Yampa/Point3.hs	16
+FRP.Yampa.Task	./Yampa/src/FRP/Yampa/Task.hs	16
+FRP.Yampa.Utilities	./Yampa/src/FRP/Yampa/Utilities.hs	37
+FRP.Yampa.Vector2	./Yampa/src/FRP/Yampa/Vector2.hs	17
+FRP.Yampa.Vector2,	./Yampa/src/FRP/Yampa/Geometry.hs	17
+FRP.Yampa.Vector3	./Yampa/src/FRP/Yampa/Vector3.hs	17
+FRP.Yampa.Vector3,	./Yampa/src/FRP/Yampa/Geometry.hs	18
+FRP.Yampa.VectorSpace	./Yampa/src/FRP/Yampa/VectorSpace.hs	16
+FRP.Yampa.VectorSpace,	./Yampa/src/FRP/YampaBackup.hs	101
+FRP.Yampa.VectorSpace,	./Yampa/src/FRP/Yampa-original.hs	101
+FRP.Yampa.VectorSpace,	./Yampa/src/FRP/Yampa.hs	101
+FRP.Yampa.VectorSpace,	./Yampa/src/FRP/Yampa/Geometry.hs	15
+Forceable	./Yampa/src/FRP/Yampa/Forceable.hs	17
+ForestGreen	./Colors.hs	56
+FunDesc	./Yampa/src/FRP/YampaBackup.hs	569
+FunDesc	./Yampa/src/FRP/Yampa-original.hs	565
+FunDesc	./Yampa/src/FRP/Yampa.hs	570
+GLUQuadric	./Terrain.hs	63
+GameCore	./GameCore.hs	3
+GameData	./Common.hs	187
+GameData	./Common.hs	187
+GameInput	./GameInput.hs	1
+GameInput	./GameInput.hs	14
+GameInput	./GameInput.hs	14
+Geometry	./Terrain.hs	63
+GoingDown	./Yampa/examples/Elevator/TestElevatorMain.hs	37
+GoingUp	./Yampa/examples/Elevator/TestElevatorMain.hs	37
+Goldenrod	./Colors.hs	61
+Green	./Colors.hs	23
+Grey	./Colors.hs	32
+Highway	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	62
+Hit	./Common.hs	90
+Hit	./Common.hs	90
+ID	./Common.hs	57
+IL	./IdentityList.hs	9
+IL	./IdentityList.hs	9
+ILKey	./IdentityList.hs	7
+Id	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	197
+IdentityList	./IdentityList.hs	2
+Int	./IdentityList.hs	7
+Khaki	./Colors.hs	59
+Laser	./Common.hs	80
+Laser	./Common.hs	80
+Laser	./Laser.hs	1
+LaserObj	./Common.hs	146
+LawnGreen	./Colors.hs	54
+LightGrey	./Colors.hs	33
+LightSlateBlue	./Colors.hs	43
+LightSlateGrey	./Colors.hs	36
+LimeGreen	./Colors.hs	55
+MCTCol	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	199
+MCTCol	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	199
+MR	./Yampa/src/FRP/Yampa/MergeableRecord.hs	68
+MTGDCol	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	262
+Magenta	./Colors.hs	26
+Main	./NoServer.hs	1
+Main	./spriteTest.hs	1
+Main	./Client.hs	1
+Main	./Server.hs	1
+Main	./Yampa/examples/Elevator/TestElevatorMain.hs	14
+Main	./Yampa/examples/TailgatingDetector/TestTGMain.hs	14
+Main	./Yampa/tests/testAFRPMain.hs	13
+Maroon	./Colors.hs	66
+MediumBlue	./Colors.hs	44
+MediumOrchid	./Colors.hs	72
+MediumSeaGreen	./Colors.hs	53
+MediumVioletRed	./Colors.hs	67
+MergeableRecord	./Yampa/src/FRP/Yampa/MergeableRecord.hs	63
+MergeableRecord	./Yampa/src/FRP/Yampa/MergeableRecord.hs	68
+MidnightBlue	./Colors.hs	38
+Mirror	./Terrain.hs	50
+MultipleVolumes	./BoundingVolume.hs	12
+MyReactHandle	./GameInput.hs	12
+NavyBlue	./Colors.hs	39
+Net	./Net.hs	1
+NoEvent	./Yampa/src/FRP/Yampa/Event.hs	97
+NoSurface	./Terrain.hs	52
+OOSKillText	./Object.hs	46
+OOSLaser	./Object.hs	41
+OOSMan	./Object.hs	49
+OOSNone	./Object.hs	50
+OOSParticle	./Object.hs	44
+OOSParticleSystem	./Object.hs	45
+OOSPlayer	./Object.hs	40
+OOSPowerUp	./Object.hs	47
+OOSScoreBoard	./Object.hs	48
+OOSSelf	./Object.hs	42
+OOSTerrain	./Object.hs	43
+Obj	./Common.hs	145
+ObjInput	./Object.hs	23
+ObjInput	./Object.hs	23
+ObjOutput	./Object.hs	28
+ObjOutput	./Object.hs	28
+Object	./Object.hs	1
+ObjectSF	./Object.hs	21
+ObsObjState	./Object.hs	40
+OliveDrab	./Colors.hs	57
+Orange	./Colors.hs	64
+Orchid	./Colors.hs	71
+Particle	./Common.hs	99
+Particle	./Common.hs	99
+ParticleSystem	./Common.hs	108
+ParticleSystem	./Common.hs	108
+Particles	./Particles.hs	1
+Paths_Yampa	./Yampa/dist/build/autogen/Paths_Yampa.hs	1
+Plane	./Terrain.hs	67
+Player	./Common.hs	66
+Player	./Common.hs	66
+Player	./Player.hs	1
+PlayerObj	./Common.hs	145
+Plum	./Colors.hs	70
+Point2	./Yampa/src/FRP/Yampa/Point2.hs	36
+Point3	./Yampa/src/FRP/Yampa/Point3.hs	35
+Position	./Yampa/examples/Elevator/Elevator.hs	25
+Position	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	51
+Position	./Yampa/tests/AFRPTestsLoopIntegral.hs	42
+Position3	./Common.hs	58
+PowerUp	./Common.hs	125
+PowerUp	./Common.hs	125
+PowerUpType	./Common.hs	120
+Projection	./Projection.hs	1
+Purple	./Colors.hs	75
+Quad	./Terrain.hs	65
+REq	./Yampa/tests/AFRPTestsCommon.hs	29
+ReactChan	./Yampa/src/FRP/Yampa.hs	3167
+ReactHandle	./GameInput.hs	12
+ReactHandle	./Yampa/src/FRP/YampaBackup.hs	3165
+ReactHandle	./Yampa/src/FRP/Yampa-original.hs	3160
+ReactHandle	./Yampa/src/FRP/Yampa.hs	3166
+ReactState	./Yampa/src/FRP/YampaBackup.hs	3157
+ReactState	./Yampa/src/FRP/YampaBackup.hs	3157
+ReactState	./Yampa/src/FRP/Yampa-original.hs	3153
+ReactState	./Yampa/src/FRP/Yampa-original.hs	3153
+ReactState	./Yampa/src/FRP/Yampa.hs	3158
+ReactState	./Yampa/src/FRP/Yampa.hs	3158
+ReadImage	./ReadImage.hs	15
+RealFloat	./Yampa/src/FRP/Yampa/Point2.hs	36
+RealFloat	./Yampa/src/FRP/Yampa/Vector3.hs	45
+RealFloat	./Yampa/src/FRP/Yampa/Vector2.hs	44
+RealFloat	./Yampa/src/FRP/Yampa/Point3.hs	35
+Red	./Colors.hs	25
+Render	./Render.hs	1
+RoyalBlue	./Colors.hs	45
+RunGame	./RunGame.hs	1
+SCMsg	./Common.hs	165
+SCMsg'	./Common.hs	149
+SCMsgFrag	./Common.hs	153
+SCMsgHit	./Common.hs	151
+SCMsgInitialize	./Common.hs	149
+SCMsgPlayer	./Common.hs	150
+SCMsgSpawn	./Common.hs	152
+SF	./Object.hs	21
+SF	./Yampa/src/FRP/YampaBackup.hs	363
+SF	./Yampa/src/FRP/YampaBackup.hs	363
+SF	./Yampa/src/FRP/Yampa-original.hs	359
+SF	./Yampa/src/FRP/Yampa-original.hs	359
+SF	./Yampa/src/FRP/Yampa.hs	364
+SF	./Yampa/src/FRP/Yampa.hs	364
+SF'	./Yampa/src/FRP/YampaBackup.hs	403
+SF'	./Yampa/src/FRP/YampaBackup.hs	418
+SF'	./Yampa/src/FRP/Yampa-original.hs	399
+SF'	./Yampa/src/FRP/Yampa-original.hs	414
+SF'	./Yampa/src/FRP/Yampa.hs	404
+SF'	./Yampa/src/FRP/Yampa.hs	419
+SFArr	./Yampa/src/FRP/YampaBackup.hs	404
+SFArr	./Yampa/src/FRP/Yampa-original.hs	400
+SFArr	./Yampa/src/FRP/Yampa.hs	405
+SFCpAXA	./Yampa/src/FRP/YampaBackup.hs	414
+SFCpAXA	./Yampa/src/FRP/Yampa-original.hs	410
+SFCpAXA	./Yampa/src/FRP/Yampa.hs	415
+SFEP	./Yampa/src/FRP/YampaBackup.hs	411
+SFEP	./Yampa/src/FRP/Yampa-original.hs	407
+SFEP	./Yampa/src/FRP/Yampa.hs	412
+SFSScan	./Yampa/src/FRP/YampaBackup.hs	408
+SFSScan	./Yampa/src/FRP/Yampa-original.hs	404
+SFSScan	./Yampa/src/FRP/Yampa.hs	409
+SaddleBrown	./Colors.hs	63
+ScoreBoard	./Common.hs	115
+ScoreBoard	./Common.hs	115
+SeaGreen	./Colors.hs	52
+ServerInput	./Server.hs	35
+ServerInput	./Server.hs	35
+ServerState	./Server.hs	24
+ServerState	./Server.hs	24
+SimpleTerrain	./Terrain.hs	71
+SlateBlue	./Colors.hs	42
+SlateGrey	./Colors.hs	35
+Sprites	./Sprites.hs	6
+State	./Yampa/examples/Elevator/TestElevatorMain.hs	37
+SteelBlue	./Colors.hs	47
+Stopped	./Yampa/examples/Elevator/TestElevatorMain.hs	37
+StrengthenLaser	./Common.hs	120
+Stringifiable	./Common.hs	193
+Surface	./Terrain.hs	48
+TGA	./TGA.hs	20
+TailgatingDetector	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	39
+Task	./Yampa/src/FRP/Yampa/Task.hs	49
+Task	./Yampa/src/FRP/Yampa/Task.hs	48
+Terrain	./Terrain.hs	1
+TerrainData	./TerrainData.hs	1
+TerrainElement	./Terrain.hs	71
+TestFlags	./Yampa/tests/testAFRPMain.hs	23
+TestFlags	./Yampa/tests/testAFRPMain.hs	23
+Texture	./Terrain.hs	49
+TextureFonts	./TextureFonts.hs	9
+Textures	./Textures.hs	7
+Time	./Yampa/src/FRP/YampaBackup.hs	350
+Time	./Yampa/src/FRP/Yampa-original.hs	346
+Time	./Yampa/src/FRP/Yampa.hs	351
+Transform	./Terrain.hs	41
+Transform{toffset	./Terrain.hs	41
+Transition	./Yampa/src/FRP/YampaBackup.hs	423
+Transition	./Yampa/src/FRP/Yampa-original.hs	419
+Transition	./Yampa/src/FRP/Yampa.hs	424
+Transparent	./Terrain.hs	51
+Tri	./Terrain.hs	66
+Trimesh	./Terrain.hs	68
+UAVStatus	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	71
+Vec3d	./Vec3d.hs	1
+Vec3d	./Vec3d.hs	8
+Vec3d	./Vec3d.hs	8
+Vector2	./Yampa/src/FRP/Yampa/Vector2.hs	44
+Vector3	./Yampa/src/FRP/Yampa/Vector3.hs	45
+VectorSpace	./Yampa/src/FRP/Yampa/VectorSpace.hs	32
+Velocity	./Yampa/examples/Elevator/Elevator.hs	27
+Velocity	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	53
+Velocity	./Yampa/tests/AFRPTestsLoopIntegral.hs	43
+Velocity3	./Common.hs	59
+Version	./Yampa/dist/build/autogen/Paths_Yampa.hs	11
+Video	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	67
+Violet	./Colors.hs	69
+VioletRed	./Colors.hs	68
+WallRender	./WallRender.hs	1
+White	./Colors.hs	28
+Word32BigEndian	./ReadImage.hs	27
+Word32BigEndian	./ReadImage.hs	27
+XRayVision	./Common.hs	121
+Yellow	./Colors.hs	27
+[(theta,	./Projection.hs	13
+[17..(32	./TextureFonts.hs	105
+[17..(32	./TextureFonts.hs	120
+]	./ReadImage.hs	37
+abortWhen	./Yampa/src/FRP/Yampa/Task.hs	176
+accum	./Yampa/src/FRP/YampaBackup.hs	2756
+accum	./Yampa/src/FRP/Yampa-original.hs	2752
+accum	./Yampa/src/FRP/Yampa.hs	2757
+accum,		--	./Yampa/src/FRP/YampaBackup.hs	223
+accum,		--	./Yampa/src/FRP/Yampa-original.hs	223
+accum,		--	./Yampa/src/FRP/Yampa.hs	223
+accumBy	./Yampa/src/FRP/YampaBackup.hs	2791
+accumBy	./Yampa/src/FRP/YampaBackup.hs	2837
+accumBy	./Yampa/src/FRP/Yampa-original.hs	2787
+accumBy	./Yampa/src/FRP/Yampa-original.hs	2833
+accumBy	./Yampa/src/FRP/Yampa.hs	2792
+accumBy	./Yampa/src/FRP/Yampa.hs	2838
+accumBy,		--	./Yampa/src/FRP/YampaBackup.hs	226
+accumBy,		--	./Yampa/src/FRP/Yampa-original.hs	226
+accumBy,		--	./Yampa/src/FRP/Yampa.hs	226
+accumFilter	./Yampa/src/FRP/YampaBackup.hs	2852
+accumFilter	./Yampa/src/FRP/YampaBackup.hs	2875
+accumFilter	./Yampa/src/FRP/Yampa-original.hs	2848
+accumFilter	./Yampa/src/FRP/Yampa-original.hs	2871
+accumFilter	./Yampa/src/FRP/Yampa.hs	2853
+accumFilter	./Yampa/src/FRP/Yampa.hs	2876
+accumFilter,	--	./Yampa/src/FRP/YampaBackup.hs	229
+accumFilter,	--	./Yampa/src/FRP/Yampa-original.hs	229
+accumFilter,	--	./Yampa/src/FRP/Yampa.hs	229
+accumFilter2	./Yampa/tests/AFRPTestsAccum.hs	152
+accumHold	./Yampa/src/FRP/YampaBackup.hs	2764
+accumHold	./Yampa/src/FRP/Yampa-original.hs	2760
+accumHold	./Yampa/src/FRP/Yampa.hs	2765
+accumHold,		--	./Yampa/src/FRP/YampaBackup.hs	224
+accumHold,		--	./Yampa/src/FRP/Yampa-original.hs	224
+accumHold,		--	./Yampa/src/FRP/Yampa.hs	224
+accumHoldBy	./Yampa/src/FRP/YampaBackup.hs	2798
+accumHoldBy	./Yampa/src/FRP/Yampa-original.hs	2794
+accumHoldBy	./Yampa/src/FRP/Yampa.hs	2799
+accumHoldBy,	--	./Yampa/src/FRP/YampaBackup.hs	227
+accumHoldBy,	--	./Yampa/src/FRP/Yampa-original.hs	227
+accumHoldBy,	--	./Yampa/src/FRP/Yampa.hs	227
+accum_accFiltFun3	./Yampa/tests/AFRPTestsAccum.hs	238
+accum_st0	./Yampa/tests/AFRPTestsAccum.hs	341
+accum_st1	./Yampa/tests/AFRPTestsAccum.hs	350
+accum_t0	./Yampa/tests/AFRPTestsAccum.hs	71
+accum_t1	./Yampa/tests/AFRPTestsAccum.hs	81
+accum_t10	./Yampa/tests/AFRPTestsAccum.hs	206
+accum_t10r	./Yampa/tests/AFRPTestsAccum.hs	212
+accum_t11	./Yampa/tests/AFRPTestsAccum.hs	216
+accum_t11r	./Yampa/tests/AFRPTestsAccum.hs	223
+accum_t12	./Yampa/tests/AFRPTestsAccum.hs	228
+accum_t12r	./Yampa/tests/AFRPTestsAccum.hs	234
+accum_t13	./Yampa/tests/AFRPTestsAccum.hs	248
+accum_t13r	./Yampa/tests/AFRPTestsAccum.hs	255
+accum_t14	./Yampa/tests/AFRPTestsAccum.hs	268
+accum_t14r	./Yampa/tests/AFRPTestsAccum.hs	276
+accum_t15	./Yampa/tests/AFRPTestsAccum.hs	281
+accum_t15r	./Yampa/tests/AFRPTestsAccum.hs	288
+accum_t16	./Yampa/tests/AFRPTestsAccum.hs	292
+accum_t16r	./Yampa/tests/AFRPTestsAccum.hs	300
+accum_t17	./Yampa/tests/AFRPTestsAccum.hs	305
+accum_t17r	./Yampa/tests/AFRPTestsAccum.hs	312
+accum_t2	./Yampa/tests/AFRPTestsAccum.hs	91
+accum_t2r	./Yampa/tests/AFRPTestsAccum.hs	94
+accum_t3	./Yampa/tests/AFRPTestsAccum.hs	102
+accum_t3r	./Yampa/tests/AFRPTestsAccum.hs	105
+accum_t4	./Yampa/tests/AFRPTestsAccum.hs	121
+accum_t4r	./Yampa/tests/AFRPTestsAccum.hs	124
+accum_t5	./Yampa/tests/AFRPTestsAccum.hs	140
+accum_t5r	./Yampa/tests/AFRPTestsAccum.hs	143
+accum_t6	./Yampa/tests/AFRPTestsAccum.hs	164
+accum_t7	./Yampa/tests/AFRPTestsAccum.hs	169
+accum_t8	./Yampa/tests/AFRPTestsAccum.hs	175
+accum_t8r	./Yampa/tests/AFRPTestsAccum.hs	181
+accum_t9	./Yampa/tests/AFRPTestsAccum.hs	194
+accum_t9r	./Yampa/tests/AFRPTestsAccum.hs	201
+addCT	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	242
+after	./Yampa/src/FRP/YampaBackup.hs	1773
+after	./Yampa/src/FRP/Yampa-original.hs	1769
+after	./Yampa/src/FRP/Yampa.hs	1774
+after,		--	./Yampa/src/FRP/YampaBackup.hs	158
+after,		--	./Yampa/src/FRP/Yampa-original.hs	158
+after,		--	./Yampa/src/FRP/Yampa.hs	158
+afterEach	./Yampa/src/FRP/YampaBackup.hs	1804
+afterEach	./Yampa/src/FRP/YampaBackup.hs	1832
+afterEach	./Yampa/src/FRP/Yampa-original.hs	1800
+afterEach	./Yampa/src/FRP/Yampa-original.hs	1828
+afterEach	./Yampa/src/FRP/Yampa.hs	1805
+afterEach	./Yampa/src/FRP/Yampa.hs	1833
+afterEach,		--	./Yampa/src/FRP/YampaBackup.hs	160
+afterEach,		--	./Yampa/src/FRP/Yampa-original.hs	160
+afterEach,		--	./Yampa/src/FRP/Yampa.hs	160
+afterEachCat	./Yampa/src/FRP/YampaBackup.hs	1837
+afterEachCat	./Yampa/src/FRP/Yampa-original.hs	1833
+afterEachCat	./Yampa/src/FRP/Yampa.hs	1838
+akw	./TerrainData.hs	180
+akwTexture	./TerrainData.hs	103
+allLasers	./Server.hs	27
+allPlayers	./Server.hs	26
+alt	./GameInput.hs	25
+andThen	./Yampa/src/FRP/Yampa/Utilities.hs	211
+angles3d	./Projection.hs	12
+applyTransform	./Terrain.hs	144
+applyTransform2	./Terrain.hs	152
+arr	./Yampa/tests/AFRPTestsLoopPre.hs	25
+arr	./Yampa/tests/AFRPTestsLoop.hs	26
+arr	./Yampa/src/FRP/Yampa/Utilities.hs	132
+arr2	./Yampa/src/FRP/Yampa/Utilities.hs	131
+arr2,		--	./Yampa/src/FRP/Yampa/Utilities.hs	46
+arr3	./Yampa/src/FRP/Yampa/Utilities.hs	135
+arr3,		--	./Yampa/src/FRP/Yampa/Utilities.hs	47
+arr4	./Yampa/src/FRP/Yampa/Utilities.hs	139
+arr4,		--	./Yampa/src/FRP/Yampa/Utilities.hs	48
+arr5	./Yampa/src/FRP/Yampa/Utilities.hs	143
+arr5,		--	./Yampa/src/FRP/Yampa/Utilities.hs	49
+arrEPrim	./Yampa/src/FRP/YampaBackup.hs	681
+arrEPrim	./Yampa/src/FRP/Yampa-original.hs	677
+arrEPrim	./Yampa/src/FRP/Yampa.hs	682
+arrPrim	./Yampa/src/FRP/YampaBackup.hs	675
+arrPrim	./Yampa/src/FRP/Yampa-original.hs	671
+arrPrim	./Yampa/src/FRP/Yampa.hs	676
+arr_tr	./Yampa/tests/AFRPTests.hs	78
+assocsIL	./IdentityList.hs	42
+attach	./Yampa/tests/AFRPTestsAccum.hs	161
+attach	./Yampa/src/FRP/Yampa/Event.hs	204
+attach,		--	./Yampa/src/FRP/YampaBackup.hs	260
+attach,		--	./Yampa/src/FRP/Yampa-original.hs	260
+attach,		--	./Yampa/src/FRP/Yampa.hs	260
+b	./Yampa/tests/AFRPTestsLoopLaws.hs	30
+basicsf_t0	./Yampa/tests/AFRPTestsBasicSF.hs	24
+basicsf_t1	./Yampa/tests/AFRPTestsBasicSF.hs	32
+basicsf_t2	./Yampa/tests/AFRPTestsBasicSF.hs	39
+basicsf_t3	./Yampa/tests/AFRPTestsBasicSF.hs	46
+basicsf_t4	./Yampa/tests/AFRPTestsBasicSF.hs	53
+bectonBottom	./TerrainData.hs	154
+bectonTexture	./TerrainData.hs	106
+bectonTop	./TerrainData.hs	158
+bloodTexture	./TerrainData.hs	124
+boxGeometry	./TerrainData.hs	148
+bracket	./TGA.hs	31
+broadcast	./Yampa/src/FRP/YampaBackup.hs	2466
+broadcast	./Yampa/src/FRP/Yampa-original.hs	2462
+broadcast	./Yampa/src/FRP/Yampa.hs	2467
+buildBigNums	./TextureFonts.hs	52
+buildFonts	./TextureFonts.hs	18
+buildingColor	./TerrainData.hs	145
+buildings	./TerrainData.hs	205
+bvTransform	./BoundingVolume.hs	15
+called	./Sprites.hs	36
+cambient	./Terrain.hs	36
+carEntry	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	128
+catEvents	./Yampa/src/FRP/Yampa/Event.hs	257
+catEvents,		--	./Yampa/src/FRP/YampaBackup.hs	268
+catEvents,		--	./Yampa/src/FRP/Yampa-original.hs	268
+catEvents,		--	./Yampa/src/FRP/Yampa.hs	268
+cdiffuse	./Terrain.hs	35
+cemissive	./Terrain.hs	37
+centerCoordY	./Common.hs	35
+checkCollisions	./Server.hs	185
+checkHits	./Server.hs	179
+coc_t0	./Yampa/tests/AFRPTestsCOC.hs	26
+collidesWith	./BoundingVolume.hs	21
+collisionLP	./Collision.hs	24
+collisionPP	./Collision.hs	10
+collisionUpdates	./Server.hs	192
+colorTable	./Colors.hs	15
+colorf	./Colors.hs	9
+compPrim	./Yampa/src/FRP/YampaBackup.hs	704
+compPrim	./Yampa/src/FRP/Yampa-original.hs	700
+compPrim	./Yampa/src/FRP/Yampa.hs	705
+comp_t0r	./Yampa/tests/AFRPTestsComp.hs	25
+comp_t1r	./Yampa/tests/AFRPTestsComp.hs	31
+comp_t2r	./Yampa/tests/AFRPTestsComp.hs	37
+comp_t3r	./Yampa/tests/AFRPTestsComp.hs	43
+comp_t4r	./Yampa/tests/AFRPTestsComp.hs	50
+comp_t5r	./Yampa/tests/AFRPTestsComp.hs	57
+computeColor	./Common.hs	222
+constT	./Yampa/src/FRP/Yampa/Task.hs	138
+constT,	--	./Yampa/src/FRP/Yampa/Task.hs	22
+constant	./Yampa/src/FRP/YampaBackup.hs	1679
+constant	./Yampa/src/FRP/Yampa-original.hs	1675
+constant	./Yampa/src/FRP/Yampa.hs	1680
+constant,		--	./Yampa/src/FRP/YampaBackup.hs	140
+constant,		--	./Yampa/src/FRP/Yampa-original.hs	140
+constant,		--	./Yampa/src/FRP/Yampa.hs	140
+count	./Yampa/src/FRP/Yampa/Utilities.hs	331
+count,		--	./Yampa/src/FRP/Yampa/Utilities.hs	86
+cpAX	./Yampa/src/FRP/YampaBackup.hs	954
+cpAX	./Yampa/src/FRP/Yampa-original.hs	950
+cpAX	./Yampa/src/FRP/Yampa.hs	955
+cpAXA	./Yampa/src/FRP/YampaBackup.hs	912
+cpAXA	./Yampa/src/FRP/Yampa-original.hs	908
+cpAXA	./Yampa/src/FRP/Yampa.hs	913
+cpAXAAux	./Yampa/src/FRP/YampaBackup.hs	924
+cpAXAAux	./Yampa/src/FRP/Yampa-original.hs	920
+cpAXAAux	./Yampa/src/FRP/Yampa.hs	925
+cpCX	./Yampa/src/FRP/YampaBackup.hs	968
+cpCX	./Yampa/src/FRP/Yampa-original.hs	964
+cpCX	./Yampa/src/FRP/Yampa.hs	969
+cpCXA	./Yampa/src/FRP/YampaBackup.hs	1000
+cpCXA	./Yampa/src/FRP/Yampa-original.hs	996
+cpCXA	./Yampa/src/FRP/Yampa.hs	1001
+cpCXAAux	./Yampa/src/FRP/YampaBackup.hs	1009
+cpCXAAux	./Yampa/src/FRP/Yampa-original.hs	1005
+cpCXAAux	./Yampa/src/FRP/Yampa.hs	1010
+cpEX	./Yampa/src/FRP/YampaBackup.hs	1114
+cpEX	./Yampa/src/FRP/Yampa-original.hs	1110
+cpEX	./Yampa/src/FRP/Yampa.hs	1115
+cpEXAux	./Yampa/src/FRP/YampaBackup.hs	1117
+cpEXAux	./Yampa/src/FRP/Yampa-original.hs	1113
+cpEXAux	./Yampa/src/FRP/Yampa.hs	1118
+cpGX	./Yampa/src/FRP/YampaBackup.hs	1044
+cpGX	./Yampa/src/FRP/Yampa-original.hs	1040
+cpGX	./Yampa/src/FRP/Yampa.hs	1045
+cpGXAux	./Yampa/src/FRP/YampaBackup.hs	1047
+cpGXAux	./Yampa/src/FRP/Yampa-original.hs	1043
+cpGXAux	./Yampa/src/FRP/Yampa.hs	1048
+cpXA	./Yampa/src/FRP/YampaBackup.hs	960
+cpXA	./Yampa/src/FRP/Yampa-original.hs	956
+cpXA	./Yampa/src/FRP/Yampa.hs	961
+cpXE	./Yampa/src/FRP/YampaBackup.hs	1167
+cpXE	./Yampa/src/FRP/Yampa-original.hs	1163
+cpXE	./Yampa/src/FRP/Yampa.hs	1168
+cpXEAux	./Yampa/src/FRP/YampaBackup.hs	1170
+cpXEAux	./Yampa/src/FRP/Yampa-original.hs	1166
+cpXEAux	./Yampa/src/FRP/Yampa.hs	1171
+cpXG	./Yampa/src/FRP/YampaBackup.hs	1078
+cpXG	./Yampa/src/FRP/Yampa-original.hs	1074
+cpXG	./Yampa/src/FRP/Yampa.hs	1079
+cpXGAux	./Yampa/src/FRP/YampaBackup.hs	1082
+cpXGAux	./Yampa/src/FRP/Yampa-original.hs	1078
+cpXGAux	./Yampa/src/FRP/Yampa.hs	1083
+cpXX	./Yampa/src/FRP/YampaBackup.hs	722
+cpXX	./Yampa/src/FRP/Yampa-original.hs	718
+cpXX	./Yampa/src/FRP/Yampa.hs	723
+createTexture	./Textures.hs	39
+createTexture	./Sprites.hs	39
+createTextures	./Sprites.hs	55
+cross	./Vec3d.hs	20
+crosshairTexture	./TerrainData.hs	121
+cshininess	./Terrain.hs	38
+ctrl	./GameInput.hs	25
+cts_init	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	239
+cylinderGeometry	./TerrainData.hs	151
+dAccumHold	./Yampa/src/FRP/YampaBackup.hs	2771
+dAccumHold	./Yampa/src/FRP/Yampa-original.hs	2767
+dAccumHold	./Yampa/src/FRP/Yampa.hs	2772
+dAccumHold,		--	./Yampa/src/FRP/YampaBackup.hs	225
+dAccumHold,		--	./Yampa/src/FRP/Yampa-original.hs	225
+dAccumHold,		--	./Yampa/src/FRP/Yampa.hs	225
+dAccumHoldBy	./Yampa/src/FRP/YampaBackup.hs	2809
+dAccumHoldBy	./Yampa/src/FRP/Yampa-original.hs	2805
+dAccumHoldBy	./Yampa/src/FRP/Yampa.hs	2810
+dAccumHoldBy,	--	./Yampa/src/FRP/YampaBackup.hs	228
+dAccumHoldBy,	--	./Yampa/src/FRP/Yampa-original.hs	228
+dAccumHoldBy,	--	./Yampa/src/FRP/Yampa.hs	228
+dHold	./Yampa/src/FRP/YampaBackup.hs	2731
+dHold	./Yampa/src/FRP/Yampa-original.hs	2727
+dHold	./Yampa/src/FRP/Yampa.hs	2732
+dHold,		--	./Yampa/src/FRP/YampaBackup.hs	216
+dHold,		--	./Yampa/src/FRP/Yampa-original.hs	216
+dHold,		--	./Yampa/src/FRP/Yampa.hs	216
+dHold_sscan	./Yampa/tests/AFRPTestsSscan.hs	81
+dSwitch	./Yampa/src/FRP/YampaBackup.hs	2227
+dSwitch	./Yampa/src/FRP/Yampa-original.hs	2223
+dSwitch	./Yampa/src/FRP/Yampa.hs	2228
+dSwitch,	--	./Yampa/src/FRP/YampaBackup.hs	177
+dSwitch,	--	./Yampa/src/FRP/Yampa-original.hs	177
+dSwitch,	--	./Yampa/src/FRP/Yampa.hs	177
+dSwitchAux	./Yampa/src/FRP/YampaBackup.hs	2239
+dSwitchAux	./Yampa/src/FRP/Yampa-original.hs	2235
+dSwitchAux	./Yampa/src/FRP/Yampa.hs	2240
+dSwitchAuxA1	./Yampa/src/FRP/YampaBackup.hs	2278
+dSwitchAuxA1	./Yampa/src/FRP/Yampa-original.hs	2274
+dSwitchAuxA1	./Yampa/src/FRP/Yampa.hs	2279
+dSwitchInv	./Yampa/src/FRP/YampaBackup.hs	2261
+dSwitchInv	./Yampa/src/FRP/Yampa-original.hs	2257
+dSwitchInv	./Yampa/src/FRP/Yampa.hs	2262
+dTrackAndHold	./Yampa/src/FRP/Yampa/Utilities.hs	307
+dTrackAndHold,	--	./Yampa/src/FRP/Yampa/Utilities.hs	79
+defLaserStr	./Common.hs	142
+defRadius	./Common.hs	133
+delCTs	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	245
+delay	./Yampa/src/FRP/YampaBackup.hs	2944
+delay	./Yampa/src/FRP/Yampa-original.hs	2940
+delay	./Yampa/src/FRP/Yampa.hs	2945
+delay,		--	./Yampa/src/FRP/YampaBackup.hs	238
+delay,		--	./Yampa/src/FRP/Yampa-original.hs	238
+delay,		--	./Yampa/src/FRP/Yampa.hs	238
+delayEvent	./Yampa/src/FRP/YampaBackup.hs	1873
+delayEvent	./Yampa/src/FRP/Yampa-original.hs	1869
+delayEvent	./Yampa/src/FRP/Yampa.hs	1874
+delayEvent,		--	./Yampa/src/FRP/YampaBackup.hs	162
+delayEvent,		--	./Yampa/src/FRP/Yampa-original.hs	162
+delayEvent,		--	./Yampa/src/FRP/Yampa.hs	162
+delayEventCat	./Yampa/src/FRP/YampaBackup.hs	1889
+delayEventCat	./Yampa/src/FRP/YampaBackup.hs	1939
+delayEventCat	./Yampa/src/FRP/Yampa-original.hs	1885
+delayEventCat	./Yampa/src/FRP/Yampa-original.hs	1935
+delayEventCat	./Yampa/src/FRP/Yampa.hs	1890
+delayEventCat	./Yampa/src/FRP/Yampa.hs	1940
+delayEventCat,	--	./Yampa/src/FRP/YampaBackup.hs	163
+delayEventCat,	--	./Yampa/src/FRP/Yampa-original.hs	163
+delayEventCat,	--	./Yampa/src/FRP/Yampa.hs	163
+delay_t4r	./Yampa/tests/AFRPTestsDelay.hs	56
+deleteIL	./IdentityList.hs	50
+deltaEncode	./Yampa/tests/AFRPTestsWFG.hs	25
+deltaEncode	./Yampa/tests/AFRPTestsKSwitch.hs	24
+deltaEncode	./Yampa/tests/AFRPTestsPSwitch.hs	34
+deltaEncode	./Yampa/tests/AFRPTestsUtils.hs	31
+deltaEncode	./Yampa/tests/AFRPTestsSwitch.hs	26
+deltaEncode	./Yampa/tests/AFRPTestsCOC.hs	24
+deltaEncode	./Yampa/src/FRP/YampaBackup.hs	3294
+deltaEncode	./Yampa/src/FRP/Yampa-original.hs	3280
+deltaEncode	./Yampa/src/FRP/Yampa.hs	3302
+deltaEncode,	--	./Yampa/src/FRP/YampaBackup.hs	304
+deltaEncode,	--	./Yampa/src/FRP/Yampa-original.hs	302
+deltaEncode,	--	./Yampa/src/FRP/Yampa.hs	304
+deltaEncodeBy	./Yampa/src/FRP/YampaBackup.hs	3299
+deltaEncodeBy	./Yampa/src/FRP/Yampa-original.hs	3285
+deltaEncodeBy	./Yampa/src/FRP/Yampa.hs	3307
+demoFloor	./TerrainData.hs	189
+demoSkyDome	./TerrainData.hs	201
+demoSkybox	./TerrainData.hs	195
+der_t0	./Yampa/tests/AFRPTestsDer.hs	27
+der_t0r	./Yampa/tests/AFRPTestsDer.hs	34
+der_t0r	./Yampa/tests/AFRPTestsDer.hs	42
+derivative	./Yampa/src/FRP/YampaBackup.hs	3005
+derivative	./Yampa/src/FRP/Yampa-original.hs	3001
+derivative	./Yampa/src/FRP/Yampa.hs	3006
+derivative,		--	./Yampa/src/FRP/YampaBackup.hs	243
+derivative,		--	./Yampa/src/FRP/Yampa-original.hs	243
+derivative,		--	./Yampa/src/FRP/Yampa.hs	243
+destringify	./Common.hs	195
+detectChangeSF	./Common.hs	226
+display	./spriteTest.hs	18
+displaySprite	./Sprites.hs	75
+displaySprite3D	./Sprites.hs	99
+displaySpriteBackend	./Sprites.hs	89
+displaySpriteWithFrame	./Sprites.hs	65
+distance	./Yampa/src/FRP/Yampa/AffineSpace.hs	39
+dkSwitch	./Yampa/src/FRP/YampaBackup.hs	2441
+dkSwitch	./Yampa/src/FRP/Yampa-original.hs	2437
+dkSwitch	./Yampa/src/FRP/Yampa.hs	2442
+dkSwitch,	--	./Yampa/src/FRP/YampaBackup.hs	179
+dkSwitch,	--	./Yampa/src/FRP/Yampa-original.hs	179
+dkSwitch,	--	./Yampa/src/FRP/Yampa.hs	179
+do	./NoServer.hs	15
+do	./WallRender.hs	13
+do	./Sprites.hs	19
+do	./Textures.hs	17
+do	./Render.hs	16
+do	./TextureFonts.hs	19
+doIOevent	./Common.hs	215
+dot	./Yampa/src/FRP/Yampa/VectorSpace.hs	39
+double,float	./Vec3d.hs	34
+downRate	./Yampa/examples/Elevator/Elevator.hs	38
+dpSwitch	./GameCore.hs	22
+dpSwitch	./GameCore.hs	13
+dpSwitch	./Yampa/src/FRP/YampaBackup.hs	2622
+dpSwitch	./Yampa/src/FRP/Yampa-original.hs	2618
+dpSwitch	./Yampa/src/FRP/Yampa.hs	2623
+dpSwitchB	./Yampa/src/FRP/YampaBackup.hs	2508
+dpSwitchB	./Yampa/src/FRP/Yampa-original.hs	2504
+dpSwitchB	./Yampa/src/FRP/Yampa.hs	2509
+dpSwitchZ	./Yampa/src/FRP/Yampa/Utilities.hs	268
+drSwitch	./Yampa/src/FRP/YampaBackup.hs	2312
+drSwitch	./Yampa/src/FRP/YampaBackup.hs	2317
+drSwitch	./Yampa/src/FRP/Yampa-original.hs	2308
+drSwitch	./Yampa/src/FRP/Yampa-original.hs	2313
+drSwitch	./Yampa/src/FRP/Yampa.hs	2313
+drSwitch	./Yampa/src/FRP/Yampa.hs	2318
+drSwitch,	--	./Yampa/src/FRP/YampaBackup.hs	178
+drSwitch,	--	./Yampa/src/FRP/Yampa-original.hs	178
+drSwitch,	--	./Yampa/src/FRP/Yampa.hs	178
+dropEvents	./Yampa/src/FRP/YampaBackup.hs	2108
+dropEvents	./Yampa/src/FRP/Yampa-original.hs	2104
+dropEvents	./Yampa/src/FRP/Yampa.hs	2109
+dropEvents,		--	./Yampa/src/FRP/YampaBackup.hs	174
+dropEvents,		--	./Yampa/src/FRP/Yampa-original.hs	174
+dropEvents,		--	./Yampa/src/FRP/Yampa.hs	174
+drpSwitch	./Yampa/src/FRP/YampaBackup.hs	2682
+drpSwitch	./Yampa/src/FRP/Yampa-original.hs	2678
+drpSwitch	./Yampa/src/FRP/Yampa.hs	2683
+drpSwitchB	./Yampa/src/FRP/YampaBackup.hs	2519
+drpSwitchB	./Yampa/src/FRP/Yampa-original.hs	2515
+drpSwitchB	./Yampa/src/FRP/Yampa.hs	2520
+drpSwitchZ	./Yampa/src/FRP/Yampa/Utilities.hs	277
+dummyCSMsg	./Common.hs	171
+dummyPlayer	./Common.hs	174
+dummySCMsg	./Common.hs	168
+dummyServerInput	./Server.hs	40
+dup	./Yampa/src/FRP/Yampa/Miscellany.hs	64
+dup,		--	./Yampa/src/FRP/YampaBackup.hs	107
+dup,		--	./Yampa/src/FRP/Yampa-original.hs	107
+dup,		--	./Yampa/src/FRP/Yampa.hs	107
+dup,	--	./Yampa/src/FRP/Yampa/Miscellany.hs	26
+dynDelayLine	./Yampa/tests/AFRPTestsUtils.hs	124
+edge	./Yampa/src/FRP/YampaBackup.hs	2015
+edge	./Yampa/src/FRP/Yampa-original.hs	2011
+edge	./Yampa/src/FRP/Yampa.hs	2016
+edge,		--	./Yampa/src/FRP/YampaBackup.hs	164
+edge,		--	./Yampa/src/FRP/Yampa-original.hs	164
+edge,		--	./Yampa/src/FRP/Yampa.hs	164
+edgeBy	./Yampa/src/FRP/YampaBackup.hs	2065
+edgeBy	./Yampa/src/FRP/Yampa-original.hs	2061
+edgeBy	./Yampa/src/FRP/Yampa.hs	2066
+edgeBy,		--	./Yampa/src/FRP/YampaBackup.hs	168
+edgeBy,		--	./Yampa/src/FRP/Yampa-original.hs	168
+edgeBy,		--	./Yampa/src/FRP/Yampa.hs	168
+edgeBy_sscan	./Yampa/tests/AFRPTestsSscan.hs	235
+edgeJust	./Yampa/src/FRP/YampaBackup.hs	2049
+edgeJust	./Yampa/src/FRP/Yampa-original.hs	2045
+edgeJust	./Yampa/src/FRP/Yampa.hs	2050
+edgeJust,		--	./Yampa/src/FRP/YampaBackup.hs	167
+edgeJust,		--	./Yampa/src/FRP/Yampa-original.hs	167
+edgeJust,		--	./Yampa/src/FRP/Yampa.hs	167
+edgeTag	./Yampa/src/FRP/YampaBackup.hs	2033
+edgeTag	./Yampa/src/FRP/Yampa-original.hs	2029
+edgeTag	./Yampa/src/FRP/Yampa.hs	2034
+edgeTag,		--	./Yampa/src/FRP/YampaBackup.hs	166
+edgeTag,		--	./Yampa/src/FRP/Yampa-original.hs	166
+edgeTag,		--	./Yampa/src/FRP/Yampa.hs	166
+edge_sscan	./Yampa/tests/AFRPTestsSscan.hs	193
+elemsIL	./IdentityList.hs	39
+elevator	./Yampa/examples/Elevator/Elevator.hs	43
+embed	./Yampa/src/FRP/YampaBackup.hs	3235
+embed	./Yampa/src/FRP/Yampa-original.hs	3221
+embed	./Yampa/src/FRP/Yampa.hs	3243
+embed,		--	./Yampa/src/FRP/YampaBackup.hs	302
+embed,		--	./Yampa/src/FRP/Yampa-original.hs	300
+embed,		--	./Yampa/src/FRP/Yampa.hs	302
+embedSynch	./Yampa/src/FRP/YampaBackup.hs	3264
+embedSynch	./Yampa/src/FRP/Yampa-original.hs	3250
+embedSynch	./Yampa/src/FRP/Yampa.hs	3272
+embedSynch,		--	./Yampa/src/FRP/YampaBackup.hs	303
+embedSynch,		--	./Yampa/src/FRP/Yampa-original.hs	301
+embedSynch,		--	./Yampa/src/FRP/Yampa.hs	303
+embed_ratio	./Yampa/tests/AFRPTestsEmbed.hs	24
+embed_sf	./Yampa/tests/AFRPTestsEmbed.hs	29
+emptyIL	./IdentityList.hs	30
+emptyServerState	./Server.hs	30
+epPrim	./Yampa/src/FRP/YampaBackup.hs	526
+epPrim	./Yampa/src/FRP/Yampa-original.hs	522
+epPrim	./Yampa/src/FRP/Yampa.hs	527
+epsilon	./Yampa/tests/AFRPTestsCommon.hs	32
+error	./Yampa/src/FRP/Yampa/Diagnostics.hs	17
+event	./Yampa/src/FRP/Yampa/Event.hs	176
+evsrc_t0	./Yampa/tests/AFRPTestsEvSrc.hs	25
+evsrc_t1	./Yampa/tests/AFRPTestsEvSrc.hs	38
+evsrc_t10	./Yampa/tests/AFRPTestsEvSrc.hs	167
+evsrc_t10r	./Yampa/tests/AFRPTestsEvSrc.hs	172
+evsrc_t11	./Yampa/tests/AFRPTestsEvSrc.hs	183
+evsrc_t11r	./Yampa/tests/AFRPTestsEvSrc.hs	189
+evsrc_t12	./Yampa/tests/AFRPTestsEvSrc.hs	200
+evsrc_t13	./Yampa/tests/AFRPTestsEvSrc.hs	213
+evsrc_t14	./Yampa/tests/AFRPTestsEvSrc.hs	233
+evsrc_t15	./Yampa/tests/AFRPTestsEvSrc.hs	245
+evsrc_t16	./Yampa/tests/AFRPTestsEvSrc.hs	263
+evsrc_t17	./Yampa/tests/AFRPTestsEvSrc.hs	277
+evsrc_t17r	./Yampa/tests/AFRPTestsEvSrc.hs	282
+evsrc_t18	./Yampa/tests/AFRPTestsEvSrc.hs	293
+evsrc_t18r	./Yampa/tests/AFRPTestsEvSrc.hs	296
+evsrc_t19	./Yampa/tests/AFRPTestsEvSrc.hs	307
+evsrc_t19r	./Yampa/tests/AFRPTestsEvSrc.hs	310
+evsrc_t1r	./Yampa/tests/AFRPTestsEvSrc.hs	41
+evsrc_t2	./Yampa/tests/AFRPTestsEvSrc.hs	52
+evsrc_t20	./Yampa/tests/AFRPTestsEvSrc.hs	321
+evsrc_t20r	./Yampa/tests/AFRPTestsEvSrc.hs	324
+evsrc_t21	./Yampa/tests/AFRPTestsEvSrc.hs	335
+evsrc_t21r	./Yampa/tests/AFRPTestsEvSrc.hs	338
+evsrc_t22	./Yampa/tests/AFRPTestsEvSrc.hs	349
+evsrc_t22r	./Yampa/tests/AFRPTestsEvSrc.hs	352
+evsrc_t23	./Yampa/tests/AFRPTestsEvSrc.hs	363
+evsrc_t23r	./Yampa/tests/AFRPTestsEvSrc.hs	366
+evsrc_t24	./Yampa/tests/AFRPTestsEvSrc.hs	377
+evsrc_t24r	./Yampa/tests/AFRPTestsEvSrc.hs	380
+evsrc_t25	./Yampa/tests/AFRPTestsEvSrc.hs	391
+evsrc_t25r	./Yampa/tests/AFRPTestsEvSrc.hs	394
+evsrc_t26	./Yampa/tests/AFRPTestsEvSrc.hs	405
+evsrc_t26r	./Yampa/tests/AFRPTestsEvSrc.hs	410
+evsrc_t27	./Yampa/tests/AFRPTestsEvSrc.hs	421
+evsrc_t27r	./Yampa/tests/AFRPTestsEvSrc.hs	424
+evsrc_t28	./Yampa/tests/AFRPTestsEvSrc.hs	436
+evsrc_t29	./Yampa/tests/AFRPTestsEvSrc.hs	470
+evsrc_t2r	./Yampa/tests/AFRPTestsEvSrc.hs	54
+evsrc_t3	./Yampa/tests/AFRPTestsEvSrc.hs	65
+evsrc_t30	./Yampa/tests/AFRPTestsEvSrc.hs	523
+evsrc_t30r	./Yampa/tests/AFRPTestsEvSrc.hs	532
+evsrc_t3r	./Yampa/tests/AFRPTestsEvSrc.hs	68
+evsrc_t4	./Yampa/tests/AFRPTestsEvSrc.hs	79
+evsrc_t4r	./Yampa/tests/AFRPTestsEvSrc.hs	82
+evsrc_t5	./Yampa/tests/AFRPTestsEvSrc.hs	93
+evsrc_t5r	./Yampa/tests/AFRPTestsEvSrc.hs	96
+evsrc_t6	./Yampa/tests/AFRPTestsEvSrc.hs	106
+evsrc_t6r	./Yampa/tests/AFRPTestsEvSrc.hs	109
+evsrc_t7	./Yampa/tests/AFRPTestsEvSrc.hs	119
+evsrc_t7r	./Yampa/tests/AFRPTestsEvSrc.hs	122
+evsrc_t8	./Yampa/tests/AFRPTestsEvSrc.hs	133
+evsrc_t8r	./Yampa/tests/AFRPTestsEvSrc.hs	138
+evsrc_t9	./Yampa/tests/AFRPTestsEvSrc.hs	149
+evsrc_t9r	./Yampa/tests/AFRPTestsEvSrc.hs	155
+explodeTexture	./TerrainData.hs	118
+f	./Yampa/src/FRP/YampaBackup.hs	2023
+f	./Yampa/src/FRP/Yampa-original.hs	2019
+f	./Yampa/src/FRP/Yampa.hs	2024
+fDiv	./Yampa/src/FRP/Yampa/Miscellany.hs	128
+fDiv,	--	./Yampa/src/FRP/Yampa/Miscellany.hs	39
+fDivMod	./Yampa/src/FRP/Yampa/Miscellany.hs	136
+fDivMod	--	./Yampa/src/FRP/Yampa/Miscellany.hs	41
+fMod	./Yampa/src/FRP/Yampa/Miscellany.hs	132
+fMod,	--	./Yampa/src/FRP/Yampa/Miscellany.hs	40
+fby	./Yampa/src/FRP/Yampa/Utilities.hs	340
+fby,		--	./Yampa/src/FRP/Yampa/Utilities.hs	89
+fdComp	./Yampa/src/FRP/YampaBackup.hs	581
+fdComp	./Yampa/src/FRP/Yampa-original.hs	577
+fdComp	./Yampa/src/FRP/Yampa.hs	582
+fdFanOut	./Yampa/src/FRP/YampaBackup.hs	615
+fdFanOut	./Yampa/src/FRP/Yampa-original.hs	611
+fdFanOut	./Yampa/src/FRP/Yampa.hs	616
+fdFun	./Yampa/src/FRP/YampaBackup.hs	575
+fdFun	./Yampa/src/FRP/Yampa-original.hs	571
+fdFun	./Yampa/src/FRP/Yampa.hs	576
+fdPar	./Yampa/src/FRP/YampaBackup.hs	605
+fdPar	./Yampa/src/FRP/Yampa-original.hs	601
+fdPar	./Yampa/src/FRP/Yampa.hs	606
+fetchCSMsg	./Server.hs	111
+fetchSCMsg	./Net.hs	90
+filter	./Yampa/examples/TailgatingDetector/TestTGMain.hs	28
+filterE	./Yampa/src/FRP/Yampa/Event.hs	281
+filterIL	./IdentityList.hs	58
+findCenterBackend	./Sprites.hs	115
+findEvents	./Yampa/examples/Elevator/TestElevatorMain.hs	49
+findSizeBackend	./Sprites.hs	124
+findTailgaters	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	317
+firstPrim	./Yampa/src/FRP/YampaBackup.hs	1217
+firstPrim	./Yampa/src/FRP/Yampa-original.hs	1213
+firstPrim	./Yampa/src/FRP/Yampa.hs	1218
+first_t0	./Yampa/tests/AFRPTestsFirstSecond.hs	24
+first_t0r	./Yampa/tests/AFRPTestsFirstSecond.hs	26
+first_t1	./Yampa/tests/AFRPTestsFirstSecond.hs	34
+first_t1r	./Yampa/tests/AFRPTestsFirstSecond.hs	36
+first_t2	./Yampa/tests/AFRPTestsFirstSecond.hs	44
+first_t3	./Yampa/tests/AFRPTestsFirstSecond.hs	53
+first_t4	./Yampa/tests/AFRPTestsFirstSecond.hs	62
+first_t5	./Yampa/tests/AFRPTestsFirstSecond.hs	71
+floorExample	./TerrainData.hs	85
+floorGeo	./TerrainData.hs	186
+floorTexture	./TerrainData.hs	109
+for	./Yampa/src/FRP/Yampa/Task.hs	195
+forAll	./Yampa/src/FRP/Yampa/Task.hs	200
+forEver	./Yampa/src/FRP/Yampa/Task.hs	205
+force	./Yampa/src/FRP/Yampa/Forceable.hs	18
+formatEvent	./Yampa/examples/Elevator/TestElevatorMain.hs	88
+fpAux	./Yampa/src/FRP/YampaBackup.hs	1226
+fpAux	./Yampa/src/FRP/Yampa-original.hs	1222
+fpAux	./Yampa/src/FRP/Yampa.hs	1227
+fpInv	./Yampa/src/FRP/YampaBackup.hs	1239
+fpInv	./Yampa/src/FRP/Yampa-original.hs	1235
+fpInv	./Yampa/src/FRP/Yampa.hs	1240
+freeze	./Yampa/src/FRP/YampaBackup.hs	643
+freeze	./Yampa/src/FRP/Yampa-original.hs	639
+freeze	./Yampa/src/FRP/Yampa.hs	644
+freezeCol	./Yampa/src/FRP/YampaBackup.hs	647
+freezeCol	./Yampa/src/FRP/Yampa-original.hs	643
+freezeCol	./Yampa/src/FRP/Yampa.hs	648
+fromEvent	./Yampa/src/FRP/Yampa/Event.hs	180
+fromEvent,		--	./Yampa/src/FRP/YampaBackup.hs	255
+fromEvent,		--	./Yampa/src/FRP/Yampa-original.hs	255
+fromEvent,		--	./Yampa/src/FRP/Yampa.hs	255
+g	./Yampa/src/FRP/Yampa/Miscellany.hs	57
+g)	./Yampa/src/FRP/YampaBackup.hs	3090
+g)	./Yampa/src/FRP/Yampa-original.hs	3086
+g)	./Yampa/src/FRP/Yampa.hs	3091
+game	./RunGame.hs	30
+gameCore	./GameCore.hs	21
+gate	./Yampa/src/FRP/Yampa/Event.hs	295
+gate,		--	./Yampa/src/FRP/YampaBackup.hs	273
+gate,		--	./Yampa/src/FRP/Yampa-original.hs	273
+gate,		--	./Yampa/src/FRP/Yampa.hs	273
+genBigNumList	./TextureFonts.hs	61
+genFontList	./TextureFonts.hs	36
+generatePreloadedParticles	./Particles.hs	78
+generatePreloadedParticles2	./Particles.hs	81
+getAndCreateTexture	./Textures.hs	25
+getAndCreateTextures	./Textures.hs	16
+getCars	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	249
+getCol	./Server.hs	194
+getCursorsFrame	./spriteTest.hs	28
+getDataFileName	./Yampa/dist/build/autogen/Paths_Yampa.hs	26
+getEvents	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	252
+getFormat	./TGA.hs	83
+getIL	./IdentityList.hs	45
+getLibexecDir	./Yampa/dist/build/autogen/Paths_Yampa.hs	20
+getTerrainBounds	./Terrain.hs	246
+getx,gety,getz	./Vec3d.hs	29
+glInit	./RunGame.hs	94
+glowTexture	./TerrainData.hs	127
+hGetBufFully	./ReadImage.hs	50
+hamsterTexture	./TerrainData.hs	115
+handle	./Server.hs	36
+height	./Common.hs	29
+highway	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	92
+hitLaserID	./Common.hs	93
+hitStr	./Common.hs	94
+hold	./Yampa/src/FRP/YampaBackup.hs	2708
+hold	./Yampa/src/FRP/Yampa-original.hs	2704
+hold	./Yampa/src/FRP/Yampa.hs	2709
+hold,		--	./Yampa/src/FRP/YampaBackup.hs	215
+hold,		--	./Yampa/src/FRP/Yampa-original.hs	215
+hold,		--	./Yampa/src/FRP/Yampa.hs	215
+hold_sscan	./Yampa/tests/AFRPTestsSscan.hs	74
+iEdge	./Yampa/src/FRP/YampaBackup.hs	2019
+iEdge	./Yampa/src/FRP/Yampa-original.hs	2015
+iEdge	./Yampa/src/FRP/Yampa.hs	2020
+iEdge,		--	./Yampa/src/FRP/YampaBackup.hs	165
+iEdge,		--	./Yampa/src/FRP/Yampa-original.hs	165
+iEdge,		--	./Yampa/src/FRP/Yampa.hs	165
+iPre	./Yampa/src/FRP/YampaBackup.hs	2918
+iPre	./Yampa/src/FRP/Yampa-original.hs	2914
+iPre	./Yampa/src/FRP/Yampa.hs	2919
+iPre,		--	./Yampa/src/FRP/YampaBackup.hs	235
+iPre,		--	./Yampa/src/FRP/Yampa-original.hs	235
+iPre,		--	./Yampa/src/FRP/Yampa.hs	235
+iPre_sscan	./Yampa/tests/AFRPTestsSscan.hs	33
+id	./Yampa/src/FRP/YampaBackup.hs	576
+id	./Yampa/src/FRP/Yampa-original.hs	572
+id	./Yampa/src/FRP/Yampa.hs	577
+id	./Yampa/src/FRP/Yampa/Forceable.hs	22
+identity	./Yampa/src/FRP/YampaBackup.hs	1674
+identity	./Yampa/src/FRP/Yampa-original.hs	1670
+identity	./Yampa/src/FRP/Yampa.hs	1675
+identity,		--	./Yampa/src/FRP/YampaBackup.hs	139
+identity,		--	./Yampa/src/FRP/Yampa-original.hs	139
+identity,		--	./Yampa/src/FRP/Yampa.hs	139
+ilAssocs	./IdentityList.hs	11
+ilNextKey	./IdentityList.hs	10
+imIntegral	./Yampa/src/FRP/YampaBackup.hs	2995
+imIntegral	./Yampa/src/FRP/Yampa-original.hs	2991
+imIntegral	./Yampa/src/FRP/Yampa.hs	2996
+imIntegral,		--	./Yampa/src/FRP/YampaBackup.hs	244
+imIntegral,		--	./Yampa/src/FRP/Yampa-original.hs	244
+imIntegral,		--	./Yampa/src/FRP/Yampa.hs	244
+impulseIntegral	./Yampa/src/FRP/Yampa/Utilities.hs	348
+impulseIntegral,	--	./Yampa/src/FRP/Yampa/Utilities.hs	92
+impulseIntegral2	./Yampa/tests/AFRPTestsSwitch.hs	178
+impulseIntegral2'	./Yampa/tests/AFRPTestsSwitch.hs	183
+initFrustum	./Common.hs	42
+initGameInput	./RunGame.hs	118
+initializePlayer	./Server.hs	93
+initially	./Yampa/src/FRP/YampaBackup.hs	1719
+initially	./Yampa/src/FRP/Yampa-original.hs	1715
+initially	./Yampa/src/FRP/Yampa.hs	1720
+initially,		--	./Yampa/src/FRP/YampaBackup.hs	149
+initially,		--	./Yampa/src/FRP/Yampa-original.hs	149
+initially,		--	./Yampa/src/FRP/Yampa.hs	149
+insertIL	./IdentityList.hs	33
+int	./Common.hs	54
+intErr	./Yampa/src/FRP/Yampa/Diagnostics.hs	19
+integral	./Yampa/src/FRP/YampaBackup.hs	2980
+integral	./Yampa/src/FRP/Yampa-original.hs	2976
+integral	./Yampa/src/FRP/Yampa.hs	2981
+integral,		--	./Yampa/src/FRP/YampaBackup.hs	241
+integral,		--	./Yampa/src/FRP/Yampa-original.hs	241
+integral,		--	./Yampa/src/FRP/Yampa.hs	241
+inverseScale	./Vec3d.hs	14
+isEvent	./Yampa/src/FRP/Yampa/Event.hs	184
+isEvent,		--	./Yampa/src/FRP/YampaBackup.hs	256
+isEvent,		--	./Yampa/src/FRP/Yampa-original.hs	256
+isEvent,		--	./Yampa/src/FRP/Yampa.hs	256
+isNoEvent	./Yampa/src/FRP/Yampa/Event.hs	188
+isNoEvent,		--	./Yampa/src/FRP/YampaBackup.hs	257
+isNoEvent,		--	./Yampa/src/FRP/Yampa-original.hs	257
+isNoEvent,		--	./Yampa/src/FRP/Yampa.hs	257
+iterFrom	./Yampa/src/FRP/YampaBackup.hs	2998
+iterFrom	./Yampa/src/FRP/Yampa-original.hs	2994
+iterFrom	./Yampa/src/FRP/Yampa.hs	2999
+joinE	./Yampa/src/FRP/Yampa/Event.hs	264
+joinE,		--	./Yampa/src/FRP/YampaBackup.hs	269
+joinE,		--	./Yampa/src/FRP/Yampa-original.hs	269
+joinE,		--	./Yampa/src/FRP/Yampa.hs	269
+kSwitch	./Yampa/src/FRP/YampaBackup.hs	2328
+kSwitch	./Yampa/src/FRP/Yampa-original.hs	2324
+kSwitch	./Yampa/src/FRP/Yampa.hs	2329
+keyState	./GameInput.hs	15
+keyboardCallback	./GameInput.hs	28
+killOrSpawn	./GameCore.hs	30
+killtext	./Object.hs	342
+kswitch_t0	./Yampa/tests/AFRPTestsKSwitch.hs	30
+kswitch_t1	./Yampa/tests/AFRPTestsKSwitch.hs	45
+kswitch_t2	./Yampa/tests/AFRPTestsKSwitch.hs	60
+kswitch_t3	./Yampa/tests/AFRPTestsKSwitch.hs	75
+lMerge	./Yampa/src/FRP/Yampa/Event.hs	221
+laser	./Object.hs	288
+laserColor	./Common.hs	86
+laserHeight	./Laser.hs	16
+laserHeightf	./Laser.hs	19
+laserID	./Common.hs	81
+laserPos	./Common.hs	83
+laserRad	./Laser.hs	13
+laserStr	./Common.hs	85
+laserVel	./Common.hs	84
+laserpID	./Common.hs	82
+lastDrawTime	./Common.hs	189
+laws_t0_lhs	./Yampa/tests/AFRPTestsLaws.hs	29
+laws_t0_rhs	./Yampa/tests/AFRPTestsLaws.hs	31
+laws_t1_lhs	./Yampa/tests/AFRPTestsLaws.hs	34
+laws_t1_rhs	./Yampa/tests/AFRPTestsLaws.hs	36
+laws_t2_lhs	./Yampa/tests/AFRPTestsLaws.hs	39
+laws_t2_rhs	./Yampa/tests/AFRPTestsLaws.hs	41
+laws_t3_lhs	./Yampa/tests/AFRPTestsLaws.hs	44
+laws_t3_rhs	./Yampa/tests/AFRPTestsLaws.hs	46
+laws_t4_lhs	./Yampa/tests/AFRPTestsLaws.hs	49
+laws_t4_rhs	./Yampa/tests/AFRPTestsLaws.hs	51
+laws_t5_lhs	./Yampa/tests/AFRPTestsLaws.hs	54
+laws_t5_rhs	./Yampa/tests/AFRPTestsLaws.hs	56
+laws_t6_lhs	./Yampa/tests/AFRPTestsLaws.hs	59
+laws_t6_rhs	./Yampa/tests/AFRPTestsLaws.hs	61
+laws_t7_lhs	./Yampa/tests/AFRPTestsLaws.hs	64
+laws_t7_rhs	./Yampa/tests/AFRPTestsLaws.hs	66
+laws_t8_lhs	./Yampa/tests/AFRPTestsLaws.hs	69
+laws_t8_rhs	./Yampa/tests/AFRPTestsLaws.hs	72
+lbps	./Yampa/examples/Elevator/TestElevatorMain.hs	27
+leftClick	./GameInput.hs	16
+len	./Vec3d.hs	26
+len2	./Vec3d.hs	23
+let	./Collision.hs	12
+let	./Yampa/tests/AFRPTestsLoopIntegral.hs	28
+libexecdir	./Yampa/dist/build/autogen/Paths_Yampa.hs	13
+lift0	./Yampa/src/FRP/Yampa/Utilities.hs	147
+lift0,		--	./Yampa/src/FRP/Yampa/Utilities.hs	50
+lift1	./Yampa/src/FRP/Yampa/Utilities.hs	151
+lift1,		--	./Yampa/src/FRP/Yampa/Utilities.hs	51
+lift2	./Yampa/src/FRP/Yampa/Utilities.hs	155
+lift2,		--	./Yampa/src/FRP/Yampa/Utilities.hs	52
+lift3	./Yampa/src/FRP/Yampa/Utilities.hs	159
+lift3,		--	./Yampa/src/FRP/Yampa/Utilities.hs	53
+lift4	./Yampa/src/FRP/Yampa/Utilities.hs	163
+lift4,		--	./Yampa/src/FRP/Yampa/Utilities.hs	54
+lift5	./Yampa/src/FRP/Yampa/Utilities.hs	167
+lift5,		--	./Yampa/src/FRP/Yampa/Utilities.hs	55
+listToIL	./IdentityList.hs	36
+ln	./Server.hs	114
+ln	./Net.hs	93
+localTime	./Yampa/src/FRP/YampaBackup.hs	1684
+localTime	./Yampa/src/FRP/Yampa-original.hs	1680
+localTime	./Yampa/src/FRP/Yampa.hs	1685
+localTime,		--	./Yampa/src/FRP/YampaBackup.hs	141
+localTime,		--	./Yampa/src/FRP/Yampa-original.hs	141
+localTime,		--	./Yampa/src/FRP/Yampa.hs	141
+loopAux	./Yampa/src/FRP/YampaBackup.hs	1642
+loopAux	./Yampa/src/FRP/Yampa-original.hs	1638
+loopAux	./Yampa/src/FRP/Yampa.hs	1643
+loopIntegral	./Yampa/src/FRP/YampaBackup.hs	3024
+loopIntegral	./Yampa/src/FRP/Yampa-original.hs	3020
+loopIntegral	./Yampa/src/FRP/Yampa.hs	3025
+loopIntegral,	--	./Yampa/src/FRP/YampaBackup.hs	248
+loopIntegral,	--	./Yampa/src/FRP/Yampa-original.hs	248
+loopIntegral,	--	./Yampa/src/FRP/Yampa.hs	248
+loopIntegral_t0r	./Yampa/tests/AFRPTestsLoopIntegral.hs	33
+loopIntegral_t1r	./Yampa/tests/AFRPTestsLoopIntegral.hs	76
+loopInv	./Yampa/src/FRP/YampaBackup.hs	1660
+loopInv	./Yampa/src/FRP/Yampa-original.hs	1656
+loopInv	./Yampa/src/FRP/Yampa.hs	1661
+loopPre	./Yampa/src/FRP/YampaBackup.hs	3019
+loopPre	./Yampa/src/FRP/Yampa-original.hs	3015
+loopPre	./Yampa/src/FRP/Yampa.hs	3020
+loopPrim	./Yampa/src/FRP/YampaBackup.hs	1635
+loopPrim	./Yampa/src/FRP/Yampa-original.hs	1631
+loopPrim	./Yampa/src/FRP/Yampa.hs	1636
+loop_acc	./Yampa/tests/AFRPTestsLoopPre.hs	24
+loop_acc	./Yampa/tests/AFRPTestsLoop.hs	25
+loop_st1	./Yampa/tests/AFRPTestsLoop.hs	203
+loop_t0	./Yampa/tests/AFRPTestsLoop.hs	28
+loop_t1	./Yampa/tests/AFRPTestsLoop.hs	35
+loop_t10	./Yampa/tests/AFRPTestsLoop.hs	106
+loop_t11	./Yampa/tests/AFRPTestsLoop.hs	110
+loop_t12	./Yampa/tests/AFRPTestsLoop.hs	114
+loop_t13	./Yampa/tests/AFRPTestsLoop.hs	124
+loop_t14	./Yampa/tests/AFRPTestsLoop.hs	133
+loop_t15	./Yampa/tests/AFRPTestsLoop.hs	142
+loop_t16	./Yampa/tests/AFRPTestsLoop.hs	159
+loop_t17	./Yampa/tests/AFRPTestsLoop.hs	167
+loop_t2	./Yampa/tests/AFRPTestsLoop.hs	42
+loop_t3	./Yampa/tests/AFRPTestsLoop.hs	53
+loop_t4	./Yampa/tests/AFRPTestsLoop.hs	62
+loop_t5	./Yampa/tests/AFRPTestsLoop.hs	71
+loop_t6	./Yampa/tests/AFRPTestsLoop.hs	80
+loop_t7	./Yampa/tests/AFRPTestsLoop.hs	89
+loop_t8	./Yampa/tests/AFRPTestsLoop.hs	93
+loop_t9	./Yampa/tests/AFRPTestsLoop.hs	97
+looplaws_t0_h	./Yampa/tests/AFRPTestsLoopLaws.hs	37
+looplaws_t0_lhs	./Yampa/tests/AFRPTestsLoopLaws.hs	39
+looplaws_t0_rhs	./Yampa/tests/AFRPTestsLoopLaws.hs	41
+looplaws_t1_h	./Yampa/tests/AFRPTestsLoopLaws.hs	47
+looplaws_t1_lhs	./Yampa/tests/AFRPTestsLoopLaws.hs	49
+looplaws_t1_rhs	./Yampa/tests/AFRPTestsLoopLaws.hs	51
+looplaws_t2_f	./Yampa/tests/AFRPTestsLoopLaws.hs	57
+looplaws_t2_lhs	./Yampa/tests/AFRPTestsLoopLaws.hs	60
+looplaws_t2_rhs	./Yampa/tests/AFRPTestsLoopLaws.hs	62
+looplaws_t3_lhs	./Yampa/tests/AFRPTestsLoopLaws.hs	74
+looplaws_t3_rhs	./Yampa/tests/AFRPTestsLoopLaws.hs	76
+looplaws_t4_lhs	./Yampa/tests/AFRPTestsLoopLaws.hs	82
+looplaws_t4_rhs	./Yampa/tests/AFRPTestsLoopLaws.hs	84
+looplaws_t5_lhs	./Yampa/tests/AFRPTestsLoopLaws.hs	92
+looplaws_t5_rhs	./Yampa/tests/AFRPTestsLoopLaws.hs	94
+mWheel	./GameInput.hs	17
+mWheelCallback	./GameInput.hs	36
+main	./NoServer.hs	14
+main	./Client.hs	18
+main	./Server.hs	43
+main	./Yampa/tests/testAFRPMain.hs	51
+makeNewWindow	./spriteTest.hs	33
+makeTextureUnsafe	./TerrainData.hs	98
+mand	./TerrainData.hs	41
+mand'	./TerrainData.hs	43
+mapFilterE	./Yampa/src/FRP/Yampa/Event.hs	287
+mapFilterE,		--	./Yampa/src/FRP/YampaBackup.hs	272
+mapFilterE,		--	./Yampa/src/FRP/Yampa-original.hs	272
+mapFilterE,		--	./Yampa/src/FRP/Yampa.hs	272
+mapFst	./Yampa/src/FRP/Yampa/Miscellany.hs	75
+mapFst,	--	./Yampa/src/FRP/Yampa/Miscellany.hs	30
+mapIL	./IdentityList.hs	55
+mapMerge	./Yampa/src/FRP/Yampa/Event.hs	244
+mapSnd	./Yampa/src/FRP/Yampa/Miscellany.hs	79
+mapSnd,	--	./Yampa/src/FRP/Yampa/Miscellany.hs	31
+mapVerticies	./Sprites.hs	140
+maxEnergy	./Common.hs	139
+maxLife	./Common.hs	136
+maybeEvent	./Common.hs	211
+maybeToEvent	./Yampa/tests/AFRPTestsSscan.hs	230
+maybeToEvent	./Yampa/src/FRP/Yampa/Event.hs	166
+mct	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	222
+merge	./Yampa/src/FRP/Yampa/Event.hs	231
+merge,		--	./Yampa/src/FRP/YampaBackup.hs	263
+merge,		--	./Yampa/src/FRP/Yampa-original.hs	263
+merge,		--	./Yampa/src/FRP/Yampa.hs	263
+mergeBy	./Yampa/src/FRP/Yampa/Event.hs	236
+mergeBy,		--	./Yampa/src/FRP/YampaBackup.hs	264
+mergeBy,		--	./Yampa/src/FRP/Yampa-original.hs	264
+mergeBy,		--	./Yampa/src/FRP/Yampa.hs	264
+mergeEvents	./Yampa/src/FRP/Yampa/Event.hs	252
+message	./GameInput.hs	19
+mkCar1	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	79
+mkCar2	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	82
+mkCar3	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	86
+mkCarTracker	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	136
+mkRMatrixT,mkRMatrixP,mkTMatrix	./Player.hs	70
+mkTask	./Yampa/src/FRP/Yampa/Task.hs	56
+mkTask,	--	./Yampa/src/FRP/Yampa/Task.hs	18
+mkVideo	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	122
+mkVideoAndTrackers	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	119
+mouseClickCallback	./GameInput.hs	32
+mouseMotionCallback	./GameInput.hs	40
+mouseTimer	./Common.hs	202
+moveBack	./TerrainData.hs	72
+moveObjs	./Server.hs	158
+mrDefault	./Yampa/src/FRP/Yampa/MergeableRecord.hs	64
+mrFinalize	./Yampa/src/FRP/Yampa/MergeableRecord.hs	85
+mrMake	./Yampa/src/FRP/Yampa/MergeableRecord.hs	72
+mrMerge	./Yampa/src/FRP/Yampa/MergeableRecord.hs	80
+msInterval	./spriteTest.hs	6
+mt	./TerrainData.hs	139
+mtgd	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	277
+negateVector	./Yampa/src/FRP/Yampa/VectorSpace.hs	36
+networkInit	./RunGame.hs	129
+never	./Yampa/src/FRP/YampaBackup.hs	1761
+never	./Yampa/src/FRP/Yampa-original.hs	1757
+never	./Yampa/src/FRP/Yampa.hs	1762
+newOrder	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	292
+nextID	./Server.hs	25
+noEvent	./Yampa/src/FRP/Yampa/Event.hs	104
+noEvent,		--	./Yampa/src/FRP/YampaBackup.hs	251
+noEvent,		--	./Yampa/src/FRP/Yampa-original.hs	251
+noEvent,		--	./Yampa/src/FRP/Yampa.hs	251
+noEventFst	./Yampa/src/FRP/Yampa/Event.hs	109
+noEventFst,		--	./Yampa/src/FRP/YampaBackup.hs	252
+noEventFst,		--	./Yampa/src/FRP/Yampa-original.hs	252
+noEventFst,		--	./Yampa/src/FRP/Yampa.hs	252
+noEventSnd	./Yampa/src/FRP/Yampa/Event.hs	114
+noEventSnd,		--	./Yampa/src/FRP/YampaBackup.hs	253
+noEventSnd,		--	./Yampa/src/FRP/Yampa-original.hs	253
+noEventSnd,		--	./Yampa/src/FRP/Yampa.hs	253
+noise	./Yampa/src/FRP/YampaBackup.hs	276
+noise	./Yampa/src/FRP/YampaBackup.hs	278
+noise	./Yampa/src/FRP/YampaBackup.hs	3034
+noise	./Yampa/src/FRP/Yampa-original.hs	276
+noise	./Yampa/src/FRP/Yampa-original.hs	278
+noise	./Yampa/src/FRP/Yampa-original.hs	3030
+noise	./Yampa/src/FRP/Yampa.hs	276
+noise	./Yampa/src/FRP/Yampa.hs	278
+noise	./Yampa/src/FRP/Yampa.hs	3035
+noise,		--	./Yampa/src/FRP/YampaBackup.hs	276
+noise,		--	./Yampa/src/FRP/Yampa-original.hs	276
+noise,		--	./Yampa/src/FRP/Yampa.hs	276
+noiseR	./Yampa/src/FRP/YampaBackup.hs	3039
+noiseR	./Yampa/src/FRP/Yampa-original.hs	3035
+noiseR	./Yampa/src/FRP/Yampa.hs	3040
+noiseR,		--	./Yampa/src/FRP/YampaBackup.hs	278
+noiseR,		--	./Yampa/src/FRP/Yampa-original.hs	278
+noiseR,		--	./Yampa/src/FRP/Yampa.hs	278
+norm		./Yampa/src/FRP/Yampa/VectorSpace.hs	40
+normalize		./Yampa/src/FRP/Yampa/VectorSpace.hs	41
+notYet	./Yampa/src/FRP/YampaBackup.hs	2080
+notYet	./Yampa/src/FRP/Yampa-original.hs	2076
+notYet	./Yampa/src/FRP/Yampa.hs	2081
+notYet,		--	./Yampa/src/FRP/YampaBackup.hs	171
+notYet,		--	./Yampa/src/FRP/Yampa-original.hs	171
+notYet,		--	./Yampa/src/FRP/Yampa.hs	171
+now	./Yampa/src/FRP/YampaBackup.hs	1767
+now	./Yampa/src/FRP/Yampa-original.hs	1763
+now	./Yampa/src/FRP/Yampa.hs	1768
+now,		--	./Yampa/src/FRP/YampaBackup.hs	157
+now,		--	./Yampa/src/FRP/Yampa-original.hs	157
+now,		--	./Yampa/src/FRP/Yampa.hs	157
+nullTransform	./TerrainData.hs	66
+numFrames	./Common.hs	190
+objSF	./Server.hs	127
+observer	./Object.hs	92
+occasionally	./Yampa/src/FRP/YampaBackup.hs	3077
+occasionally	./Yampa/src/FRP/Yampa-original.hs	3073
+occasionally	./Yampa/src/FRP/Yampa.hs	3078
+occasionally,	--	./Yampa/src/FRP/YampaBackup.hs	280
+occasionally,	--	./Yampa/src/FRP/Yampa-original.hs	280
+occasionally,	--	./Yampa/src/FRP/Yampa.hs	280
+oiColliding	./Object.hs	25
+oiGameInput	./Object.hs	24
+old_accum	./Yampa/src/FRP/YampaBackup.hs	2753
+old_accum	./Yampa/src/FRP/Yampa-original.hs	2749
+old_accum	./Yampa/src/FRP/Yampa.hs	2754
+old_accum,		--	./Yampa/src/FRP/YampaBackup.hs	220
+old_accum,		--	./Yampa/src/FRP/Yampa-original.hs	220
+old_accum,		--	./Yampa/src/FRP/Yampa.hs	220
+old_accumBy	./Yampa/src/FRP/YampaBackup.hs	2786
+old_accumBy	./Yampa/src/FRP/Yampa-original.hs	2782
+old_accumBy	./Yampa/src/FRP/Yampa.hs	2787
+old_accumBy,	--	./Yampa/src/FRP/YampaBackup.hs	221
+old_accumBy,	--	./Yampa/src/FRP/Yampa-original.hs	221
+old_accumBy,	--	./Yampa/src/FRP/Yampa.hs	221
+old_accumFilter	./Yampa/src/FRP/YampaBackup.hs	2869
+old_accumFilter	./Yampa/src/FRP/Yampa-original.hs	2865
+old_accumFilter	./Yampa/src/FRP/Yampa.hs	2870
+old_accumFilter,	--	./Yampa/src/FRP/YampaBackup.hs	222
+old_accumFilter,	--	./Yampa/src/FRP/Yampa-original.hs	222
+old_accumFilter,	--	./Yampa/src/FRP/Yampa.hs	222
+old_accumHold	./Yampa/src/FRP/Yampa/Utilities.hs	315
+old_accumHold,	--	./Yampa/src/FRP/Yampa/Utilities.hs	82
+old_accumHoldBy	./Yampa/src/FRP/Yampa/Utilities.hs	323
+old_accumHoldBy,	--	./Yampa/src/FRP/Yampa/Utilities.hs	84
+old_dAccumHold	./Yampa/src/FRP/Yampa/Utilities.hs	319
+old_dAccumHold,	--	./Yampa/src/FRP/Yampa/Utilities.hs	83
+old_dAccumHoldBy	./Yampa/src/FRP/Yampa/Utilities.hs	327
+old_dAccumHoldBy,	--	./Yampa/src/FRP/Yampa/Utilities.hs	85
+old_dHold	./Yampa/src/FRP/Yampa/Utilities.hs	301
+old_dHold,		--	./Yampa/src/FRP/Yampa/Utilities.hs	78
+old_hold	./Yampa/src/FRP/YampaBackup.hs	2704
+old_hold	./Yampa/src/FRP/Yampa-original.hs	2700
+old_hold	./Yampa/src/FRP/Yampa.hs	2705
+old_hold,		--	./Yampa/src/FRP/YampaBackup.hs	214
+old_hold,		--	./Yampa/src/FRP/Yampa-original.hs	214
+old_hold,		--	./Yampa/src/FRP/Yampa.hs	214
+old_iPre	./Yampa/src/FRP/YampaBackup.hs	2903
+old_iPre	./Yampa/src/FRP/Yampa-original.hs	2899
+old_iPre	./Yampa/src/FRP/Yampa.hs	2904
+old_impulseIntegral	./Yampa/src/FRP/Yampa/Utilities.hs	351
+old_impulseIntegral	--	./Yampa/src/FRP/Yampa/Utilities.hs	93
+old_pre	./Yampa/src/FRP/YampaBackup.hs	2893
+old_pre	./Yampa/src/FRP/Yampa-original.hs	2889
+old_pre	./Yampa/src/FRP/Yampa.hs	2894
+once	./Yampa/src/FRP/YampaBackup.hs	2085
+once	./Yampa/src/FRP/Yampa-original.hs	2081
+once	./Yampa/src/FRP/Yampa.hs	2086
+once,		--	./Yampa/src/FRP/YampaBackup.hs	172
+once,		--	./Yampa/src/FRP/Yampa-original.hs	172
+once,		--	./Yampa/src/FRP/Yampa.hs	172
+ooBounds	./Object.hs	33
+ooKillReq	./Object.hs	31
+ooNetworkMsgs	./Object.hs	30
+ooObsObjState	./Object.hs	29
+ooSpawnReq	./Object.hs	32
+origin	./Yampa/src/FRP/Yampa/AffineSpace.hs	35
+outputs	./Server.hs	202
+p	./Yampa/src/FRP/Yampa/AffineSpace.hs	41
+pSwitch	./Yampa/src/FRP/YampaBackup.hs	2585
+pSwitch	./Yampa/src/FRP/Yampa-original.hs	2581
+pSwitch	./Yampa/src/FRP/Yampa.hs	2586
+pSwitchB	./Yampa/src/FRP/YampaBackup.hs	2502
+pSwitchB	./Yampa/src/FRP/Yampa-original.hs	2498
+pSwitchB	./Yampa/src/FRP/Yampa.hs	2503
+pSwitchZ	./Yampa/src/FRP/Yampa/Utilities.hs	263
+par	./Yampa/src/FRP/YampaBackup.hs	2536
+par	./Yampa/src/FRP/Yampa-original.hs	2532
+par	./Yampa/src/FRP/Yampa.hs	2537
+parAux	./Yampa/src/FRP/YampaBackup.hs	2552
+parAux	./Yampa/src/FRP/Yampa-original.hs	2548
+parAux	./Yampa/src/FRP/Yampa.hs	2553
+parB	./Yampa/src/FRP/YampaBackup.hs	2496
+parB	./Yampa/src/FRP/Yampa-original.hs	2492
+parB	./Yampa/src/FRP/Yampa.hs	2497
+parB,		--	./Yampa/src/FRP/YampaBackup.hs	185
+parB,		--	./Yampa/src/FRP/Yampa-original.hs	185
+parB,		--	./Yampa/src/FRP/Yampa.hs	185
+parFanOutPrim	./Yampa/src/FRP/YampaBackup.hs	1439
+parFanOutPrim	./Yampa/src/FRP/Yampa-original.hs	1435
+parFanOutPrim	./Yampa/src/FRP/Yampa.hs	1440
+parSplitPrim	./Yampa/src/FRP/YampaBackup.hs	1289
+parSplitPrim	./Yampa/src/FRP/Yampa-original.hs	1285
+parSplitPrim	./Yampa/src/FRP/Yampa.hs	1290
+parZ	./Yampa/src/FRP/Yampa/Utilities.hs	259
+parseArgs	./Yampa/tests/testAFRPMain.hs	31
+particle	./Object.hs	315
+particle2	./Object.hs	327
+particleDepth	./Common.hs	103
+particleEnergy	./Common.hs	102
+particleNum	./Particles.hs	13
+particlePV	./Common.hs	109
+particlePos	./Common.hs	100
+particleVel	./Common.hs	101
+particlesEnergy	./Common.hs	111
+particlesMax	./Common.hs	110
+pfoAX	./Yampa/src/FRP/YampaBackup.hs	1580
+pfoAX	./Yampa/src/FRP/Yampa-original.hs	1576
+pfoAX	./Yampa/src/FRP/Yampa.hs	1581
+pfoAXInv	./Yampa/src/FRP/YampaBackup.hs	1595
+pfoAXInv	./Yampa/src/FRP/Yampa-original.hs	1591
+pfoAXInv	./Yampa/src/FRP/Yampa.hs	1596
+pfoCX	./Yampa/src/FRP/YampaBackup.hs	1534
+pfoCX	./Yampa/src/FRP/Yampa-original.hs	1530
+pfoCX	./Yampa/src/FRP/Yampa.hs	1535
+pfoCXInv	./Yampa/src/FRP/YampaBackup.hs	1549
+pfoCXInv	./Yampa/src/FRP/Yampa-original.hs	1545
+pfoCXInv	./Yampa/src/FRP/Yampa.hs	1550
+pfoIX	./Yampa/src/FRP/YampaBackup.hs	1488
+pfoIX	./Yampa/src/FRP/Yampa-original.hs	1484
+pfoIX	./Yampa/src/FRP/Yampa.hs	1489
+pfoIXInv	./Yampa/src/FRP/YampaBackup.hs	1503
+pfoIXInv	./Yampa/src/FRP/Yampa-original.hs	1499
+pfoIXInv	./Yampa/src/FRP/Yampa.hs	1504
+pfoXA	./Yampa/src/FRP/YampaBackup.hs	1603
+pfoXA	./Yampa/src/FRP/Yampa-original.hs	1599
+pfoXA	./Yampa/src/FRP/Yampa.hs	1604
+pfoXAInv	./Yampa/src/FRP/YampaBackup.hs	1618
+pfoXAInv	./Yampa/src/FRP/Yampa-original.hs	1614
+pfoXAInv	./Yampa/src/FRP/Yampa.hs	1619
+pfoXC	./Yampa/src/FRP/YampaBackup.hs	1557
+pfoXC	./Yampa/src/FRP/Yampa-original.hs	1553
+pfoXC	./Yampa/src/FRP/Yampa.hs	1558
+pfoXCInv	./Yampa/src/FRP/YampaBackup.hs	1572
+pfoXCInv	./Yampa/src/FRP/Yampa-original.hs	1568
+pfoXCInv	./Yampa/src/FRP/Yampa.hs	1573
+pfoXI	./Yampa/src/FRP/YampaBackup.hs	1511
+pfoXI	./Yampa/src/FRP/Yampa-original.hs	1507
+pfoXI	./Yampa/src/FRP/Yampa.hs	1512
+pfoXIInv	./Yampa/src/FRP/YampaBackup.hs	1526
+pfoXIInv	./Yampa/src/FRP/Yampa-original.hs	1522
+pfoXIInv	./Yampa/src/FRP/Yampa.hs	1527
+pfoXX	./Yampa/src/FRP/YampaBackup.hs	1453
+pfoXX	./Yampa/src/FRP/Yampa-original.hs	1449
+pfoXX	./Yampa/src/FRP/Yampa.hs	1454
+pfoXXInv	./Yampa/src/FRP/YampaBackup.hs	1479
+pfoXXInv	./Yampa/src/FRP/Yampa-original.hs	1475
+pfoXXInv	./Yampa/src/FRP/Yampa.hs	1480
+phi	./Projection.hs	13
+pillar	./TerrainData.hs	163
+pillarColor	./TerrainData.hs	142
+pillars	./TerrainData.hs	167
+player	./Object.hs	235
+player'	./Object.hs	238
+player0	./Object.hs	180
+player1	./Object.hs	366
+player1ID	./Common.hs	91
+player2ID	./Common.hs	92
+playerAcc	./Common.hs	70
+playerColor	./Common.hs	75
+playerEnergy	./Common.hs	74
+playerID	./Common.hs	67
+playerLife	./Common.hs	73
+playerName	./Common.hs	76
+playerPos	./Common.hs	68
+playerRadius	./Common.hs	72
+playerVel	./Common.hs	69
+playerView	./Common.hs	71
+point2X	./Yampa/src/FRP/Yampa/Point2.hs	38
+point2X,	--	./Yampa/src/FRP/Yampa/Point2.hs	23
+point2Y	./Yampa/src/FRP/Yampa/Point2.hs	41
+point2Y	--	./Yampa/src/FRP/Yampa/Point2.hs	24
+point3X	./Yampa/src/FRP/Yampa/Point3.hs	37
+point3X,	--	./Yampa/src/FRP/Yampa/Point3.hs	21
+point3Y	./Yampa/src/FRP/Yampa/Point3.hs	40
+point3Y,	--	./Yampa/src/FRP/Yampa/Point3.hs	22
+point3Z	./Yampa/src/FRP/Yampa/Point3.hs	43
+point3Z	--	./Yampa/src/FRP/Yampa/Point3.hs	23
+posCntrl	./Yampa/tests/AFRPTestsLoopIntegral.hs	46
+posCntrlNR	./Yampa/tests/AFRPTestsLoopIntegral.hs	49
+posMouse	./GameInput.hs	18
+powerup	./Object.hs	271
+powerupPos	./Common.hs	126
+powerupRadius	./Common.hs	127
+powerupType	./Common.hs	128
+pre	./Yampa/src/FRP/YampaBackup.hs	2910
+pre	./Yampa/src/FRP/Yampa-original.hs	2906
+pre	./Yampa/src/FRP/Yampa.hs	2911
+pre,		--	./Yampa/src/FRP/YampaBackup.hs	234
+pre,		--	./Yampa/src/FRP/Yampa-original.hs	234
+pre,		--	./Yampa/src/FRP/Yampa.hs	234
+pre_sscan	./Yampa/tests/AFRPTestsSscan.hs	27
+pre_t3r	./Yampa/tests/AFRPTestsPre.hs	52
+pre_t4r	./Yampa/tests/AFRPTestsPre.hs	76
+pre_t5r	./Yampa/tests/AFRPTestsPre.hs	100
+pre_t6r	./Yampa/tests/AFRPTestsPre.hs	124
+pre_t7r	./Yampa/tests/AFRPTestsPre.hs	148
+pre_t8r	./Yampa/tests/AFRPTestsPre.hs	172
+preloadedRandomVecs	./Particles.hs	73
+preservingMatrix	./Player.hs	22
+preservingMatrix	./Sprites.hs	40
+preservingSurface	./Terrain.hs	89
+preservingTransform	./Terrain.hs	290
+printFlush	./Common.hs	205
+printFonts'	./TextureFonts.hs	94
+printFontsAt	./TextureFonts.hs	109
+proc	./RunGame.hs	31
+processSurface	./Terrain.hs	277
+provided	./Yampa/src/FRP/Yampa/Utilities.hs	286
+provided,		--	./Yampa/src/FRP/Yampa/Utilities.hs	75
+psAX	./Yampa/src/FRP/YampaBackup.hs	1387
+psAX	./Yampa/src/FRP/Yampa-original.hs	1383
+psAX	./Yampa/src/FRP/Yampa.hs	1388
+psAXInv	./Yampa/src/FRP/YampaBackup.hs	1402
+psAXInv	./Yampa/src/FRP/Yampa-original.hs	1398
+psAXInv	./Yampa/src/FRP/Yampa.hs	1403
+psCX	./Yampa/src/FRP/YampaBackup.hs	1341
+psCX	./Yampa/src/FRP/Yampa-original.hs	1337
+psCX	./Yampa/src/FRP/Yampa.hs	1342
+psCXInv	./Yampa/src/FRP/YampaBackup.hs	1356
+psCXInv	./Yampa/src/FRP/Yampa-original.hs	1352
+psCXInv	./Yampa/src/FRP/Yampa.hs	1357
+psXA	./Yampa/src/FRP/YampaBackup.hs	1410
+psXA	./Yampa/src/FRP/Yampa-original.hs	1406
+psXA	./Yampa/src/FRP/Yampa.hs	1411
+psXAInv	./Yampa/src/FRP/YampaBackup.hs	1425
+psXAInv	./Yampa/src/FRP/Yampa-original.hs	1421
+psXAInv	./Yampa/src/FRP/Yampa.hs	1426
+psXC	./Yampa/src/FRP/YampaBackup.hs	1364
+psXC	./Yampa/src/FRP/Yampa-original.hs	1360
+psXC	./Yampa/src/FRP/Yampa.hs	1365
+psXCInv	./Yampa/src/FRP/YampaBackup.hs	1379
+psXCInv	./Yampa/src/FRP/Yampa-original.hs	1375
+psXCInv	./Yampa/src/FRP/Yampa.hs	1380
+psXX	./Yampa/src/FRP/YampaBackup.hs	1302
+psXX	./Yampa/src/FRP/Yampa-original.hs	1298
+psXX	./Yampa/src/FRP/Yampa.hs	1303
+psXXInv	./Yampa/src/FRP/YampaBackup.hs	1331
+psXXInv	./Yampa/src/FRP/Yampa-original.hs	1327
+psXXInv	./Yampa/src/FRP/Yampa.hs	1332
+pswitch_limit	./Yampa/tests/AFRPTestsPSwitch.hs	182
+pswitch_limit2	./Yampa/tests/AFRPTestsPSwitch.hs	239
+pswitch_ramp	./Yampa/tests/AFRPTestsPSwitch.hs	178
+pswitch_t0	./Yampa/tests/AFRPTestsPSwitch.hs	39
+pswitch_t1	./Yampa/tests/AFRPTestsPSwitch.hs	72
+pswitch_t2	./Yampa/tests/AFRPTestsPSwitch.hs	106
+pswitch_t3	./Yampa/tests/AFRPTestsPSwitch.hs	139
+pswitch_t4	./Yampa/tests/AFRPTestsPSwitch.hs	185
+pswitch_t4rec	./Yampa/tests/AFRPTestsPSwitch.hs	194
+pswitch_t5	./Yampa/tests/AFRPTestsPSwitch.hs	242
+pswitch_t5rec	./Yampa/tests/AFRPTestsPSwitch.hs	252
+quad0	./TerrainData.hs	81
+quadExample	./TerrainData.hs	78
+rMerge	./Yampa/src/FRP/Yampa/Event.hs	226
+rMerge,		--	./Yampa/src/FRP/YampaBackup.hs	262
+rMerge,		--	./Yampa/src/FRP/Yampa-original.hs	262
+rMerge,		--	./Yampa/src/FRP/Yampa.hs	262
+rSwitch	./Yampa/src/FRP/YampaBackup.hs	2299
+rSwitch	./Yampa/src/FRP/YampaBackup.hs	2304
+rSwitch	./Yampa/src/FRP/Yampa-original.hs	2295
+rSwitch	./Yampa/src/FRP/Yampa-original.hs	2300
+rSwitch	./Yampa/src/FRP/Yampa.hs	2300
+rSwitch	./Yampa/src/FRP/Yampa.hs	2305
+ramp	./Yampa/tests/AFRPTestsRSwitch.hs	115
+randomList	./Particles.hs	50
+randomSeed'	./Particles.hs	53
+randomSeed')	./Particles.hs	71
+randomTriple'	./Particles.hs	59
+rbps	./Yampa/examples/Elevator/TestElevatorMain.hs	30
+react	./Yampa/src/FRP/YampaBackup.hs	3184
+react	./Yampa/src/FRP/Yampa-original.hs	3178
+react	./Yampa/src/FRP/Yampa.hs	3204
+reactCommit	./Yampa/src/FRP/Yampa.hs	3207
+reactGetHandle	./Yampa/src/FRP/YampaBackup.hs	3202
+reactInit	./Yampa/src/FRP/YampaBackup.hs	3168
+reactInit	./Yampa/src/FRP/Yampa-original.hs	3163
+reactInit	./Yampa/src/FRP/Yampa.hs	3170
+reactInternal	./Yampa/src/FRP/Yampa.hs	3187
+react_t0	./Yampa/tests/AFRPTestsReact.hs	27
+react_t0r	./Yampa/tests/AFRPTestsReact.hs	58
+reactimate	./Yampa/src/FRP/YampaBackup.hs	3133
+reactimate	./Yampa/src/FRP/Yampa-original.hs	3129
+reactimate	./Yampa/src/FRP/Yampa.hs	3134
+reactimate,		--	./Yampa/src/FRP/YampaBackup.hs	283
+reactimate,		--	./Yampa/src/FRP/Yampa-original.hs	283
+reactimate,		--	./Yampa/src/FRP/Yampa.hs	283
+readGLsizei	./ReadImage.hs	43
+readImage	./ReadImage.hs	61
+readImageC	./Textures.hs	33
+readTga	./TGA.hs	34
+readVec3d	./Vec3d.hs	71
+recur	./Yampa/src/FRP/Yampa/Utilities.hs	208
+recur	./Yampa/src/FRP/Yampa/Utilities.hs	215
+recur,		--	./Yampa/src/FRP/Yampa/Utilities.hs	61
+redrawTimer	./Common.hs	198
+renderKillText	./Render.hs	53
+renderLaser	./Laser.hs	23
+renderNum	./TextureFonts.hs	78
+renderObsObjState	./Object.hs	71
+renderOrtho	./Render.hs	15
+renderParticle	./Particles.hs	17
+renderParticleSystem	./Particles.hs	39
+renderPlayer	./Player.hs	21
+renderQuad	./WallRender.hs	35
+renderScoreBoard	./Render.hs	62
+renderSelf	./Player.hs	67
+renderTerrainElement	./Terrain.hs	156
+repeatUntil	./Yampa/src/FRP/Yampa/Task.hs	189
+repeatUntil,--	./Yampa/src/FRP/Yampa/Task.hs	27
+repeatedly	./Yampa/src/FRP/YampaBackup.hs	1789
+repeatedly	./Yampa/src/FRP/Yampa-original.hs	1785
+repeatedly	./Yampa/src/FRP/Yampa.hs	1790
+repeatedly,		--	./Yampa/src/FRP/YampaBackup.hs	159
+repeatedly,		--	./Yampa/src/FRP/Yampa-original.hs	159
+repeatedly,		--	./Yampa/src/FRP/Yampa.hs	159
+reproject	./Projection.hs	9
+restoreSurfaceColor	./Terrain.hs	76
+rotSpeed	./spriteTest.hs	9
+roundV	./Vec3d.hs	47
+route	./GameCore.hs	24
+rpSwitch	./Yampa/src/FRP/YampaBackup.hs	2665
+rpSwitch	./Yampa/src/FRP/Yampa-original.hs	2661
+rpSwitch	./Yampa/src/FRP/Yampa.hs	2666
+rpSwitchB	./Yampa/src/FRP/YampaBackup.hs	2514
+rpSwitchB	./Yampa/src/FRP/Yampa-original.hs	2510
+rpSwitchB	./Yampa/src/FRP/Yampa.hs	2515
+rpSwitchB,drpSwitchB,--	./Yampa/src/FRP/YampaBackup.hs	191
+rpSwitchB,drpSwitchB,--	./Yampa/src/FRP/Yampa-original.hs	191
+rpSwitchB,drpSwitchB,--	./Yampa/src/FRP/Yampa.hs	191
+rpSwitchZ	./Yampa/src/FRP/Yampa/Utilities.hs	273
+rpswitch_limit	./Yampa/tests/AFRPTestsRPSwitch.hs	178
+rpswitch_ramp	./Yampa/tests/AFRPTestsRPSwitch.hs	174
+rpswitch_t0	./Yampa/tests/AFRPTestsRPSwitch.hs	65
+rpswitch_t1	./Yampa/tests/AFRPTestsRPSwitch.hs	91
+rpswitch_t2	./Yampa/tests/AFRPTestsRPSwitch.hs	117
+rpswitch_t3	./Yampa/tests/AFRPTestsRPSwitch.hs	143
+rpswitch_t4	./Yampa/tests/AFRPTestsRPSwitch.hs	183
+rsA	./Yampa/src/FRP/YampaBackup.hs	3160
+rsA	./Yampa/src/FRP/Yampa-original.hs	3156
+rsA	./Yampa/src/FRP/Yampa.hs	3161
+rsActuate	./Yampa/src/FRP/YampaBackup.hs	3158
+rsActuate	./Yampa/src/FRP/Yampa-original.hs	3154
+rsActuate	./Yampa/src/FRP/Yampa.hs	3159
+rsB	./Yampa/src/FRP/YampaBackup.hs	3161
+rsB	./Yampa/src/FRP/Yampa-original.hs	3157
+rsB	./Yampa/src/FRP/Yampa.hs	3162
+rsLastTime	./Yampa/src/FRP/YampaBackup.hs	3162
+rsLastTime	./Yampa/src/FRP/Yampa.hs	3163
+rsSF	./Yampa/src/FRP/YampaBackup.hs	3159
+rsSF	./Yampa/src/FRP/Yampa-original.hs	3155
+rsSF	./Yampa/src/FRP/Yampa.hs	3160
+rswitch_sawTooth	./Yampa/tests/AFRPTestsRSwitch.hs	107
+rswitch_t0r	./Yampa/tests/AFRPTestsRSwitch.hs	67
+rswitch_t1r	./Yampa/tests/AFRPTestsRSwitch.hs	78
+rswitch_t2r	./Yampa/tests/AFRPTestsRSwitch.hs	88
+rswitch_t3r	./Yampa/tests/AFRPTestsRSwitch.hs	99
+runGame	./RunGame.hs	35
+runRegTests	./Yampa/tests/AFRPTests.hs	144
+runServer	./Server.hs	58
+runSpaceTests	./Yampa/tests/AFRPTests.hs	154
+runTask	./Yampa/src/FRP/Yampa/Task.hs	64
+runTask,	--	./Yampa/src/FRP/Yampa/Task.hs	19
+runTask_	./Yampa/src/FRP/Yampa/Task.hs	70
+runTask_,	--	./Yampa/src/FRP/Yampa/Task.hs	20
+safeZip	./Yampa/src/FRP/Yampa/Utilities.hs	244
+sample	./Yampa/src/FRP/Yampa/Utilities.hs	195
+sample,		--	./Yampa/src/FRP/Yampa/Utilities.hs	60
+sampleWindow	./Yampa/src/FRP/Yampa/Utilities.hs	229
+sampleWindow,	--	./Yampa/src/FRP/Yampa/Utilities.hs	63
+sbScores	./Common.hs	116
+scale	./Vec3d.hs	11
+scoreboard	./Object.hs	256
+secondPrim	./Yampa/src/FRP/YampaBackup.hs	1249
+secondPrim	./Yampa/src/FRP/Yampa-original.hs	1245
+secondPrim	./Yampa/src/FRP/Yampa.hs	1250
+second_t0	./Yampa/tests/AFRPTestsFirstSecond.hs	98
+second_t1	./Yampa/tests/AFRPTestsFirstSecond.hs	101
+second_t2	./Yampa/tests/AFRPTestsFirstSecond.hs	104
+second_t3	./Yampa/tests/AFRPTestsFirstSecond.hs	107
+second_t4	./Yampa/tests/AFRPTestsFirstSecond.hs	110
+second_t5	./Yampa/tests/AFRPTestsFirstSecond.hs	113
+sel3_1	./Yampa/src/FRP/Yampa/Miscellany.hs	89
+sel3_2	./Yampa/src/FRP/Yampa/Miscellany.hs	91
+sel3_3	./Yampa/src/FRP/Yampa/Miscellany.hs	93
+sel4_1	./Yampa/src/FRP/Yampa/Miscellany.hs	98
+sel4_2	./Yampa/src/FRP/Yampa/Miscellany.hs	100
+sel4_3	./Yampa/src/FRP/Yampa/Miscellany.hs	102
+sel4_4	./Yampa/src/FRP/Yampa/Miscellany.hs	104
+sel5_1	./Yampa/src/FRP/Yampa/Miscellany.hs	110
+sel5_2	./Yampa/src/FRP/Yampa/Miscellany.hs	112
+sel5_3	./Yampa/src/FRP/Yampa/Miscellany.hs	114
+sel5_4	./Yampa/src/FRP/Yampa/Miscellany.hs	116
+sel5_5	./Yampa/src/FRP/Yampa/Miscellany.hs	118
+sendAll	./Server.hs	140
+sendCSMsg	./Net.hs	100
+sendSCMsg	./Server.hs	121
+sensitivity	./Common.hs	39
+server	./Server.hs	106
+serverObject	./Object.hs	217
+setUpOrtho	./TextureFonts.hs	126
+setVertex	./Sprites.hs	132
+sf	./Yampa/tests/AFRPTestsKSwitch.hs	101
+sf	./Yampa/tests/AFRPTestsPSwitch.hs	188
+sf	./Yampa/tests/AFRPTestsPSwitch.hs	245
+sf	./Yampa/tests/AFRPTestsPSwitch.hs	307
+sf	./Yampa/tests/AFRPTestsPSwitch.hs	318
+sf	./Yampa/tests/AFRPTestsSscan.hs	327
+sf	./Yampa/tests/AFRPTestsSscan.hs	359
+sf	./Yampa/tests/AFRPTestsSscan.hs	381
+sf	./Yampa/tests/AFRPTestsSscan.hs	403
+sf	./Yampa/tests/AFRPTestsSscan.hs	436
+sf	./Yampa/tests/AFRPTestsRPSwitch.hs	186
+sf	./Yampa/tests/AFRPTestsRPSwitch.hs	239
+sfArr	./Yampa/src/FRP/YampaBackup.hs	452
+sfArr	./Yampa/src/FRP/Yampa-original.hs	448
+sfArr	./Yampa/src/FRP/Yampa.hs	453
+sfArrE	./Yampa/src/FRP/YampaBackup.hs	476
+sfArrE	./Yampa/src/FRP/Yampa-original.hs	472
+sfArrE	./Yampa/src/FRP/Yampa.hs	477
+sfArrG	./Yampa/src/FRP/YampaBackup.hs	482
+sfArrG	./Yampa/src/FRP/Yampa-original.hs	478
+sfArrG	./Yampa/src/FRP/Yampa.hs	483
+sfConst	./Yampa/src/FRP/YampaBackup.hs	465
+sfConst	./Yampa/src/FRP/Yampa-original.hs	461
+sfConst	./Yampa/src/FRP/Yampa.hs	466
+sfEP	./Yampa/src/FRP/YampaBackup.hs	510
+sfEP	./Yampa/src/FRP/Yampa-original.hs	506
+sfEP	./Yampa/src/FRP/Yampa.hs	511
+sfId	./Yampa/src/FRP/YampaBackup.hs	459
+sfId	./Yampa/src/FRP/Yampa-original.hs	455
+sfId	./Yampa/src/FRP/Yampa.hs	460
+sfMkInv	./Yampa/src/FRP/YampaBackup.hs	542
+sfMkInv	./Yampa/src/FRP/Yampa-original.hs	538
+sfMkInv	./Yampa/src/FRP/Yampa.hs	543
+sfMkInvAux	./Yampa/src/FRP/YampaBackup.hs	545
+sfMkInvAux	./Yampa/src/FRP/Yampa-original.hs	541
+sfMkInvAux	./Yampa/src/FRP/Yampa.hs	546
+sfNever	./Yampa/src/FRP/YampaBackup.hs	471
+sfNever	./Yampa/src/FRP/Yampa-original.hs	467
+sfNever	./Yampa/src/FRP/Yampa.hs	472
+sfSScan	./Yampa/src/FRP/YampaBackup.hs	488
+sfSScan	./Yampa/src/FRP/Yampa-original.hs	484
+sfSScan	./Yampa/src/FRP/Yampa.hs	489
+sfTF'	./Yampa/src/FRP/YampaBackup.hs	426
+sfTF'	./Yampa/src/FRP/Yampa-original.hs	422
+sfTF'	./Yampa/src/FRP/Yampa.hs	427
+sfe	./Yampa/tests/AFRPTestsKSwitch.hs	104
+showString	./Yampa/src/FRP/Yampa/Internals.hs	33
+showVec3d	./Vec3d.hs	68
+simple_loop	./Yampa/tests/AFRPTestsLoopLaws.hs	29
+skyDomeGeo	./TerrainData.hs	198
+skyGeometry	./TerrainData.hs	192
+skyTexture	./TerrainData.hs	112
+sleepT	./Yampa/src/FRP/Yampa/Task.hs	143
+smaximum_sscan	./Yampa/tests/AFRPTestsSscan.hs	298
+snap	./Yampa/src/FRP/Yampa/Utilities.hs	180
+snap,		--	./Yampa/src/FRP/Yampa/Utilities.hs	58
+snapAfter	./Yampa/src/FRP/Yampa/Utilities.hs	187
+snapAfter,		--	./Yampa/src/FRP/Yampa/Utilities.hs	59
+snapT	./Yampa/src/FRP/Yampa/Task.hs	152
+spAux	./Yampa/src/FRP/YampaBackup.hs	1258
+spAux	./Yampa/src/FRP/YampaBackup.hs	1745
+spAux	./Yampa/src/FRP/Yampa-original.hs	1254
+spAux	./Yampa/src/FRP/Yampa-original.hs	1741
+spAux	./Yampa/src/FRP/Yampa.hs	1259
+spAux	./Yampa/src/FRP/Yampa.hs	1746
+spInv	./Yampa/src/FRP/YampaBackup.hs	1271
+spInv	./Yampa/src/FRP/Yampa-original.hs	1267
+spInv	./Yampa/src/FRP/Yampa.hs	1272
+splitE	./Yampa/src/FRP/Yampa/Event.hs	271
+splitE,		--	./Yampa/src/FRP/YampaBackup.hs	270
+splitE,		--	./Yampa/src/FRP/Yampa-original.hs	270
+splitE,		--	./Yampa/src/FRP/Yampa.hs	270
+splitList	./TextureFonts.hs	30
+spriteDisable	./Sprites.hs	29
+spriteInit	./Sprites.hs	18
+sscan	./Yampa/src/FRP/YampaBackup.hs	1731
+sscan	./Yampa/src/FRP/Yampa-original.hs	1727
+sscan	./Yampa/src/FRP/Yampa.hs	1732
+sscan,		--	./Yampa/src/FRP/YampaBackup.hs	152
+sscan,		--	./Yampa/src/FRP/Yampa-original.hs	152
+sscan,		--	./Yampa/src/FRP/Yampa.hs	152
+sscanPrim	./Yampa/tests/AFRPTestsSscan.hs	28
+sscanPrim	./Yampa/src/FRP/YampaBackup.hs	496
+sscanPrim	./Yampa/src/FRP/YampaBackup.hs	1738
+sscanPrim	./Yampa/src/FRP/Yampa-original.hs	492
+sscanPrim	./Yampa/src/FRP/Yampa-original.hs	1734
+sscanPrim	./Yampa/src/FRP/Yampa.hs	497
+sscanPrim	./Yampa/src/FRP/Yampa.hs	1739
+sscanPrim,		--	./Yampa/src/FRP/YampaBackup.hs	153
+sscanPrim,		--	./Yampa/src/FRP/Yampa-original.hs	153
+sscanPrim,		--	./Yampa/src/FRP/Yampa.hs	153
+sscan_t0r	./Yampa/tests/AFRPTestsSscan.hs	37
+sscan_t10	./Yampa/tests/AFRPTestsSscan.hs	248
+sscan_t11	./Yampa/tests/AFRPTestsSscan.hs	262
+sscan_t12	./Yampa/tests/AFRPTestsSscan.hs	282
+sscan_t13r	./Yampa/tests/AFRPTestsSscan.hs	307
+sscan_t14r	./Yampa/tests/AFRPTestsSscan.hs	324
+sscan_t15r	./Yampa/tests/AFRPTestsSscan.hs	356
+sscan_t16r	./Yampa/tests/AFRPTestsSscan.hs	378
+sscan_t17r	./Yampa/tests/AFRPTestsSscan.hs	400
+sscan_t18r	./Yampa/tests/AFRPTestsSscan.hs	433
+sscan_t1r	./Yampa/tests/AFRPTestsSscan.hs	44
+sscan_t2r	./Yampa/tests/AFRPTestsSscan.hs	51
+sscan_t3r	./Yampa/tests/AFRPTestsSscan.hs	63
+sscan_t4r	./Yampa/tests/AFRPTestsSscan.hs	90
+sscan_t5r	./Yampa/tests/AFRPTestsSscan.hs	114
+sscan_t6r	./Yampa/tests/AFRPTestsSscan.hs	138
+sscan_t7r	./Yampa/tests/AFRPTestsSscan.hs	165
+sscan_t8	./Yampa/tests/AFRPTestsSscan.hs	204
+sscan_t9	./Yampa/tests/AFRPTestsSscan.hs	217
+startTime	./Common.hs	188
+streamToSF	./Yampa/src/FRP/YampaBackup.hs	3048
+streamToSF	./Yampa/src/FRP/Yampa-original.hs	3044
+streamToSF	./Yampa/src/FRP/Yampa.hs	3049
+stringify	./Common.hs	194
+surfaceExample	./TerrainData.hs	94
+surfaceSegment	./TerrainData.hs	48
+swap	./Yampa/src/FRP/Yampa/Miscellany.hs	67
+swap,		--	./Yampa/src/FRP/YampaBackup.hs	108
+swap,		--	./Yampa/src/FRP/Yampa-original.hs	108
+swap,		--	./Yampa/src/FRP/Yampa.hs	108
+swap,	--	./Yampa/src/FRP/Yampa/Miscellany.hs	27
+swapByteRGB	./TGA.hs	71
+swapByteRGBA	./TGA.hs	77
+swapBytes'	./TGA.hs	64
+switch	./Yampa/tests/AFRPTestsEmbed.hs	25
+switch	./Yampa/src/FRP/YampaBackup.hs	2132
+switch	./Yampa/src/FRP/YampaBackup.hs	2169
+switch	./Yampa/src/FRP/Yampa-original.hs	2128
+switch	./Yampa/src/FRP/Yampa-original.hs	2165
+switch	./Yampa/src/FRP/Yampa.hs	2133
+switch	./Yampa/src/FRP/Yampa.hs	2170
+switchAfter	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	75
+switchAux	./Yampa/src/FRP/YampaBackup.hs	2142
+switchAux	./Yampa/src/FRP/YampaBackup.hs	2179
+switchAux	./Yampa/src/FRP/Yampa-original.hs	2138
+switchAux	./Yampa/src/FRP/Yampa-original.hs	2175
+switchAux	./Yampa/src/FRP/Yampa.hs	2143
+switchAux	./Yampa/src/FRP/Yampa.hs	2180
+switchAuxA1	./Yampa/src/FRP/YampaBackup.hs	2158
+switchAuxA1	./Yampa/src/FRP/YampaBackup.hs	2213
+switchAuxA1	./Yampa/src/FRP/Yampa-original.hs	2154
+switchAuxA1	./Yampa/src/FRP/Yampa-original.hs	2209
+switchAuxA1	./Yampa/src/FRP/Yampa.hs	2159
+switchAuxA1	./Yampa/src/FRP/Yampa.hs	2214
+switchInv	./Yampa/src/FRP/YampaBackup.hs	2198
+switchInv	./Yampa/src/FRP/Yampa-original.hs	2194
+switchInv	./Yampa/src/FRP/Yampa.hs	2199
+switch_t0a	./Yampa/tests/AFRPTestsSwitch.hs	48
+switch_t0b	./Yampa/tests/AFRPTestsSwitch.hs	53
+switch_t0c	./Yampa/tests/AFRPTestsSwitch.hs	59
+switch_t0e	./Yampa/tests/AFRPTestsSwitch.hs	65
+switch_t0final	./Yampa/tests/AFRPTestsSwitch.hs	68
+switch_t1a	./Yampa/tests/AFRPTestsSwitch.hs	84
+switch_t1b	./Yampa/tests/AFRPTestsSwitch.hs	92
+switch_t1rec	./Yampa/tests/AFRPTestsSwitch.hs	95
+switch_t3rec	./Yampa/tests/AFRPTestsSwitch.hs	133
+switch_t4a	./Yampa/tests/AFRPTestsSwitch.hs	163
+switch_t4final	./Yampa/tests/AFRPTestsSwitch.hs	167
+switch_t5	./Yampa/tests/AFRPTestsSwitch.hs	189
+tHelp	./Yampa/tests/testAFRPMain.hs	25
+tReg	./Yampa/tests/testAFRPMain.hs	23
+tSpace	./Yampa/tests/testAFRPMain.hs	24
+tag	./Yampa/src/FRP/Yampa/Event.hs	197
+tagWith	./Yampa/src/FRP/Yampa/Event.hs	200
+tailgaters	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	310
+tailgating	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	168
+takeEvents	./Yampa/src/FRP/YampaBackup.hs	2090
+takeEvents	./Yampa/src/FRP/YampaBackup.hs	2097
+takeEvents	./Yampa/src/FRP/Yampa-original.hs	2086
+takeEvents	./Yampa/src/FRP/Yampa-original.hs	2093
+takeEvents	./Yampa/src/FRP/Yampa.hs	2091
+takeEvents	./Yampa/src/FRP/Yampa.hs	2098
+takeEvents,		--	./Yampa/src/FRP/YampaBackup.hs	173
+takeEvents,		--	./Yampa/src/FRP/Yampa-original.hs	173
+takeEvents,		--	./Yampa/src/FRP/Yampa.hs	173
+taskToSF	./Yampa/src/FRP/Yampa/Task.hs	79
+taskToSF,	--	./Yampa/src/FRP/Yampa/Task.hs	21
+task_t3r	./Yampa/tests/AFRPTestsTask.hs	88
+task_t4r	./Yampa/tests/AFRPTestsTask.hs	113
+task_t5r	./Yampa/tests/AFRPTestsTask.hs	133
+task_t6r	./Yampa/tests/AFRPTestsTask.hs	153
+task_t7r	./Yampa/tests/AFRPTestsTask.hs	174
+task_t8r	./Yampa/tests/AFRPTestsTask.hs	195
+terrain0	./Object.hs	62
+terrainW	./Object.hs	53
+testElevator	./Yampa/examples/Elevator/TestElevatorMain.hs	40
+testMCT	./Yampa/examples/TailgatingDetector/TestTGMain.hs	58
+testMTGD	./Yampa/examples/TailgatingDetector/TestTGMain.hs	85
+testSF1	./Yampa/tests/AFRPTestsComp.hs	24
+testSF1	./Yampa/tests/AFRPTestsArr.hs	31
+testSF1	./Yampa/tests/AFRPTestsCommon.hs	99
+testSF1	./Yampa/tests/AFRPTestsEvSrc.hs	26
+testSF1	./Yampa/tests/AFRPTestsFirstSecond.hs	25
+testSF1	./Yampa/tests/AFRPTestsPre.hs	26
+testSF1	./Yampa/tests/AFRPTestsBasicSF.hs	25
+testSF1	./Yampa/tests/AFRPTestsTask.hs	27
+testSF1	./Yampa/tests/AFRPTestsLaws.hs	30
+testSF1	./Yampa/tests/AFRPTestsDelay.hs	24
+testSF2	./Yampa/tests/AFRPTestsCommon.hs	103
+testSFSpaceLeak	./Yampa/tests/AFRPTestsCommon.hs	121
+testSFSpaceLeak	./Yampa/tests/AFRPTestsCommon.hs	131
+testTransform	./TerrainData.hs	69
+testVideo	./Yampa/examples/TailgatingDetector/TestTGMain.hs	27
+tf10}	./Yampa/src/FRP/YampaBackup.hs	2133
+tf10}	./Yampa/src/FRP/Yampa-original.hs	2129
+tf10}	./Yampa/src/FRP/Yampa.hs	2134
+time	./Yampa/src/FRP/YampaBackup.hs	1689
+time	./Yampa/src/FRP/Yampa-original.hs	1685
+time	./Yampa/src/FRP/Yampa.hs	1690
+timeOut	./Yampa/src/FRP/Yampa/Task.hs	161
+timer	./spriteTest.hs	45
+tlist	./Particles.hs	70
+toDisplayList	./TextureFonts.hs	137
+toF	./Colors.hs	10
+toF	./Colors.hs	12
+tooClose	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	179
+tphi	./Terrain.hs	44
+trackAndHold	./Yampa/src/FRP/YampaBackup.hs	2745
+trackAndHold	./Yampa/src/FRP/Yampa-original.hs	2741
+trackAndHold	./Yampa/src/FRP/Yampa.hs	2746
+trackAndHold,	--	./Yampa/src/FRP/YampaBackup.hs	217
+trackAndHold,	--	./Yampa/src/FRP/Yampa-original.hs	217
+trackAndHold,	--	./Yampa/src/FRP/Yampa.hs	217
+tscale	./Terrain.hs	42
+ttheta	./Terrain.hs	43
+tunnel	./TerrainData.hs	176
+uavStatus	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	102
+unTask	./Yampa/src/FRP/Yampa/Task.hs	52
+unsafePerformIO	./Common.hs	13
+unsafePerformIO	./Yampa/tests/AFRPTestsReact.hs	28
+updateIL	./IdentityList.hs	81
+updateObjs	./Server.hs	163
+updatePlayersPos	./Server.hs	198
+upper	./Yampa/examples/Elevator/Elevator.hs	34
+usage	./Yampa/tests/testAFRPMain.hs	40
+usrErr	./Yampa/src/FRP/Yampa/Diagnostics.hs	16
+utils_t0	./Yampa/tests/AFRPTestsUtils.hs	47
+utils_t1	./Yampa/tests/AFRPTestsUtils.hs	56
+utils_t10	./Yampa/tests/AFRPTestsUtils.hs	207
+utils_t11	./Yampa/tests/AFRPTestsUtils.hs	220
+utils_t12	./Yampa/tests/AFRPTestsUtils.hs	233
+utils_t13	./Yampa/tests/AFRPTestsUtils.hs	246
+utils_t14	./Yampa/tests/AFRPTestsUtils.hs	259
+utils_t2	./Yampa/tests/AFRPTestsUtils.hs	81
+utils_t3	./Yampa/tests/AFRPTestsUtils.hs	91
+utils_t4	./Yampa/tests/AFRPTestsUtils.hs	102
+utils_t4r	./Yampa/tests/AFRPTestsUtils.hs	105
+utils_t5	./Yampa/tests/AFRPTestsUtils.hs	113
+utils_t5r	./Yampa/tests/AFRPTestsUtils.hs	116
+utils_t6	./Yampa/tests/AFRPTestsUtils.hs	136
+utils_t7	./Yampa/tests/AFRPTestsUtils.hs	155
+utils_t8	./Yampa/tests/AFRPTestsUtils.hs	171
+utils_t9	./Yampa/tests/AFRPTestsUtils.hs	189
+vec3d	./Vec3d.hs	44
+vecToColor	./Common.hs	219
+vector2	./Yampa/src/FRP/Yampa/Vector2.hs	46
+vector2,		--	./Yampa/src/FRP/Yampa/Vector2.hs	20
+vector2Polar	./Yampa/src/FRP/Yampa/Vector2.hs	58
+vector2Polar,	--	./Yampa/src/FRP/Yampa/Vector2.hs	24
+vector2Rho	./Yampa/src/FRP/Yampa/Vector2.hs	61
+vector2Rho,		--	./Yampa/src/FRP/Yampa/Vector2.hs	25
+vector2RhoTheta	./Yampa/src/FRP/Yampa/Vector2.hs	67
+vector2RhoTheta,	--	./Yampa/src/FRP/Yampa/Vector2.hs	27
+vector2Rotate	./Yampa/src/FRP/Yampa/Vector2.hs	94
+vector2Theta	./Yampa/src/FRP/Yampa/Vector2.hs	64
+vector2Theta,	--	./Yampa/src/FRP/Yampa/Vector2.hs	26
+vector2X	./Yampa/src/FRP/Yampa/Vector2.hs	49
+vector2X,		--	./Yampa/src/FRP/Yampa/Vector2.hs	21
+vector2XY	./Yampa/src/FRP/Yampa/Vector2.hs	55
+vector2XY,		--	./Yampa/src/FRP/Yampa/Vector2.hs	23
+vector2Y	./Yampa/src/FRP/Yampa/Vector2.hs	52
+vector2Y,		--	./Yampa/src/FRP/Yampa/Vector2.hs	22
+vector3	./Vec3d.hs	38
+vector3	./Yampa/src/FRP/Yampa/Vector3.hs	47
+vector3,		--	./Yampa/src/FRP/Yampa/Vector3.hs	20
+vector3Phi	./Yampa/src/FRP/Yampa/Vector3.hs	74
+vector3Phi,		--	./Yampa/src/FRP/Yampa/Vector3.hs	28
+vector3Rho	./Yampa/src/FRP/Yampa/Vector3.hs	68
+vector3Rho,		--	./Yampa/src/FRP/Yampa/Vector3.hs	26
+vector3RhoThetaPhi	./Yampa/src/FRP/Yampa/Vector3.hs	77
+vector3RhoThetaPhi,	--	./Yampa/src/FRP/Yampa/Vector3.hs	29
+vector3Rotate	./Yampa/src/FRP/Yampa/Vector3.hs	109
+vector3Spherical	./Yampa/src/FRP/Yampa/Vector3.hs	62
+vector3Spherical,	--	./Yampa/src/FRP/Yampa/Vector3.hs	25
+vector3Theta	./Yampa/src/FRP/Yampa/Vector3.hs	71
+vector3Theta,	--	./Yampa/src/FRP/Yampa/Vector3.hs	27
+vector3X	./Yampa/src/FRP/Yampa/Vector3.hs	50
+vector3X,		--	./Yampa/src/FRP/Yampa/Vector3.hs	21
+vector3XYZ	./Yampa/src/FRP/Yampa/Vector3.hs	59
+vector3XYZ,		--	./Yampa/src/FRP/Yampa/Vector3.hs	24
+vector3Y	./Yampa/src/FRP/Yampa/Vector3.hs	53
+vector3Y,		--	./Yampa/src/FRP/Yampa/Vector3.hs	22
+vector3Z	./Yampa/src/FRP/Yampa/Vector3.hs	56
+vector3Z,		--	./Yampa/src/FRP/Yampa/Vector3.hs	23
+version	./Yampa/dist/build/autogen/Paths_Yampa.hs	10
+vertex3	./Vec3d.hs	41
+vfyNoEv	./Yampa/src/FRP/YampaBackup.hs	636
+vfyNoEv	./Yampa/src/FRP/Yampa-original.hs	632
+vfyNoEv	./Yampa/src/FRP/Yampa.hs	637
+videoAndTrackers	./Yampa/examples/TailgatingDetector/TailgatingDetector.hs	147
+wallInit	./WallRender.hs	12
+wfg_t0	./Yampa/tests/AFRPTestsWFG.hs	41
+wfg_t1	./Yampa/tests/AFRPTestsWFG.hs	50
+wfg_t2	./Yampa/tests/AFRPTestsWFG.hs	74
+wfg_t3	./Yampa/tests/AFRPTestsWFG.hs	85
+whenFstGE	./Yampa/tests/AFRPTestsPSwitch.hs	36
+whenSndGE	./Yampa/tests/AFRPTestsKSwitch.hs	26
+withBinaryFile	./ReadImage.hs	58
+withBinaryFile'	./TGA.hs	30
+withSocketsDo	./Client.hs	19
+word32BigEndianToGLsizei	./ReadImage.hs	29
+x<-[0..(255	./TextureFonts.hs	25
+xyz	./Projection.hs	18
+zeroVector	./Yampa/src/FRP/Yampa/VectorSpace.hs	33
+zipWith2	./Vec3d.hs	50
+zipWithIL	./IdentityList.hs	61
+{-test	./WallRender.hs	50
+{handles	./Server.hs	24
+{key	./GameInput.hs	14
+{msg	./Server.hs	35
+{sfTF	./Yampa/src/FRP/YampaBackup.hs	363
+{sfTF	./Yampa/src/FRP/Yampa-original.hs	359
+{sfTF	./Yampa/src/FRP/Yampa.hs	364
+{shift	./GameInput.hs	25

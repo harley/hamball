@@ -39,6 +39,7 @@ centerCoordY = fromIntegral height / 2
 sensitivity :: Float
 sensitivity = pi/(fromIntegral $ width `div` 4)
 
+initFrustum :: IO ()
 initFrustum = do
     loadIdentity
     let near   = 0.8
