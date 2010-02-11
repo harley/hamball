@@ -9,8 +9,7 @@ type ILKey = Int
 data IL a = IL {
     ilNextKey :: ILKey,
     ilAssocs :: [(ILKey, a)]
-}
-    deriving (Show, Eq)
+}   deriving (Show, Eq)
 
 instance Functor IL where
     fmap f (IL {ilNextKey = nk, ilAssocs = assocs}) =

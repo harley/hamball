@@ -54,3 +54,7 @@ STEPS:
 	- explain how things work
 	- benchmark
 - add "reset velocity" key
+- fix server to send CLOSE msg to hamsterver
+
+IL identity list
+- 

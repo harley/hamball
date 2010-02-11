@@ -71,7 +71,7 @@ runServer port sf = withSocketsDo $ do
           let loop = do
                 a <- readChan rch   -- Makes this loop block when there's no input
                 unGetChan rch a
-                reactCommit rh rch
+                react rh rch
                 loop
           loop
       where acceptClient rch sock = do
@@ -116,7 +116,7 @@ fetchCSMsg rch h = do
                 (_,CSMsgPlayer p) -> playerLife p < 100
                 (_,CSMsgLaser l) -> True
                 _ -> False
-    react rch (\si -> si {msg = destringify ln, handle = Just h}) False
+    reactWriteChan rch (\si -> si {msg = destringify ln, handle = Just h}) False
 
 sendSCMsg :: Handle -> SCMsg -> IO ()
 sendSCMsg h msg = do
