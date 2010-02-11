@@ -63,8 +63,8 @@ runGame handle sf = do
             sleep 0.001
             pollEvents
             empty <- isEmptyChan rch
-            when empty $ react rch id True
-            reactCommit rh rch
+            when empty $ reactWriteChan rch id True -- TODO: what is this for?
+            react rh rch
             q <- readIORef quit
             unless q $ loop rh rch quit
 
@@ -95,11 +95,11 @@ glInit = do
     initialize
 
     openWindow (Size width height) [DisplayAlphaBits 8] Window --FullScreen
+	-- TODO: mouse wraps horizontally well; not vertically but it's not needed anyway 
     disableSpecial MouseCursor
     windowTitle $= "Hamsters Game version 0.0.2.0"
     stencilTest $= Enabled
 
---    enableSpecial MouseCursor
     matrixMode $= Projection
     initFrustum
     matrixMode $= Modelview 0

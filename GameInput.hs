@@ -27,15 +27,15 @@ data GameInput = GameInput {key :: Maybe Key,
 
 keyboardCallback :: ReactChan GameInput -> IORef Bool -> Key -> KeyButtonState -> IO ()
 keyboardCallback _ quit (SpecialKey ESC) Press = writeIORef quit True
-keyboardCallback rch _ k ks = react rch (\gi -> gi {key = Just k, keyState = Just ks}) True
+keyboardCallback rch _ k ks = reactWriteChan rch (\gi -> gi {key = Just k, keyState = Just ks}) True
 
 mouseClickCallback :: ReactChan GameInput -> MouseButton -> KeyButtonState -> IO ()
-mouseClickCallback rch ButtonLeft ks = react rch (\gi -> gi {leftClick = (ks == Press)}) True
-mouseClickCallback rch _ ks = react rch (\gi -> gi) True
+mouseClickCallback rch ButtonLeft ks = reactWriteChan rch (\gi -> gi {leftClick = (ks == Press)}) True
+mouseClickCallback rch _ ks = reactWriteChan rch (\gi -> gi) True
 
 mWheelCallback :: ReactChan GameInput -> Int -> IO ()
-mWheelCallback rch i | i > 2000000000= react rch (\gi -> gi {mWheel = i-4294967296}) True --hackish because of the stupid round around coord by GLFW
-                     | otherwise =     react rch (\gi -> gi {mWheel = i}) True
+mWheelCallback rch i | i > 2000000000= reactWriteChan rch (\gi -> gi {mWheel = i-4294967296}) True --hackish because of the stupid round around coord by GLFW
+                     | otherwise =     reactWriteChan rch (\gi -> gi {mWheel = i}) True
 
 mouseMotionCallback :: ReactChan GameInput -> IORef Double -> IORef Int -> Position -> IO ()
 mouseMotionCallback rch timerRef yPrev p@(Position x y) = do
@@ -44,6 +44,7 @@ mouseMotionCallback rch timerRef yPrev p@(Position x y) = do
     when (t-t' >= mouseTimer) $ do
         yp' <- readIORef yPrev
         let yp = fromIntegral yp'
+			-- NOTE: this wraps mouse position horizontally well but not well if we keep pushing mouse cursor up
             p = Position (if x < (width `div` 4) then x+(width `div` 2) else if x >= (3*width `div` 4) then x - (width `div` 2) else x)
                          (if y < (height `div` 3) then (height `div` 3) else if y >= (2*height `div` 3) then (2*height `div` 3 - 1) else y)
             needsUpdate = x < width `div` 4 || x >= 3*width `div` 4 || (y < height `div` 3 && y > yp) || (y >= 2*height `div` 3 && y < yp)
@@ -53,5 +54,5 @@ mouseMotionCallback rch timerRef yPrev p@(Position x y) = do
                 return ()
         writeIORef yPrev $ fromIntegral y
         when needsUpdate performUpdate
-        react rch (\gi -> gi {posMouse = p}) True
+        reactWriteChan rch (\gi -> gi {posMouse = p}) True
     writeIORef timerRef t

@@ -94,7 +94,7 @@ fetchSCMsg rch h = do
         b = case scMsg of
                 (_,SCMsgHit h) -> True
                 _ -> False
-    react rch (\gi -> gi {message = destringify ln}) False
+    reactWriteChan rch (\gi -> gi {message = destringify ln}) False
 
 -- Send msg from Client to Server
 sendCSMsg :: Handle -> CSMsg -> IO ()

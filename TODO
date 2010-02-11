@@ -36,7 +36,8 @@ Client: loopPre with dpSwitch
 2. Start over
 3.
 
-
+QUESTIONS:
+- is loopPre needed from Yampa?  Can it be faster if made from CCA?
 
 
 YAMPA
@@ -48,6 +49,8 @@ YAMPA
 STEPS:
 - Start with NoServer.hs
 	- make it work
-		+ hang on ESC if run in GHCi
+		+ hang on ESC if run in GHCi or if -threaded is enabled
+		+ unsafe notice msg otherwise
 	- explain how things work
 	- benchmark
+- add "reset velocity" key

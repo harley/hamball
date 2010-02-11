@@ -295,7 +295,7 @@ module FRP.Yampa (
     react,              --    ReactHandle a b
                         --    -> (DTime,Maybe a)
                         --    -> IO Bool
-    reactCommit,                        
+    reactWriteChan,                        
 
 -- Embedding (tentative: will be revisited)
     DTime,		-- [s] Sampling interval, always > 0.
@@ -3131,6 +3131,7 @@ occasionally g t_avg x | t_avg > 0 = SF {sfTF = tf0}
 --			the reactimation loop and return to its caller.
 -- sf .........	Signal function to reactimate.
 
+-- NOTE: reactimate is too restrictive, hence we prefer to use reactInit and react separately
 reactimate :: IO a
 	      -> (Bool -> IO (DTime, Maybe a))
 	      -> (Bool -> b -> IO Bool)
@@ -3155,12 +3156,13 @@ reactimate init sense actuate (SF {sfTF = tf0}) = undefined
 -- needs to own the top-level control flow:
 
 -- reactimate's state, maintained across samples:
+-- NOTE: Added rsLastTime, separated ReactHandle a b out
 data ReactState a b = ReactState {
     rsActuate :: Bool -> b -> IO (),
     rsSF :: SF' a b,
     rsA :: a,
     rsB :: b,
-    rsLastTime :: UTCTime
+    rsLastTime :: UTCTime -- TODO: explain this better
 }
 
 type ReactHandle a b = IORef (ReactState a b)
@@ -3190,10 +3192,10 @@ reactInternal :: ReactHandle a b
                  -> IO ()
 reactInternal rh fa bl = 
   do rs@(ReactState {rsActuate = actuate,
-	             rsSF = sf,
-		     rsA = a,
-		     rsB = b,
-		     rsLastTime = t }) <- readIORef rh
+					 rsSF = sf,
+					 rsA = a,
+					 rsB = b,
+					 rsLastTime = t }) <- readIORef rh
      t' <- getCurrentTime		     
      let a' = fa a
          dt = diffUTCTime t' t
@@ -3201,16 +3203,16 @@ reactInternal rh fa bl =
      writeIORef rh (rs {rsSF = sf',rsA = a',rsB = b',rsLastTime = t'})
      actuate bl b'     
      
-react :: ReactChan a -> (a -> a) -> Bool -> IO ()
-react rch f bl = writeChan rch (f,bl)
+reactWriteChan :: ReactChan a -> (a -> a) -> Bool -> IO ()
+reactWriteChan rch f bl = writeChan rch (f,bl)
 
-reactCommit :: ReactHandle a b -> ReactChan a -> IO ()
-reactCommit rh rch = do
+react :: ReactHandle a b -> ReactChan a -> IO ()
+react rh rch = do
     empty <- isEmptyChan rch
     when (not empty) $ do
         (f,bl) <- readChan rch
         reactInternal rh f bl
-        reactCommit rh rch
+        react rh rch
 
 ------------------------------------------------------------------------------
 -- Embedding

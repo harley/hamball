@@ -64,7 +64,7 @@ runServer port sf = withSocketsDo $ do
           forkIO $ acceptClient rch sock
           forkIO $ do
                 let loop = do
-                      react rch id False
+                      reactWriteChan rch id False
                       threadDelay 100000    -- Microseconds
                       loop
                 loop

@@ -3,6 +3,8 @@
 *.hi
 Server
 Client
+NoServer
 Makefile
 Yampa/dist
+*.swp
 
