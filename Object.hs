@@ -96,11 +96,11 @@ observer pl = let setFromKey k (gi, prev) = dup $ case (key gi == Just k, keySta
                                                                 (True,Just Release) -> 0
                                                                 (_   ,_        ) -> prev
                   checkMouseWheel (gi, prev)  =  let raw = mWheel gi
-                                                     new = if raw < 9 then raw else (raw - 4294967295)-1 -- to prevent overflow
+                                                     new = if raw < 9 then raw else (raw - 4294967295)-1 -- to avoid overflow or casting to big integer
                                                  in dup (float new / 4)
                   speed = 20
-                  getx (GameInput{posMouse=Position x y}) = x
-                  gety (GameInput{posMouse=Position x y}) = y
+                  getx GameInput{posMouse=Position x y} = x
+                  gety GameInput{posMouse=Position x y} = y
 
                   powerupSF' val = switch (arr ((+val) . fst) &&& after 15 ()) (\_ -> powerupSF)
                   powerupSF = switch (arr fst &&& arr snd) powerupSF'
@@ -116,15 +116,14 @@ observer pl = let setFromKey k (gi, prev) = dup $ case (key gi == Just k, keySta
         f = speed *^ f'
         r = speed *^ r'
         up = speed *^ (r' `cross` f') -- actually r cross f can be calculated by hand. im too lazy for now
-    keyw <- loopPre 0 $ arr $ setFromKey (CharKey 'W') -< gi
-    keys <- loopPre 0 $ arr $ setFromKey (CharKey 'S') -< gi
-    keyd <- loopPre 0 $ arr $ setFromKey (CharKey 'D') -< gi
-    keya <- loopPre 0 $ arr $ setFromKey (CharKey 'A') -< gi
---    keyup <- loopPre 0 $ arr $ setFromKey (CharKey 'Q') -< gi
+    fwd  <- loopPre 0 $ arr $ setFromKey (CharKey 'W') -< gi
+    bwd <- loopPre 0 $ arr $ setFromKey (CharKey 'S') -< gi
+    right <- loopPre 0 $ arr $ setFromKey (CharKey 'D') -< gi
+    left <- loopPre 0 $ arr $ setFromKey (CharKey 'A') -< gi
     keyWheel <- loopPre 0 $ arr $ checkMouseWheel -< gi
     collideEvent <- edge <<^ (/= Nothing) -< collider
-    let df = (keyw-keys) *^ f
-        dr = (keyd-keya) *^ r
+    let df = (fwd - bwd) *^ f
+        dr = (right - left) *^ r
         du = keyWheel *^ up
         a = df ^+^ dr ^+^ du
         v = (if collideEvent == Event () then -50 else 1) *^ a
