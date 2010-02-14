@@ -1,17 +1,17 @@
 GHC_N_OPTS = ghc --make -XMultiParamTypeClasses -XArrows -XTypeSynonymInstances -XFlexibleInstances -outputdir obj
 
 
-all0: server client copyToBin
+all0: s c copyToBin
 
-all: yampa glfw server client copyToBin
+all: yampa glfw s c copyToBin
 
-server:
+s:
 	$(GHC_N_OPTS) Server.hs
 
-client:
+c:
 	$(GHC_N_OPTS) Client.hs
 
-ns: yampa glfw
+ns:
 	$(GHC_N_OPTS) NoServer.hs
 
 yampa:

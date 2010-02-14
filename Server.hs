@@ -51,9 +51,9 @@ main = do
 
     runServer (PortNumber 4444) server
 
-    r <- simpleHTTP $ getRequest (serverTracker ++ "close?name=" ++ hostName)
-    txt <- getResponseBody r
-    putStrLn txt
+--    r <- simpleHTTP $ getRequest (serverTracker ++ "close?name=" ++ hostName)
+--    txt <- getResponseBody r
+--    putStrLn txt
 
 runServer :: PortID -> SF ServerInput (IO()) -> IO ()
 runServer port sf = withSocketsDo $ do
@@ -61,33 +61,38 @@ runServer port sf = withSocketsDo $ do
 
           (rh,rch) <- reactInit (return dummyServerInput) (\_ sendmsgs -> sendmsgs) sf
 
+          -- one thread listens for new players joining
           forkIO $ acceptClient rch sock
+
+          -- TODO: explain this hack
+          -- want the server to 2 simultaneous functions
+          -- * every 100ms, try to update current state of the game
+          -- * also update from the channel
+          -- 
           forkIO $ do
                 let loop = do
                       reactWriteChan rch id False
                       threadDelay 100000    -- Microseconds
                       loop
                 loop
+
+          -- main thread process. TODO: is this readChan/unGetChan stuff necessary? 
           let loop = do
                 a <- readChan rch   -- Makes this loop block when there's no input
                 unGetChan rch a
                 react rh rch
                 loop
-          loop
+          loop 
       where acceptClient rch sock = do
                 (hand,_,_) <- accept sock
                 open <- hIsOpen hand
-                printFlush (show open)
+                printFlush ("Accepting, verify opened: " ++ show open)
                 forkIO $ do
                     let loop = do
                            succ <- hWaitForInput hand (-1)
                            when succ $ fetchCSMsg rch hand
                            loop
-                        loop2 = do
-                            print "Preparing to delay..."
-                            threadDelay 100000000000
-                            loop2
-                    catch loop (\e -> print e >> loop2) --myThreadId >>= \i -> printFlush ("kill loop in " ++ show i) >> myThreadId >>= killThread >> return ())
+                    catch loop (\e -> print e >> print "Thread is dying") --myThreadId >>= \i -> printFlush ("kill loop in " ++ show i) >> myThreadId >>= killThread >> return ())
                 acceptClient rch sock
 
 initializePlayer :: ID -> String -> Player
@@ -121,7 +126,7 @@ fetchCSMsg rch h = do
 sendSCMsg :: Handle -> SCMsg -> IO ()
 sendSCMsg h msg = do
     --_ <- hIsOpen h  -- The game breaks if we uncomment this line! WTFWTFWTFWTFTWFFFFFFFFFFFFFFFFFFFF
-    hPutStrLn h (stringify msg)
+    hPutStrLn h (debugShow (stringify msg))
     hFlush h
 
 objSF :: SF (ServerInput, (ServerState, ServerState)) (IO(), (ServerState, ServerState))
@@ -168,8 +173,12 @@ updateObjs (s, Event ServerInput{msg=(_, CSMsgKillLaser lid)}) = s{allLasers = f
 updateObjs (s, Event ServerInput{msg=(pid,CSMsgDeath killer)}) = s {allPlayers = replace pid (initializePlayer pid pname) (allPlayers s)}
     where replace pid pl (p:ps) = if playerID p == pid then pl:ps else p : replace pid pl ps
           pname = playerName $ fromJust $ find ((== pid) . playerID) $ allPlayers s
-updateObjs (s, Event ServerInput{msg=(pid, CSMsgExit)}) = s{allPlayers = filter (\p -> playerID p /= pid) $ allPlayers s}
-updateObjs (s, Event ServerInput{msg=(-1,CSMsgJoin name),handle=Just hand}) =
+-- TODO: Handle client exit
+updateObjs (s, Event ServerInput{msg=(pid, CSMsgExit), handle=Just hand}) = 
+    let newPlayers = filter (\p -> playerID p /= pid) $ allPlayers s
+        newHandles = filter (\(pid, h) -> h /= hand)  $ handles s
+    in s{allPlayers = newPlayers, handles = newHandles}
+updateObjs (s, Event ServerInput{msg=(_, CSMsgJoin name),handle=Just hand}) =
     let pid = nextID s
         newPlayer = initializePlayer pid name
     in s{handles = handles s ++ [(pid,hand)], nextID = pid+1, allPlayers = allPlayers s ++ [newPlayer]}
@@ -181,7 +190,7 @@ checkHits (sprev, s) = catMaybes $ map collisionLP [(lprev,l,p) | (lprev,l) <- m
                                                                      zipWithIL (\a b -> (a,b)) (const Nothing) (const Nothing)
                                                                                (allLasers sprev) (allLasers s),
                                                                   p <- allPlayers s, laserpID l /= playerID p]
-
+{-
 checkCollisions :: ServerState -> [Player]
 checkCollisions s = flatten $ catMaybes $ map collisionPP [(p1,p2) | p1 <- allPlayers s,
                                                                      p2 <- allPlayers s,
@@ -198,10 +207,11 @@ collisionUpdates (s, colliders) = s{allPlayers = map (getCol colliders) $ allPla
 updatePlayersPos :: (ServerState, [Position3]) -> ServerState
 updatePlayersPos (s, posList) = s{allPlayers = playersList}
     where playersList = zipWith (\pos p -> p{playerPos = pos}) posList (allPlayers s)
-
+-}
 outputs :: (ServerState, Event ServerInput, [Hit], [Player]) -> [SCMsg]
 outputs (s, esi, hits, collisions) =
     let allIDs = map playerID $ allPlayers s
+        -- TODO: remove colIDs
         colIDs = map playerID $ collisions
         playerUpdates = maybeEvent []
                         (\si -> case msg si of -- player updates (exclude sender from recips, colliding players from list)

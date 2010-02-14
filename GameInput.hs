@@ -16,7 +16,8 @@ data GameInput = GameInput {key :: Maybe Key,
                             leftClick :: Bool,
                             mWheel :: Int,
                             posMouse :: Position,
-                            message :: SCMsg}
+                            message :: SCMsg,
+                            rightClick :: Bool}
     deriving Show
 
 --the following OpenGL types are listed here for convenience
@@ -31,6 +32,7 @@ keyboardCallback rch _ k ks = reactWriteChan rch (\gi -> gi {key = Just k, keySt
 
 mouseClickCallback :: ReactChan GameInput -> MouseButton -> KeyButtonState -> IO ()
 mouseClickCallback rch ButtonLeft ks = reactWriteChan rch (\gi -> gi {leftClick = (ks == Press)}) True
+mouseClickCallback rch ButtonRight ks = reactWriteChan rch (\gi -> gi {rightClick = (ks == Press)}) True
 mouseClickCallback rch _ ks = reactWriteChan rch (\gi -> gi) True
 
 mWheelCallback :: ReactChan GameInput -> Int -> IO ()
@@ -44,7 +46,7 @@ mouseMotionCallback rch timerRef yPrev p@(Position x y) = do
     when (t-t' >= mouseTimer) $ do
         yp' <- readIORef yPrev
         let yp = fromIntegral yp'
-			-- NOTE: this wraps mouse position horizontally well but not well if we keep pushing mouse cursor up
+            -- NOTE: this wraps mouse position horizontally well but not well if we keep pushing mouse cursor up
             p = Position (if x < (width `div` 4) then x+(width `div` 2) else if x >= (3*width `div` 4) then x - (width `div` 2) else x)
                          (if y < (height `div` 3) then (height `div` 3) else if y >= (2*height `div` 3) then (2*height `div` 3 - 1) else y)
             needsUpdate = x < width `div` 4 || x >= 3*width `div` 4 || (y < height `div` 3 && y > yp) || (y >= 2*height `div` 3 && y < yp)

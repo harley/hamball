@@ -2,11 +2,21 @@ module Vec3d where
 
 import FRP.Yampa
 import Graphics.Rendering.OpenGL
+import Text.Printf
 
 infixl 0 .*
 
+-- NOTE: Eq for GLFloat is probably a BAD idea, hence manually defined below
 data Vec3d = Vec3d !(GLfloat, GLfloat, GLfloat)
-    deriving (Show, Eq)
+--	deriving (Eq, Show)
+
+instance Show Vec3d where
+	show (Vec3d (x, y, z)) = printf "<%.2f,%.2f,%.2f>" x y z
+
+-- Two points being close enough
+instance Eq Vec3d where
+	Vec3d (x1,y1,z1) == Vec3d (x2,y2,z2) = (sqr (x1-x2) + sqr (y1-y2) + sqr (z1-z2)) < 0.01
+		where sqr x = x * x
 
 scale :: Vec3d -> GLfloat -> Vec3d
 scale (Vec3d (ax,ay,az)) s = Vec3d (ax*s,ay*s,az*s)

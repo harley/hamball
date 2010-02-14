@@ -21,6 +21,9 @@ This may be reworked.
 6. test with seperation.  render vs network
 7. fix to make it work with the new OPENGL
 
+Some notes about implementing client server
+http://www.3impact.com/3Impact_Engine/hulk7123/multiplayer.htm
+
 Yampa dependency:
 
 Client: loopPre with dpSwitch
@@ -55,6 +58,13 @@ STEPS:
 	- benchmark
 - add "reset velocity" key
 - fix server to send CLOSE msg to hamsterver
+- fix collision detection
+- Allow window size from command line. Maybe wrap all in a GameConfig data
+- Cap highest velocity
+- Kill notifications: Client side add an object KillNotifier (similar to ScoreBoard), whenever see a frag msg, send frag msg to everyone, KN listens and draw, also must include lifetime!!
+- Right click to stand still
 
 IL identity list
-- 
+ 
+
+

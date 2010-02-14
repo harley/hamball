@@ -24,7 +24,7 @@ instance Show a => Show (Event a) where
 -- width MUST be divisible by 4
 -- height MUST be divisible by 3
 
-fullscreen = True
+fullscreen = False
 
 width, height :: GLint
 (width,height) = if fullscreen then (1600,1200) else (640,480)
@@ -227,9 +227,9 @@ detectChangeSF :: Eq a => SF (a, a) (Event a, a)
 detectChangeSF = arr (\(new,old) -> (if new == old then NoEvent else Event new, new))
 
 
-selfKill e = (print "Socket closed." >> myThreadId >>= killThread >> return ())
+-- selfKill e = (print "Socket closed." >> myThreadId >>= killThread >> return ())
                -- else ioError e)
 
 -- if you change this, also go to file ./server to change the rm script to remove this file after server closes
-hostName = ".host_name"
+-- hostName = ".host_name"
 

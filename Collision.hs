@@ -7,6 +7,7 @@ import Terrain
 
 -- Currently assuming equal mass (variable radius should be okay).
 -- Collisions are fully elastic.
+{-
 collisionPP :: (Player, Player) -> Maybe (Player, Player)
 collisionPP (player1,player2) =
     let separation = playerPos player2 ^-^ playerPos player1
@@ -18,9 +19,9 @@ collisionPP (player1,player2) =
              (v1a,v2a) = (scale dir1 (dir1 `dot` v1), scale dir2 (dir2 `dot` v2))
              (v1n,v2n) = (v1 ^-^ v1a, v2 ^-^ v2a)
              (newP1, newP2) = (player1{playerPos=v1a ^+^ v1n}, player2{playerPos= v2a ^+^ v2n})
-          in Just -- $ debug ("Sep...collision occured btw " ++ (show $ playerID newP1) ++ " && " ++ (show $ playerID newP2))
+          in debug ("Bah") Just -- $ debug ("Sep...collision occured btw " ++ (show $ playerID newP1) ++ " && " ++ (show $ playerID newP2))
                 (newP1, newP2)
-
+-}
 collisionLP :: (Laser, Laser, Player) -> Maybe Hit
 collisionLP (lprev, l, p) =
     let p1 = laserPos lprev
@@ -38,4 +39,3 @@ collisionLP (lprev, l, p) =
 --    let appT = (offset +).(scl *^).id.id -- assuming no rotated quads
 --        (p1,p2,p3,p4) = (appT p1', appT p2', appT p3', appT p4')
 --     in Nothing
-

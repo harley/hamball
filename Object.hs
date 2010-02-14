@@ -9,7 +9,6 @@ import Terrain
 import TerrainData
 import Vec3d
 import Graphics.Rendering.OpenGL
--- import qualified Graphics.UI.GLUT as GLUT
 import Graphics.UI.GLFW hiding (time)
 import Data.Maybe
 import BoundingVolume
@@ -28,7 +27,7 @@ data ObjInput = ObjInput {
 data ObjOutput = ObjOutput {
     ooObsObjState :: !ObsObjState,         -- Observable Object State
     ooNetworkMsgs :: ![CSMsg],             -- Messages to send to the server
-    ooKillReq :: !(Event ()),              -- Kill me pls!
+    ooKillReq :: !(Event ()),              -- When this happens, kill the object itself
     ooSpawnReq :: ![ObjectSF],             -- Spawn these guys pls
     ooBounds :: !BoundingVolume
 }
@@ -89,6 +88,8 @@ renderObsObjState (OOSPowerUp pow) = renderPlayer $ Player {playerID = 0,
                                                             playerName = "Dummy"}
 renderObsObjState OOSNone = return ()
 
+-- observer is the player that is being controlled at each client
+-- TODO: Improve and clean this up
 observer :: Player -> ObjectSF
 observer pl = let setFromKey k (gi, prev) = dup $ case (key gi == Just k, keyState gi) of
                                                                 (True,Just Press) -> 1
@@ -224,7 +225,7 @@ serverObject playerNameStr = proc (ObjInput {oiGameInput = gi}) -> do
                                                   ooSpawnReq = case msg of
                                                                    SCMsgSpawn (PlayerObj p) -> [player p dummySCMsg]
                                                                    SCMsgSpawn (LaserObj l) -> [laser l]
-                                                                   SCMsgInitialize p -> [observer p{playerName = playerNameStr}]
+                                                                   SCMsgInitialize p -> debug "spawning OBSERVER" [observer p{playerName = playerNameStr}]
                                                                    _ -> [],
                                                   ooBounds = BoundingEmpty}
     let oo = processSCMsg changeMsg

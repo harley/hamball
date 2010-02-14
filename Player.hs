@@ -11,7 +11,6 @@ import Graphics.Rendering.OpenGL as OpenGL
 import Data.String
 import WallRender
 import TerrainData
---import TextureFonts
 import Colors
 import Render
 import Graphics.UI.GLFW
@@ -49,6 +48,8 @@ renderPlayer p = preservingMatrix $ do
                                      0 , 1 , 0 , mvc!!7 ,
                                      0 , 0 , 1 , mvc!!11 ,
                                      0 , 0 , 0 , mvc!!15 ]-}
+
+    -- TODO: Fix this billboard-style name tag overhead
     preservingMatrix $ do
         loadIdentity
         --let v = Vec3d(Matrix[8], Matrix[9], -Matrix[10]);
@@ -64,10 +65,11 @@ renderPlayer p = preservingMatrix $ do
         blend $= Disabled
         --multMatrix newMT
 
+-- Camera view and text on screen.
 renderSelf :: Player -> IO()
 renderSelf p = do
     let (theta,phi) = playerView p
-        mkRMatrixT,mkRMatrixP,mkTMatrix :: IO (GLmatrix Float)
+        mkRMatrixT, mkRMatrixP, mkTMatrix :: IO (GLmatrix Float)
         (ct,st,c,s) = (cos theta,sin theta,cos phi,sin phi)
         u = Vec3d (ct,st,0) `cross` Vec3d (0,0,1)
         (x,y,z) = (getx u,gety u,getz u)
@@ -91,6 +93,10 @@ renderSelf p = do
             textureFunction $= Replace
 --            printFonts' (centerCoordX-9) (centerCoordY-9) (tex, base) 1 "+"
 
+            renderText 5 0 ("Life: " ++ show (round (playerLife p))) 4
+            renderText 5 80 ("Pos : " ++ show (playerPos  p)) 2
+            renderText 5 100 ("Vel : " ++ show (playerVel  p)) 2
+
             let r = 16 :: Float
             preservingMatrix $ do
                 loadIdentity
@@ -99,13 +105,6 @@ renderSelf p = do
                 texture Texture2D $= Enabled
                 displaySprite3D crosshairTexture (Vertex3 (-r) (-r) 0) (Vertex3 (-r) r 0) (Vertex3 r r 0) (Vertex3 r (-r) 0) (0.0, 0.0) (1.0, 1.0)
                 texture Texture2D $= Disabled
--- TODO: color for text is not working
---            color $ Color4 0 255 0 (255 :: GLubyte)
---            renderColor (colorf Purple) do
-            renderText 5 0 ("Life: " ++ show (round (playerLife p))) 4
---            printFonts' 0 0 (tex, base) 1 ("Life: " ++ show (playerLife p))
---            printFonts' 0 22 (tex, base) 1 ("Pos : " ++ show (playerPos  p))
---            printFonts' 0 44 (tex, base) 1 ("Vel : " ++ show (playerVel  p))
             blend $= Disabled
 
         matrixMode $= Projection
@@ -116,9 +115,7 @@ renderSelf p = do
         multMatrix rMatrixP
         multMatrix rMatrixT
         multMatrix tMatrix
---        m :: GLmatrix Float <- get currentMatrix
---        mcs <- getMatrixComponents RowMajor m
---        print mcs
+			
         matrixMode $= Modelview 0
 
 {-

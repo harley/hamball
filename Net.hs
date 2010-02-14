@@ -90,6 +90,7 @@ instance Stringifiable CSMsg where
 fetchSCMsg :: ReactChan GameInput -> Handle -> IO ()
 fetchSCMsg rch h = do
     ln <- hGetLine h
+    --printFlush ln
     let scMsg = destringify ln :: SCMsg
         b = case scMsg of
                 (_,SCMsgHit h) -> True
