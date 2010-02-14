@@ -158,8 +158,8 @@ data CSMsg' = CSMsgPlayer !Player        -- For when velocity changes
             | CSMsgLaser !Laser          -- For spawning
             | CSMsgKillLaser !ID
             | CSMsgDeath !ID
-            | CSMsgExit
-            | CSMsgJoin !String
+            | CSMsgExit !String			 -- Name of player that exits, requires unique player names
+            | CSMsgJoin !String			 -- Name of player that enters the game
     deriving (Show, Eq)
 
 type SCMsg = (ID, SCMsg')   -- Server to Client, i.e. runs on Client
@@ -169,7 +169,7 @@ dummySCMsg :: SCMsg
 dummySCMsg = (-1,SCMsgHit (Hit {player1ID= -1,player2ID= -1,hitLaserID= -1,hitStr= -1}))
 
 dummyCSMsg :: CSMsg
-dummyCSMsg = (-1,CSMsgExit)
+dummyCSMsg = (-1,CSMsgExit "dummy")
 
 dummyPlayer :: Player
 dummyPlayer = Player {playerID = 0,

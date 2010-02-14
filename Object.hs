@@ -225,7 +225,7 @@ serverObject playerNameStr = proc (ObjInput {oiGameInput = gi}) -> do
                                                   ooSpawnReq = case msg of
                                                                    SCMsgSpawn (PlayerObj p) -> [player p dummySCMsg]
                                                                    SCMsgSpawn (LaserObj l) -> [laser l]
-                                                                   SCMsgInitialize p -> debug "spawning OBSERVER" [observer p{playerName = playerNameStr}]
+                                                                   SCMsgInitialize p -> [observer p{playerName = playerNameStr}]
                                                                    _ -> [],
                                                   ooBounds = BoundingEmpty}
     let oo = processSCMsg changeMsg

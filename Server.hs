@@ -20,15 +20,15 @@ import Data.List
 import System.IO.Error
 import System (getArgs)
 
--- TODO Why IL Laser? What are handles, nextID?
+-- PlayerID is now name not ID, but server also labels player with ID to use internally
 data ServerState = ServerState {handles :: ![(Int, Handle)],
                                 nextID :: !Int,
                                 allPlayers :: ![Player],
-                                allLasers :: !(IL Laser)}
+                                allLasers :: !(IL Laser)}--TODO: why IL on Lasers and why not on Players
     deriving (Show, Eq)
 
 emptyServerState :: ServerState
-emptyServerState = ServerState{handles=[],nextID=0,allPlayers=[],allLasers=emptyIL}
+emptyServerState = ServerState{handles=[], nextID=0, allPlayers=[], allLasers=emptyIL}
 
 serverTracker = "http://hamsterver.heroku.com/"
 
@@ -65,7 +65,7 @@ runServer port sf = withSocketsDo $ do
           forkIO $ acceptClient rch sock
 
           -- TODO: explain this hack
-          -- want the server to 2 simultaneous functions
+          -- want the server to simultaneous functions
           -- * every 100ms, try to update current state of the game
           -- * also update from the channel
           -- 
@@ -76,7 +76,7 @@ runServer port sf = withSocketsDo $ do
                       loop
                 loop
 
-          -- main thread process. TODO: is this readChan/unGetChan stuff necessary? 
+          -- main thread process. TODO: is this readChan/unGetChan stuff necessary? It's yampa limitation. should fix in yampa code
           let loop = do
                 a <- readChan rch   -- Makes this loop block when there's no input
                 unGetChan rch a
@@ -92,7 +92,8 @@ runServer port sf = withSocketsDo $ do
                            succ <- hWaitForInput hand (-1)
                            when succ $ fetchCSMsg rch hand
                            loop
-                    catch loop (\e -> print e >> print "Thread is dying") --myThreadId >>= \i -> printFlush ("kill loop in " ++ show i) >> myThreadId >>= killThread >> return ())
+                    -- When player quits, handle becomes invalid (closed by main thread), thus exception thrown       
+                    catch loop (\e -> print "Player quit.")
                 acceptClient rch sock
 
 initializePlayer :: ID -> String -> Player
@@ -170,12 +171,12 @@ updateObjs (s, Event ServerInput{msg=(_, CSMsgPlayer p)}) = s{allPlayers = map (
 updateObjs (s, Event ServerInput{msg=(_, CSMsgUpdate p)}) = s{allPlayers = map (\x->if playerID x == playerID p then p else x) $ allPlayers s}
 updateObjs (s, Event ServerInput{msg=(_, CSMsgLaser l)}) = s{allLasers = insertIL l $ allLasers s}
 updateObjs (s, Event ServerInput{msg=(_, CSMsgKillLaser lid)}) = s{allLasers = filterIL ((/= lid) . laserID) $ allLasers s}
-updateObjs (s, Event ServerInput{msg=(pid,CSMsgDeath killer)}) = s {allPlayers = replace pid (initializePlayer pid pname) (allPlayers s)}
+-- TODO: handling death is too inefficient
+updateObjs (s, Event ServerInput{msg=(pid, CSMsgDeath killer)}) = s {allPlayers = replace pid (initializePlayer pid pname) (allPlayers s)}
     where replace pid pl (p:ps) = if playerID p == pid then pl:ps else p : replace pid pl ps
           pname = playerName $ fromJust $ find ((== pid) . playerID) $ allPlayers s
--- TODO: Handle client exit
-updateObjs (s, Event ServerInput{msg=(pid, CSMsgExit), handle=Just hand}) = 
-    let newPlayers = filter (\p -> playerID p /= pid) $ allPlayers s
+updateObjs (s, Event ServerInput{msg = (_, CSMsgExit exitPlayerName), handle = Just hand}) = 
+    let newPlayers = filter (\p -> playerName p /= exitPlayerName) $ allPlayers s
         newHandles = filter (\(pid, h) -> h /= hand)  $ handles s
     in s{allPlayers = newPlayers, handles = newHandles}
 updateObjs (s, Event ServerInput{msg=(_, CSMsgJoin name),handle=Just hand}) =

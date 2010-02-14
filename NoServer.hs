@@ -14,6 +14,6 @@ import Vec3d
 main :: IO ()
 main = do
     glInit
-    runGame Nothing (game [observer dummyPlayer, player dummyPlayer dummySCMsg, terrain0] >>> 
+    runGame "NoServer" Nothing (game [observer dummyPlayer, player dummyPlayer dummySCMsg, terrain0] >>> 
 					 arr (\(ooss,msgs) -> (renderObsObjStates ooss, return ())))
   where renderObsObjStates = foldl (\io oos -> io >> renderObsObjState oos) (return ())

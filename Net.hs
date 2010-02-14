@@ -61,7 +61,7 @@ instance Stringifiable CSMsg' where
     stringify (CSMsgKillLaser ident) = "killlaser:" ++ (show ident)
     stringify (CSMsgDeath ident) = "death:" ++ (show ident)
     stringify (CSMsgJoin name) = "join:" ++ name
-    stringify (CSMsgExit) = "exit"
+    stringify (CSMsgExit name) = "exit:" ++ name
 
     destringify s = let untildelim = span (/= ':')
                         (p1,s1) = untildelim s
@@ -72,7 +72,7 @@ instance Stringifiable CSMsg' where
                           "killlaser" -> CSMsgKillLaser $ read $ drop 1 s1
                           "death" -> CSMsgDeath $ read $ drop 1 s1
                           "join" -> CSMsgJoin $ drop 1 s1
-                          "exit" -> CSMsgExit
+                          "exit" -> CSMsgExit $ drop 1 s1
 
 instance Stringifiable SCMsg where
 

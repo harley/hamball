@@ -46,7 +46,7 @@ main = withSocketsDo $ do -- withSocketsDo is only needed for Windows platform, 
     let initialObjs = [serverObject playerName, scoreboard, terrain0]
 
     -- TODO: Explain runGame
-    runGame (Just handle) (game initialObjs >>> (arr (\(ooss,msgs) -> (renderObsObjStates ooss, sendNetworkMsgs handle msgs))))
+    runGame playerName (Just handle) (game initialObjs >>> (arr (\(ooss,msgs) -> (renderObsObjStates ooss, sendNetworkMsgs handle msgs))))
   where renderObsObjStates = foldl (\io oos -> io >> renderObsObjState oos) (return ())
         sendNetworkMsgs h = foldl (\io msg -> io >> sendCSMsg h msg) (return ())
 

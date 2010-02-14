@@ -32,8 +32,8 @@ game initialObjs = proc gi -> do
     oos <- loopPre emptyIL (arr dup <<< gameCore (listToIL initialObjs)) -< gi
     returnA -< (map ooObsObjState $ elemsIL oos, concatMap ooNetworkMsgs $ elemsIL oos)
 
-runGame :: Maybe Handle -> SF GameInput (IO (), IO ()) -> IO ()
-runGame handle sf = do
+runGame :: String -> Maybe Handle -> SF GameInput (IO (), IO ()) -> IO ()
+runGame playerName handle sf = do
         t <- get GLFW.time
         sTime <- newIORef t -- start time
         ldTime <- newIORef t -- last draw time
@@ -63,7 +63,7 @@ runGame handle sf = do
         case handle of
             Just h -> do
                 printFlush "Announcing exit."
-                sendCSMsg h (-1, CSMsgExit)
+                sendCSMsg h (-1, CSMsgExit playerName)
                 hClose h
             _ -> return ()
 
