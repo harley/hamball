@@ -35,9 +35,12 @@ mouseClickCallback rch ButtonLeft ks = reactWriteChan rch (\gi -> gi {leftClick 
 mouseClickCallback rch ButtonRight ks = reactWriteChan rch (\gi -> gi {rightClick = (ks == Press)}) True
 mouseClickCallback rch _ ks = reactWriteChan rch (\gi -> gi) True
 
+-- Make sure wheel value does not go to far
+-- default range is 0 -> 4294967295, so we only use first 4 and last 4 values
 mWheelCallback :: ReactChan GameInput -> Int -> IO ()
-mWheelCallback rch i | i > 2000000000= reactWriteChan rch (\gi -> gi {mWheel = i-4294967296}) True --hackish because of the stupid round around coord by GLFW
-                     | otherwise =     reactWriteChan rch (\gi -> gi {mWheel = i}) True
+mWheelCallback rch i | i == 9  = mouseWheel $= 8
+                     | i == 4294967287 = mouseWheel $= 4294967288 -- rep -4
+                     | otherwise = reactWriteChan rch (\gi -> gi {mWheel = i}) True
 
 mouseMotionCallback :: ReactChan GameInput -> IORef Double -> IORef Int -> Position -> IO ()
 mouseMotionCallback rch timerRef yPrev p@(Position x y) = do

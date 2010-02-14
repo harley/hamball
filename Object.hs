@@ -95,8 +95,9 @@ observer pl = let setFromKey k (gi, prev) = dup $ case (key gi == Just k, keySta
                                                                 (True,Just Press) -> 1
                                                                 (True,Just Release) -> 0
                                                                 (_   ,_        ) -> prev
-                  checkMouseWheel (gi, prev)  =  let new = float (mWheel gi) / 4
-                                                 in dup new -- TODO: cap this so that you can wheel the speed to high
+                  checkMouseWheel (gi, prev)  =  let raw = mWheel gi
+                                                     new = if raw < 9 then raw else (raw - 4294967295)-1 -- to prevent overflow
+                                                 in dup (float new / 4)
                   speed = 20
                   getx (GameInput{posMouse=Position x y}) = x
                   gety (GameInput{posMouse=Position x y}) = y

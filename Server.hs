@@ -172,9 +172,8 @@ updateObjs (s, Event ServerInput{msg=(_, CSMsgUpdate p)}) = s{allPlayers = map (
 updateObjs (s, Event ServerInput{msg=(_, CSMsgLaser l)}) = s{allLasers = insertIL l $ allLasers s}
 updateObjs (s, Event ServerInput{msg=(_, CSMsgKillLaser lid)}) = s{allLasers = filterIL ((/= lid) . laserID) $ allLasers s}
 -- TODO: handling death is too inefficient
-updateObjs (s, Event ServerInput{msg=(pid, CSMsgDeath killer)}) = s {allPlayers = replace pid (initializePlayer pid pname) (allPlayers s)}
-    where replace pid pl (p:ps) = if playerID p == pid then pl:ps else p : replace pid pl ps
-          pname = playerName $ fromJust $ find ((== pid) . playerID) $ allPlayers s
+updateObjs (s, Event ServerInput{msg=(pid, CSMsgDeath killer)}) = s{allPlayers = reInitDead pid (allPlayers s)}
+    where reInitDead pid (p:ps) = if playerID p == pid then (initializePlayer pid (playerName p)):ps else p:reInitDead pid ps
 updateObjs (s, Event ServerInput{msg = (_, CSMsgExit exitPlayerName), handle = Just hand}) = 
     let newPlayers = filter (\p -> playerName p /= exitPlayerName) $ allPlayers s
         newHandles = filter (\(pid, h) -> h /= hand)  $ handles s
