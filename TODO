@@ -56,14 +56,13 @@ STEPS:
 		+ unsafe notice msg otherwise
 	- explain how things work
 	- benchmark
-- add "reset velocity" key
 - fix server to send CLOSE msg to hamsterver
 - fix collision detection
 - Allow window size from command line. Maybe wrap all in a GameConfig data
-- Cap highest velocity
+- [DONE] Cap highest velocity
 - Kill notifications: Client side add an object KillNotifier (similar to ScoreBoard), whenever see a frag msg, send frag msg to everyone, KN listens and draw, also must include lifetime!!
-- Right click to stand still
-
+- [DONE] Right click to stand still
+- Fix Yampa empty chan problem
 IL identity list
  
 

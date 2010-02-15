@@ -128,7 +128,7 @@ observer pl = let setFromKey k (gi, prev) = dup $ case (key gi == Just k, keySta
         dr = (right - left) *^ r
         du = keyWheel *^ up
         a = df ^+^ dr ^+^ du
-        v = (if isEvent collideEvent then -20 else 1) *^ a
+        v = (if isEvent collideEvent then -5 else 1) *^ a
     --v <- integral -< a
     p <- (playerPos pl ^+^) ^<< integral -< v
 

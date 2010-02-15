@@ -15,10 +15,10 @@ ns:
 	$(GHC_N_OPTS) NoServer.hs
 
 yampa:
-	cd Yampa; cabal install -p
+	cd Yampa; cabal install
 
 glfw:
-	cabal install GLFW -p
+	cabal install GLFW
 
 copyToBin:
 	cp Client ../hamBin/; cp Server ../hamBin/
