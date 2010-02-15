@@ -29,7 +29,7 @@ data ObjOutput = ObjOutput {
     ooNetworkMsgs :: ![CSMsg],             -- Messages to send to the server
     ooKillReq :: !(Event ()),              -- When this happens, kill the object itself
     ooSpawnReq :: ![ObjectSF],             -- Spawn these guys pls
-    ooBounds :: !BoundingVolume
+    ooBounds :: !BoundingVolume            -- For collision detection on the client side, currently player vs player
 }
 
 instance Eq ObjOutput where
@@ -41,7 +41,6 @@ data ObsObjState = OOSPlayer !Player
                  | OOSSelf !Player
                  | OOSTerrain ![TerrainElement]
                  | OOSParticle !Particle
-                 | OOSParticleSystem !ParticleSystem -- Defunct
                  | OOSKillText !String
                  | OOSPowerUp !PowerUp
                  | OOSScoreBoard !ScoreBoard
@@ -49,6 +48,7 @@ data ObsObjState = OOSPlayer !Player
                  | OOSNone
     deriving Show
 
+-- Waterfall
 terrainW :: ObjectSF
 terrainW = proc ObjInput {oiGameInput = gi} -> do
     kill <- edge <<^ (\gi -> key gi == Just (CharKey 'K')) -< gi
@@ -58,6 +58,7 @@ terrainW = proc ObjInput {oiGameInput = gi} -> do
                           ooSpawnReq = [],
                           ooBounds = BoundingEmpty}
 
+-- Main game terrain
 terrain0 :: ObjectSF
 terrain0 = proc oi -> do
     returnA -< ObjOutput {ooObsObjState=OOSTerrain [demoTerrain],
@@ -73,7 +74,6 @@ renderObsObjState (OOSLaser l) = renderLaser l
 renderObsObjState (OOSSelf p) = renderSelf p
 renderObsObjState (OOSTerrain ts) = (foldr (>>) (return ()) $ map renderTerrainElement ts)
 renderObsObjState (OOSParticle p) = renderParticle p
-renderObsObjState (OOSParticleSystem ps) = renderParticleSystem ps
 renderObsObjState (OOSKillText str) = renderKillText str
 renderObsObjState (OOSScoreBoard sb) = renderScoreBoard sb
 renderObsObjState (OOSPowerUp pow) = renderPlayer $ Player {playerID = 0,
@@ -96,8 +96,10 @@ observer pl = let setFromKey k (gi, prev) = dup $ case (key gi == Just k, keySta
                                                                 (True,Just Release) -> 0
                                                                 (_   ,_        ) -> prev
                   checkMouseWheel (gi, prev)  =  let raw = mWheel gi
-                                                     new = if raw < 9 then raw else (raw - 4294967295)-1 -- to avoid overflow or casting to big integer
-                                                 in dup (float new / 4)
+                                                     -- to avoid overflow or casting to big integer 
+                                                     v = if raw < 9 then raw else (raw - 4294967295)-1 
+                                                     actualV = float v / 4 --if rightClick gi then 0 else float v / 4
+                                                 in dup actualV
                   speed = 20
                   getx GameInput{posMouse=Position x y} = x
                   gety GameInput{posMouse=Position x y} = y
@@ -107,8 +109,6 @@ observer pl = let setFromKey k (gi, prev) = dup $ case (key gi == Just k, keySta
 
                in proc (ObjInput {oiGameInput = gi, oiColliding = collider}) -> do
 
-    --theta <- loopPre 0 $ arr (\(i,p) -> dup $ p + sensitivity * (fromIntegral $ getx i)) -< gi
-    --phi <- loopPre 0 $ arr (\(i,p) -> dup $ bound (-pi/2) (pi/2) $ p + sensitivity * (fromIntegral $ gety i)) -< gi
     let theta = sensitivity * (fromIntegral $ getx gi - (width `div` 2))
         phi = (-sensitivity) * (fromIntegral $ gety gi - (height `div` 2))
         f' = Vec3d (cos theta * cos phi, -sin theta * cos phi, sin phi)
@@ -116,17 +116,19 @@ observer pl = let setFromKey k (gi, prev) = dup $ case (key gi == Just k, keySta
         f = speed *^ f'
         r = speed *^ r'
         up = speed *^ (r' `cross` f') -- actually r cross f can be calculated by hand. im too lazy for now
+
     fwd  <- loopPre 0 $ arr $ setFromKey (CharKey 'W') -< gi
     bwd <- loopPre 0 $ arr $ setFromKey (CharKey 'S') -< gi
     right <- loopPre 0 $ arr $ setFromKey (CharKey 'D') -< gi
     left <- loopPre 0 $ arr $ setFromKey (CharKey 'A') -< gi
     keyWheel <- loopPre 0 $ arr $ checkMouseWheel -< gi
+    stopEvent <- edge -< rightClick gi
     collideEvent <- edge <<^ (/= Nothing) -< collider
     let df = (fwd - bwd) *^ f
         dr = (right - left) *^ r
         du = keyWheel *^ up
         a = df ^+^ dr ^+^ du
-        v = (if collideEvent == Event () then -50 else 1) *^ a
+        v = (if isEvent collideEvent then -20 else 1) *^ a
     --v <- integral -< a
     p <- (playerPos pl ^+^) ^<< integral -< v
 
@@ -142,7 +144,7 @@ observer pl = let setFromKey k (gi, prev) = dup $ case (key gi == Just k, keySta
                                                     _ -> NoEvent) pow
 
     laserstr <- powerupSF -< (defLaserStr, laserPowEvent)
-    radius <- powerupSF -< (playerRadius pl, radiusPowEvent)
+    radius   <- powerupSF -< (playerRadius pl, radiusPowEvent)
 
     t <- time -< ()
     let lsr = Laser {laserID = round (10*t),
@@ -151,12 +153,15 @@ observer pl = let setFromKey k (gi, prev) = dup $ case (key gi == Just k, keySta
                      laserVel = 20 *^ f,
                      laserStr = laserstr,
                      laserColor = playerColor pl}
+
     fireLaser <- edge -< leftClick gi
+
     changeVel <- tagWith () ^<< loopPre (Vec3d (0,0,0)) detectChangeSF -< v
     changeMsg <- loopPre dummySCMsg detectChangeSF -< message gi
     let hitEvent = case changeMsg of
                        Event (_,SCMsgHit h) -> if playerID pl == player2ID h then changeMsg else NoEvent
                        _ -> NoEvent
+
     life <- loopPre (playerLife pl) (arr (\(hev,life) -> dup $ maybeEvent life (\(_,SCMsgHit h) -> life - hitStr h) hev)) -< hitEvent
     let killerID = case hitEvent of
                        Event (_,SCMsgHit h) -> player1ID h
@@ -171,13 +176,13 @@ observer pl = let setFromKey k (gi, prev) = dup $ case (key gi == Just k, keySta
     returnA -< ObjOutput {ooObsObjState = OOSSelf pl',
                           ooNetworkMsgs = (\xs -> [x | Event x <- xs]) $
                                             [fireLaser `tag` (playerID pl,CSMsgLaser lsr),
-                                             foldl (mergeBy const) NoEvent [changeVel, hitEvent `tag` ()] `tag` (playerID pl,CSMsgPlayer pl'),
-                                             fmap (\pid -> (playerID pl,CSMsgDeath pid)) kill],
+                                             foldl (mergeBy const) NoEvent [changeVel, hitEvent `tag` ()] `tag` (playerID pl, CSMsgPlayer pl'),
+                                             fmap (\pid -> (playerID pl, CSMsgDeath pid)) kill],
                           ooKillReq = kill `tag` (),
                           ooSpawnReq = maybeEvent [] (\_ -> [laser lsr]) fireLaser,
                           ooBounds = let v = Vec3d (playerRadius pl', playerRadius pl', playerRadius pl')
                                      in BoundingBox (p ^-^ v) (p ^+^ v)}
-
+{-
 player0 :: ID -> Velocity3 -> ObjectSF
 player0 pid p0 = let setFromKey k (gi, prev) = (\a -> (a,a)) $ (case (key gi == Just k, keyState gi) of
                                                                  (True,Just Press) -> 1
@@ -214,7 +219,7 @@ player0 pid p0 = let setFromKey k (gi, prev) = (\a -> (a,a)) $ (case (key gi == 
                               ooKillReq = NoEvent,
                               ooSpawnReq = [],
                               ooBounds = BoundingEmpty}
-
+-}
 serverObject :: String -> ObjectSF
 serverObject playerNameStr = proc (ObjInput {oiGameInput = gi}) -> do
     spawnWaterfall <- edge <<^ (\gi -> key gi == Just (CharKey 'L')) -< gi

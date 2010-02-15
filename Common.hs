@@ -10,9 +10,12 @@ import System.IO.Unsafe
 import System.Random
 import Control.Concurrent
 
+debug :: (Show a) => a -> t -> t
 debug s x = unsafePerformIO (print s) `seq` x
-debugShow x = debug ("debugShow: " ++ (show x)) x -- only for SHOWable objects
+debugShow, debugShow2 :: (Show a) => a -> a
+debugShow x = debug ("debug: " ++ show x) x -- only for SHOWable objects
 debugShow2 x = debug (show x) x -- only for SHOWable objects
+debugMaybe :: String -> t -> t
 debugMaybe s x = if s /= "" then debug s x else x
 
 -- The following is for debugging purposes only

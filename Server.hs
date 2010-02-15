@@ -167,23 +167,23 @@ moveObjs listFun posFun velFun = proc s0 -> do
     returnA -< (fmap posFun $ listFun s0) ^+^ dPs
 
 updateObjs :: (ServerState, Event ServerInput) -> ServerState
-updateObjs (s, Event ServerInput{msg=(_, CSMsgPlayer p)}) = s{allPlayers = map (\x->if playerID x == playerID p then p else x) $ allPlayers s}
-updateObjs (s, Event ServerInput{msg=(_, CSMsgUpdate p)}) = s{allPlayers = map (\x->if playerID x == playerID p then p else x) $ allPlayers s}
-updateObjs (s, Event ServerInput{msg=(_, CSMsgLaser l)}) = s{allLasers = insertIL l $ allLasers s}
-updateObjs (s, Event ServerInput{msg=(_, CSMsgKillLaser lid)}) = s{allLasers = filterIL ((/= lid) . laserID) $ allLasers s}
--- TODO: handling death is too inefficient
-updateObjs (s, Event ServerInput{msg=(pid, CSMsgDeath killer)}) = s{allPlayers = reInitDead pid (allPlayers s)}
+updateObjs (s, Event ServerInput{msg=(_, CSMsgPlayer p)})           = s{allPlayers = map (\x->if playerID x == playerID p then p else x) $ allPlayers s}
+updateObjs (s, Event ServerInput{msg=(_, CSMsgUpdate p)})           = s{allPlayers = map (\x->if playerID x == playerID p then p else x) $ allPlayers s}
+updateObjs (s, Event ServerInput{msg=(_, CSMsgLaser l)})            = s{allLasers  = insertIL l $ allLasers s}
+updateObjs (s, Event ServerInput{msg=(_, CSMsgKillLaser lid)})      = s{allLasers  = filterIL ((/= lid) . laserID) $ allLasers s}
+updateObjs (s, Event ServerInput{msg=(pid, CSMsgDeath killer)})     = s{allPlayers = reInitDead pid (allPlayers s)}
     where reInitDead pid (p:ps) = if playerID p == pid then (initializePlayer pid (playerName p)):ps else p:reInitDead pid ps
-updateObjs (s, Event ServerInput{msg = (_, CSMsgExit exitPlayerName), handle = Just hand}) = 
-    let newPlayers = filter (\p -> playerName p /= exitPlayerName) $ allPlayers s
-        newHandles = filter (\(pid, h) -> h /= hand)  $ handles s
+updateObjs (s, Event ServerInput{msg = (_, CSMsgExit exitPlayerName), handle = Just hand})  = 
+    let newHandles  = filter (\(pid, h) -> h /= hand)  $ handles s
+        newPlayers  = filter (\p -> playerName p /= exitPlayerName) $ allPlayers s
+        
     in s{allPlayers = newPlayers, handles = newHandles}
-updateObjs (s, Event ServerInput{msg=(_, CSMsgJoin name),handle=Just hand}) =
-    let pid = nextID s
+updateObjs (s, Event ServerInput{msg=(_, CSMsgJoin name),handle=Just hand})                 =
+    let pid       = nextID s
         newPlayer = initializePlayer pid name
-    in s{handles = handles s ++ [(pid,hand)], nextID = pid+1, allPlayers = allPlayers s ++ [newPlayer]}
+    in s{handles  = handles s ++ [(pid,hand)], nextID = pid+1, allPlayers = allPlayers s ++ [newPlayer]}
 updateObjs (s, NoEvent) = s
-updateObjs (s, _) = error $ "updateObjs couldn't find a match for " ++ (show s)
+updateObjs (s, _)       = error $ "updateObjs couldn't find a match for " ++ (show s)
 
 checkHits :: (ServerState, ServerState) -> [Hit]
 checkHits (sprev, s) = catMaybes $ map collisionLP [(lprev,l,p) | (lprev,l) <- map snd $ assocsIL $
@@ -226,10 +226,13 @@ outputs (s, esi, hits, collisions) =
                                                    in [(i, SCMsgSpawn (PlayerObj pl)) | i <- allIDs, i /= playerID pl] ++
                                                       [(i, SCMsgFrag pl') | i <- allIDs] ++
                                                       [(pid, SCMsgInitialize pl)]
-                            (pid, CSMsgJoin _) -> let pl = head $ reverse $ allPlayers s
+                            (_, CSMsgJoin _) -> let pl = head $ reverse $ allPlayers s
                                                   in [(playerID pl, SCMsgInitialize pl)] ++
                                                      [(playerID pl, SCMsgSpawn (PlayerObj p)) | p <- allPlayers s, playerID p /= playerID pl] ++
                                                      [(i, SCMsgSpawn (PlayerObj pl)) | i <- allIDs, i /= playerID pl]
+                            -- TODO: Send SCMsgExit so client can delete the object?
+                            --(_, CSMsgExit name) ->                                                   
+                                                 
                             _ -> []) esi
      in (playerUpdates ++ [(i, SCMsgHit h) | i <- allIDs, h <- hits] -- hit broadcasts
                        ++ [(i, SCMsgPlayer p) | i <- allIDs, p <- collisions]) -- collision broadcasts

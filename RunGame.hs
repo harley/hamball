@@ -144,8 +144,6 @@ networkInit rch (Just handle) = do
     fail <- hIsClosed handle
     when fail (error "networkInit handle fail")
     fid <- forkIO $ do
-        mid <- myThreadId
-        printFlush (show mid)
         let loop = do
 --             print ("Waiting for server message on handle " ++ (show handle))
              succ <- hWaitForInput handle (-1)
@@ -153,6 +151,5 @@ networkInit rch (Just handle) = do
              loop
         --loop
         catch loop (\e -> print "Client network thread is dying.")
-    printFlush $ "forked " ++ show fid
     return ()
 

@@ -11,8 +11,8 @@ import Monad
 
 instance Stringifiable Hit where
 
-    stringify h = (show $ player1ID h) ++ delim ++
-                  (show $ player2ID h) ++ delim ++
+    stringify h = (show $ player1ID h)  ++ delim ++
+                  (show $ player2ID h)  ++ delim ++
                   (show $ hitLaserID h) ++ delim ++
                   (show $ hitStr h)
         where delim = ";"
@@ -90,7 +90,7 @@ instance Stringifiable CSMsg where
 fetchSCMsg :: ReactChan GameInput -> Handle -> IO ()
 fetchSCMsg rch h = do
     ln <- hGetLine h
-    --printFlush ln
+    --printFlush ln -- for debug
     let scMsg = destringify ln :: SCMsg
         b = case scMsg of
                 (_,SCMsgHit h) -> True
@@ -101,5 +101,5 @@ fetchSCMsg rch h = do
 sendCSMsg :: Handle -> CSMsg -> IO ()
 sendCSMsg h msg = do
     hPutStrLn h (stringify msg)
-    hFlush h -- flushing is required here.
+    hFlush h -- required.
 

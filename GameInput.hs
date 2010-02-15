@@ -32,7 +32,7 @@ keyboardCallback rch _ k ks = reactWriteChan rch (\gi -> gi {key = Just k, keySt
 
 mouseClickCallback :: ReactChan GameInput -> MouseButton -> KeyButtonState -> IO ()
 mouseClickCallback rch ButtonLeft ks = reactWriteChan rch (\gi -> gi {leftClick = (ks == Press)}) True
-mouseClickCallback rch ButtonRight ks = reactWriteChan rch (\gi -> gi {rightClick = (ks == Press)}) True
+mouseClickCallback rch ButtonRight ks = mouseWheel $= 0 >> reactWriteChan rch (\gi -> gi {rightClick = (ks == Press), mWheel = 0}) True
 mouseClickCallback rch _ ks = reactWriteChan rch (\gi -> gi) True
 
 -- Make sure wheel value does not go to far

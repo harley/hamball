@@ -1,7 +1,7 @@
 GHC_N_OPTS = ghc --make -XMultiParamTypeClasses -XArrows -XTypeSynonymInstances -XFlexibleInstances -outputdir obj
 
 
-all0: s c copyToBin
+all0: s c
 
 all: yampa glfw s c copyToBin
 
