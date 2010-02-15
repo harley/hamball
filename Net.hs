@@ -43,6 +43,7 @@ instance Stringifiable SCMsg' where
     stringify (SCMsgHit h) = "hit:" ++ (stringify h)
     stringify (SCMsgSpawn obj) = "spawn:" ++ (stringify obj)
     stringify (SCMsgFrag p) = "frag:" ++ (stringify p)
+    stringify (SCMsgRemove pID)   = "remove:" ++ (show pID)
 
     destringify s = let untildelim = span (/= ':')
                         (p1,s1) = untildelim s
@@ -52,6 +53,7 @@ instance Stringifiable SCMsg' where
                           "hit"        -> SCMsgHit $ destringify $ drop 1 s1
                           "spawn"      -> SCMsgSpawn $ destringify $ drop 1 s1
                           "frag"       -> SCMsgFrag $ destringify $ drop 1 s1
+                          "remove"     -> SCMsgRemove $ read $ drop 1 s1
 
 instance Stringifiable CSMsg' where
 
@@ -90,7 +92,7 @@ instance Stringifiable CSMsg where
 fetchSCMsg :: ReactChan GameInput -> Handle -> IO ()
 fetchSCMsg rch h = do
     ln <- hGetLine h
-    --printFlush ln -- for debug
+    printFlush ln -- for debug
     let scMsg = destringify ln :: SCMsg
         b = case scMsg of
                 (_,SCMsgHit h) -> True

@@ -249,6 +249,7 @@ player' pl initMsg = proc ObjInput{oiGameInput=gi} -> do
                                                       _ -> NoEvent) changeMsg
         kill = maybeEvent NoEvent (\(i,msg') -> case msg' of
                                                     SCMsgSpawn (PlayerObj p) -> if playerID pl == playerID p then Event () else NoEvent
+                                                    SCMsgRemove pID -> if playerID pl == pID then Event () else NoEvent
                                                     _ -> NoEvent) changeMsg
     pos <- (playerPos pl ^+^) ^<< integral -< playerVel pl
     let pl' = pl {playerPos = pos}

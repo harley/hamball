@@ -23,12 +23,13 @@ import System (getArgs)
 -- PlayerID is now name not ID, but server also labels player with ID to use internally
 data ServerState = ServerState {handles :: ![(Int, Handle)],
                                 nextID :: !Int,
+                                lastExitID :: !Int,
                                 allPlayers :: ![Player],
                                 allLasers :: !(IL Laser)}--TODO: why IL on Lasers and why not on Players
     deriving (Show, Eq)
 
 emptyServerState :: ServerState
-emptyServerState = ServerState{handles=[], nextID=0, allPlayers=[], allLasers=emptyIL}
+emptyServerState = ServerState{handles=[], nextID=0, lastExitID=(-1), allPlayers=[], allLasers=emptyIL}
 
 serverTracker = "http://hamsterver.heroku.com/"
 
@@ -175,9 +176,8 @@ updateObjs (s, Event ServerInput{msg=(pid, CSMsgDeath killer)})     = s{allPlaye
     where reInitDead pid (p:ps) = if playerID p == pid then (initializePlayer pid (playerName p)):ps else p:reInitDead pid ps
 updateObjs (s, Event ServerInput{msg = (_, CSMsgExit exitPlayerName), handle = Just hand})  = 
     let newHandles  = filter (\(pid, h) -> h /= hand)  $ handles s
-        newPlayers  = filter (\p -> playerName p /= exitPlayerName) $ allPlayers s
-        
-    in s{allPlayers = newPlayers, handles = newHandles}
+        (newPlayers, [exitPlayer])  =  partition (\p -> playerName p /= exitPlayerName) $ allPlayers s
+    in s{allPlayers = newPlayers, handles = newHandles, lastExitID = playerID exitPlayer}
 updateObjs (s, Event ServerInput{msg=(_, CSMsgJoin name),handle=Just hand})                 =
     let pid       = nextID s
         newPlayer = initializePlayer pid name
@@ -231,7 +231,7 @@ outputs (s, esi, hits, collisions) =
                                                      [(playerID pl, SCMsgSpawn (PlayerObj p)) | p <- allPlayers s, playerID p /= playerID pl] ++
                                                      [(i, SCMsgSpawn (PlayerObj pl)) | i <- allIDs, i /= playerID pl]
                             -- TODO: Send SCMsgExit so client can delete the object?
-                            --(_, CSMsgExit name) ->                                                   
+                            (_, CSMsgExit name) -> [(i, SCMsgRemove (lastExitID s)) | i <- allIDs]
                                                  
                             _ -> []) esi
      in (playerUpdates ++ [(i, SCMsgHit h) | i <- allIDs, h <- hits] -- hit broadcasts

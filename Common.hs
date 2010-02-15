@@ -150,10 +150,11 @@ data Obj = PlayerObj !Player
     deriving (Show, Eq)
 
 data SCMsg' = SCMsgInitialize !Player
-            | SCMsgPlayer !Player        -- For updating
+            | SCMsgPlayer !Player        -- For updating pos
             | SCMsgHit !Hit
             | SCMsgSpawn !Obj            -- For creating new ones
             | SCMsgFrag !Player          -- For telling everyone a player got a kill
+			| SCMsgRemove !Int			 -- Remove exiting player	
     deriving (Show, Eq)
 
 data CSMsg' = CSMsgPlayer !Player        -- For when velocity changes
