@@ -73,7 +73,7 @@ runServer port sf = withSocketsDo $ do
           forkIO $ do
                 let loop = do
                       reactWriteChan rch id False
-                      threadDelay 100000    -- Microseconds
+                      threadDelay 10000    -- Microseconds
                       loop
                 loop
 
@@ -168,11 +168,11 @@ moveObjs listFun posFun velFun = proc s0 -> do
     returnA -< (fmap posFun $ listFun s0) ^+^ dPs
 
 updateObjs :: (ServerState, Event ServerInput) -> ServerState
-updateObjs (s, Event ServerInput{msg=(_, CSMsgPlayer p)})           = s{allPlayers = map (\x->if playerID x == playerID p then p else x) $ allPlayers s}
-updateObjs (s, Event ServerInput{msg=(_, CSMsgUpdate p)})           = s{allPlayers = map (\x->if playerID x == playerID p then p else x) $ allPlayers s}
-updateObjs (s, Event ServerInput{msg=(_, CSMsgLaser l)})            = s{allLasers  = insertIL l $ allLasers s}
-updateObjs (s, Event ServerInput{msg=(_, CSMsgKillLaser lid)})      = s{allLasers  = filterIL ((/= lid) . laserID) $ allLasers s}
-updateObjs (s, Event ServerInput{msg=(pid, CSMsgDeath killer)})     = s{allPlayers = reInitDead pid (allPlayers s)}
+updateObjs (s, Event ServerInput{msg=(_, CSMsgPlayer p)})               = s{allPlayers = map (\x->if playerID x == playerID p then p else x) $ allPlayers s}
+updateObjs (s, Event ServerInput{msg=(_, CSMsgUpdate p)})               = s{allPlayers = map (\x->if playerID x == playerID p then p else x) $ allPlayers s}
+updateObjs (s, Event ServerInput{msg=(_, CSMsgLaser l)})                = s{allLasers  = insertIL l $ allLasers s}
+updateObjs (s, Event ServerInput{msg=(_, CSMsgKillLaser lid)})          = s{allLasers  = filterIL ((/= lid) . laserID) $ allLasers s}
+updateObjs (s, Event ServerInput{msg=(pid, CSMsgDeath h)})  = s{allPlayers = reInitDead pid (allPlayers s)}
     where reInitDead pid (p:ps) = if playerID p == pid then (initializePlayer pid (playerName p)):ps else p:reInitDead pid ps
 updateObjs (s, Event ServerInput{msg = (_, CSMsgExit exitPlayerName), handle = Just hand})  = 
     let newHandles  = filter (\(pid, h) -> h /= hand)  $ handles s
@@ -213,18 +213,18 @@ outputs (s, esi, hits, collisions) =
     let allIDs = map playerID $ allPlayers s
         -- TODO: remove colIDs
         colIDs = map playerID $ collisions
-        playerUpdates = maybeEvent []
+        playerUpdates = event []
                         (\si -> case msg si of -- player updates (exclude sender from recips, colliding players from list)
                             (pid, CSMsgPlayer p) -> [(i, SCMsgPlayer p) | i <- allIDs, i /= pid, pid `notElem` colIDs]
                             (pid, CSMsgLaser l ) -> [(i, SCMsgSpawn (LaserObj l)) | i <- allIDs, i /= pid]
-                            (pid, CSMsgDeath kid) -> let pl = case find ((pid ==) . playerID) (allPlayers s) of
-                                                                  Nothing -> error "Couldn't find a player that was just killed...???"
-                                                                  Just p -> p
-                                                         pl' = case find ((kid ==) . playerID) (allPlayers s) of
-                                                                   Nothing -> error "Couldn't find a player that just killed someone...???"
-                                                                   Just p' -> p'
+                            (pid, CSMsgDeath h) -> let pl = case find ((pid ==) . playerID) (allPlayers s) of
+                                                                            Nothing -> error "Couldn't find a player that was just killed...???"
+                                                                            Just p -> p
+                                                       pl' = case find ((player1ID h ==) . playerID) (allPlayers s) of
+                                                                            Nothing -> error "Couldn't find a player that just killed someone...???"
+                                                                            Just p' -> p'
                                                    in [(i, SCMsgSpawn (PlayerObj pl)) | i <- allIDs, i /= playerID pl] ++
-                                                      [(i, SCMsgFrag pl') | i <- allIDs] ++
+                                                      [(i, SCMsgFrag h) | i <- allIDs] ++
                                                       [(pid, SCMsgInitialize pl)]
                             (_, CSMsgJoin _) -> let pl = head $ reverse $ allPlayers s
                                                   in [(playerID pl, SCMsgInitialize pl)] ++

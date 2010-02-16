@@ -116,7 +116,7 @@ data ParticleSystem = ParticleSystem {
   deriving (Show, Eq)
 
 data ScoreBoard = ScoreBoard {
-    sbScores :: ![(Player, Int)]
+    sbScores :: ![(Int, Int)] -- PlayerID and Score
 }
     deriving (Show, Eq)
 
@@ -153,17 +153,17 @@ data SCMsg' = SCMsgInitialize !Player
             | SCMsgPlayer !Player        -- For updating pos
             | SCMsgHit !Hit
             | SCMsgSpawn !Obj            -- For creating new ones
-            | SCMsgFrag !Player          -- For telling everyone a player got a kill
-			| SCMsgRemove !Int			 -- Remove exiting player	
+            | SCMsgFrag !Hit             -- For telling everyone player1 killed player2
+            | SCMsgRemove !Int             -- Remove exiting player    
     deriving (Show, Eq)
 
 data CSMsg' = CSMsgPlayer !Player        -- For when velocity changes
             | CSMsgUpdate !Player        -- For periodic updates
             | CSMsgLaser !Laser          -- For spawning
             | CSMsgKillLaser !ID
-            | CSMsgDeath !ID
-            | CSMsgExit !String			 -- Name of player that exits, requires unique player names
-            | CSMsgJoin !String			 -- Name of player that enters the game
+            | CSMsgDeath !Hit            -- ID of killer and killed
+            | CSMsgExit !String          -- Name of player that exits, requires unique player names
+            | CSMsgJoin !String          -- Name of player that enters the game
     deriving (Show, Eq)
 
 type SCMsg = (ID, SCMsg')   -- Server to Client, i.e. runs on Client
@@ -212,9 +212,12 @@ printFlush s = do
     hFlush stdout
     hFlush stderr
 
+{-
+ - Removing, duplicate function 'event'
 maybeEvent :: b -> (a -> b) -> Event a -> b
 maybeEvent n _ NoEvent = n
 maybeEvent _ f (Event x) = f x
+-}
 
 doIOevent :: Event (IO ()) -> IO ()
 doIOevent (Event io) = io

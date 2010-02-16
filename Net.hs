@@ -42,7 +42,7 @@ instance Stringifiable SCMsg' where
     stringify (SCMsgPlayer p) = "player:" ++ (stringify p)
     stringify (SCMsgHit h) = "hit:" ++ (stringify h)
     stringify (SCMsgSpawn obj) = "spawn:" ++ (stringify obj)
-    stringify (SCMsgFrag p) = "frag:" ++ (stringify p)
+    stringify (SCMsgFrag finalHit) = "frag:" ++ (stringify finalHit)
     stringify (SCMsgRemove pID)   = "remove:" ++ (show pID)
 
     destringify s = let untildelim = span (/= ':')
@@ -61,7 +61,7 @@ instance Stringifiable CSMsg' where
     stringify (CSMsgUpdate p) = "update:" ++ (stringify p)
     stringify (CSMsgLaser l) = "laser:" ++ (stringify l)
     stringify (CSMsgKillLaser ident) = "killlaser:" ++ (show ident)
-    stringify (CSMsgDeath ident) = "death:" ++ (show ident)
+    stringify (CSMsgDeath h) = "death:" ++ (stringify h)
     stringify (CSMsgJoin name) = "join:" ++ name
     stringify (CSMsgExit name) = "exit:" ++ name
 
@@ -71,8 +71,8 @@ instance Stringifiable CSMsg' where
                           "player" -> CSMsgPlayer $ destringify $ drop 1 s1
                           "update" -> CSMsgUpdate $ destringify $ drop 1 s1
                           "laser" -> CSMsgLaser $ destringify $ drop 1 s1
-                          "killlaser" -> CSMsgKillLaser $ read $ drop 1 s1
-                          "death" -> CSMsgDeath $ read $ drop 1 s1
+                          "killlaser" -> CSMsgKillLaser $ read $ drop 1 s1 -- TODO: read here is a bit unsafe
+                          "death"-> CSMsgDeath $ destringify $ drop 1 s1
                           "join" -> CSMsgJoin $ drop 1 s1
                           "exit" -> CSMsgExit $ drop 1 s1
 

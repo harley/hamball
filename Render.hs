@@ -23,7 +23,6 @@ renderOrtho width height graphicActions = do
      matrixMode $= Projection
    matrixMode   $= Modelview 0
 
-
 --renderText
 renderText x y str s = unsafePreservingMatrix $ do
     translate (Vector3 x y (0::Float))
@@ -44,12 +43,14 @@ renderColor c graphicActions = unsafePreservingMatrix $ do
     -- materialShininess FrontAndBack $= shin
     graphicActions -- Execute commands
 
-{-    materialDiffuse FrontAndBack $= curDiff -- For now, always FrontAndBack
+{-  -- restore?
+    materialDiffuse FrontAndBack $= curDiff -- For now, always FrontAndBack
     materialSpecular FrontAndBack $= curSpec
     materialAmbient FrontAndBack $= curAmb
     materialEmission FrontAndBack $= curEmis
 -}
 
+-- Technically this renders any text
 renderKillText :: String -> IO()
 renderKillText str = do
   renderOrtho widthf heightf $ do
@@ -57,7 +58,7 @@ renderKillText str = do
             blend $= Enabled
             blendFunc $= (SrcAlpha, OneMinusSrcAlpha)-- transparent colors will let the background show through and opaque colors will be drawn over it.
             textureFunction $= Replace
-            printFonts' (double widthf-250) 44 (tex, base) 1 $ str++ " was killed"
+            renderText 5 200 str 3
 
 renderScoreBoard :: ScoreBoard -> IO ()
 renderScoreBoard sb = 
@@ -72,8 +73,8 @@ renderScoreBoard sb =
            blend $= Enabled
            blendFunc $= (SrcAlpha, OneMinusSrcAlpha)
            textureFunction $= Replace
-           let loop n ((pl,s):rest) = do
-                   renderText 10 (double heightf - n*64) (playerName pl ++ ": " ++ show s) 4
+           let loop n ((plID,s):rest) = do
+                   renderText 10 (double heightf - n*64) (show plID ++ ": " ++ show s) 4
                    loop (n+1) rest
                loop _ [] = return ()
            loop 1 $ mergeSort $ sbScores sb

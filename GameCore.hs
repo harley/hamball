@@ -29,4 +29,4 @@ route (gi,oos) objs = mapIL (route' oos) objs
 
 killOrSpawn :: (a, IL ObjOutput) -> Event (IL ObjectSF -> IL ObjectSF)
 killOrSpawn (_,oos) = Event $ foldl (.) id funcs
-    where funcs = map (\(k,oo) -> ((maybeEvent id (\_ -> deleteIL k)) (ooKillReq oo)) . ((foldl (.) id . map insertIL) (ooSpawnReq oo))) (assocsIL oos)
+    where funcs = map (\(k,oo) -> ((event id (\_ -> deleteIL k)) (ooKillReq oo)) . ((foldl (.) id . map insertIL) (ooSpawnReq oo))) (assocsIL oos)

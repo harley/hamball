@@ -162,11 +162,11 @@ observer pl = let setFromKey k (gi, prev) = dup $ case (key gi == Just k, keySta
                        Event (_,SCMsgHit h) -> if playerID pl == player2ID h then changeMsg else NoEvent
                        _ -> NoEvent
 
-    life <- loopPre (playerLife pl) (arr (\(hev,life) -> dup $ maybeEvent life (\(_,SCMsgHit h) -> life - hitStr h) hev)) -< hitEvent
-    let killerID = case hitEvent of
-                       Event (_,SCMsgHit h) -> player1ID h
-                       _ -> -1
-        kill = if life <= 0 then Event killerID else NoEvent
+    life <- loopPre (playerLife pl) (arr (\(hev,life) -> dup $ event life (\(_,SCMsgHit h) -> life - hitStr h) hev)) -< hitEvent
+    let killerHit = case hitEvent of
+                       Event (_,SCMsgHit h) -> Just h
+                       _ -> Nothing
+        kill = if life <= 0 then Event (fromJust killerHit) else NoEvent
         pl' = pl {playerPos = p,
                   playerVel = v,
                   playerAcc = a,
@@ -175,11 +175,11 @@ observer pl = let setFromKey k (gi, prev) = dup $ case (key gi == Just k, keySta
                   playerRadius = radius}
     returnA -< ObjOutput {ooObsObjState = OOSSelf pl',
                           ooNetworkMsgs = (\xs -> [x | Event x <- xs]) $
-                                            [fireLaser `tag` (playerID pl,CSMsgLaser lsr),
+                                            [fireLaser `tag` (playerID pl, CSMsgLaser lsr),
                                              foldl (mergeBy const) NoEvent [changeVel, hitEvent `tag` ()] `tag` (playerID pl, CSMsgPlayer pl'),
-                                             fmap (\pid -> (playerID pl, CSMsgDeath pid)) kill],
+                                             fmap (\hit -> (playerID pl, CSMsgDeath hit)) kill],
                           ooKillReq = kill `tag` (),
-                          ooSpawnReq = maybeEvent [] (\_ -> [laser lsr]) fireLaser,
+                          ooSpawnReq = event [] (\_ -> [laser lsr]) fireLaser,
                           ooBounds = let v = Vec3d (playerRadius pl', playerRadius pl', playerRadius pl')
                                      in BoundingBox (p ^-^ v) (p ^+^ v)}
 {-
@@ -244,35 +244,42 @@ player pl initMsg = switch (player' pl initMsg) (\(p,msg) -> player p msg)
 player' :: Player -> SCMsg -> SF ObjInput (ObjOutput, Event (Player, SCMsg))
 player' pl initMsg = proc ObjInput{oiGameInput=gi} -> do
     changeMsg <- loopPre initMsg detectChangeSF -< message gi
-    let update = maybeEvent NoEvent (\(i,msg') -> case msg' of
+    let update = event NoEvent (\(i,msg') -> case msg' of
                                                       SCMsgPlayer p -> if playerID pl == playerID p then Event p else NoEvent
                                                       _ -> NoEvent) changeMsg
-        kill = maybeEvent NoEvent (\(i,msg') -> case msg' of
+        kill = event NoEvent (\(i,msg') -> case msg' of
                                                     SCMsgSpawn (PlayerObj p) -> if playerID pl == playerID p then Event () else NoEvent
-                                                    SCMsgRemove pID -> if playerID pl == pID then Event () else NoEvent
+                                                    _ -> NoEvent) changeMsg
+        exit = event NoEvent (\(i,msg') -> case msg' of
+                                                    SCMsgRemove pID -> if playerID pl == pID then Event() else NoEvent
                                                     _ -> NoEvent) changeMsg
     pos <- (playerPos pl ^+^) ^<< integral -< playerVel pl
     let pl' = pl {playerPos = pos}
-    returnA -< (ObjOutput {ooObsObjState = OOSPlayer pl {playerPos = pos},
+        rad = playerRadius pl
+    returnA -< (ObjOutput {ooObsObjState = OOSPlayer pl', -- {playerPos = pos},
                            ooNetworkMsgs = [],
-                           ooKillReq = kill,
-                           ooSpawnReq = maybeEvent [] (\_ -> ([killtext $ playerName pl] ++ (map particle $ generatePreloadedParticles pos))) kill,
-                           ooBounds = let d = Vec3d (playerRadius pl', playerRadius pl', playerRadius pl')
-                                      in BoundingBox (pos ^-^ d) (pos ^+^ d)}, fmap (\ev -> (ev,message gi)) update)
+                           ooKillReq = kill `lMerge` exit, -- left-biased merge
+                           ooSpawnReq = event [] (\_ -> (map particle $ generatePreloadedParticles pos)) kill,
+                           ooBounds = let d = Vec3d (rad, rad, rad)
+                                      in BoundingBox (pos ^-^ d) (pos ^+^ d)}, 
+                fmap (\ev -> (ev,message gi)) update)
 
 scoreboard :: ObjectSF
-scoreboard = let addFrag pl ((p,s):rest) = if playerID pl == playerID p then (p,s+1):rest else (p,s) : addFrag pl rest
-                 addFrag pl [] = [(pl,1)]
+scoreboard = let addFrag plID ((pID,s):rest) = if plID == pID then (pID,s+1):rest else (pID,s) : addFrag plID rest
+                 addFrag plID [] = [(plID,1)]
              in proc ObjInput{oiGameInput=gi} -> do
     changeMsg <- loopPre dummySCMsg detectChangeSF -< message gi
+    let killAnnounce = event NoEvent (\(i, msg') -> case msg' of
+                                                     SCMsgFrag hit -> Event (show (player1ID hit) ++ " just killed " ++ (show (player2ID hit)))
+                                                     _ -> NoEvent) changeMsg
     sb' <- loopPre (ScoreBoard{sbScores=[]}) 
-                   (arr (\(chmsg,sb) -> dup $ maybeEvent sb (\(i,msg') -> case msg' of
-                                                                              SCMsgFrag p -> sb {sbScores = addFrag p $ sbScores sb}
+                   (arr (\(chmsg,sb) -> dup $ event sb (\(i,msg') -> case msg' of
+                                                                              SCMsgFrag hit -> sb {sbScores = addFrag (player1ID hit) $ sbScores sb}
                                                                               _ -> sb) chmsg)) -< changeMsg
     returnA -< ObjOutput {ooObsObjState = OOSScoreBoard sb',
                           ooNetworkMsgs = [],
                           ooKillReq = NoEvent,
-                          ooSpawnReq = [],
+                          ooSpawnReq = event [] (\txt -> [killtext txt]) killAnnounce,
                           ooBounds = BoundingEmpty}
 
 powerup :: PowerUp -> ObjectSF
@@ -312,10 +319,10 @@ laser l = proc (ObjInput {oiColliding = collider}) -> do
         v' = newVel $ laserVel l
         l'' = l' {laserVel = v'}
     returnA -< ObjOutput {ooObsObjState = OOSLaser l',
-                          ooNetworkMsgs = maybeEvent [] (\_ -> [(laserpID l, CSMsgKillLaser $ laserID l)]) kill ++
-                                          maybeEvent [] (\_ -> [(laserpID l, CSMsgLaser l'')]) reflect,
+                          ooNetworkMsgs = event [] (\_ -> [(laserpID l, CSMsgKillLaser $ laserID l)]) kill ++
+                                          event [] (\_ -> [(laserpID l, CSMsgLaser l'')]) reflect,
                           ooKillReq = mergeBy (\_ _ -> ()) kill reflect,
-                          ooSpawnReq = maybeEvent [] (\_ -> [laser l'']) reflect,
+                          ooSpawnReq = event [] (\_ -> [laser l'']) reflect,
                           ooBounds = BoundingEmpty} --BoundingBox (p ^-^ Vec3d(laserRadf, laserRadf, 0)) (p ^+^ Vec3d(laserRadf, laserRadf, laserHeightf)) }
 
 
@@ -330,7 +337,7 @@ particle part = proc _ -> do
                           ooKillReq = kill,
                           ooSpawnReq = [],
                           ooBounds = BoundingEmpty}
-
+{-
 particle2 :: Particle -> ObjectSF
 particle2 part = proc _ -> do
     pos <- (particlePos part ^+^) ^<< integral -< 10 *^ (unsafePerformIO $ randomTriple')
@@ -339,13 +346,13 @@ particle2 part = proc _ -> do
         d10 = (fromIntegral depth) / 10.0
     spawn <- repeatedly 0.01 () -< ()
     kill <- repeatedly 0.3 () -< ()
-    let spawnreq = if depth < 3 then maybeEvent [] (\_ -> [particle part']) spawn else []
+    let spawnreq = if depth < 3 then event [] (\_ -> [particle part']) spawn else []
     returnA -< ObjOutput {ooObsObjState = OOSParticle part',
                           ooNetworkMsgs = [],
                           ooKillReq = kill,
                           ooSpawnReq = spawnreq,
                           ooBounds = BoundingEmpty}
-
+-}
 killtext :: String -> ObjectSF
 killtext playerName = proc _ -> do
     kill <- repeatedly 3 () -< ()
@@ -406,7 +413,7 @@ player1 pid p0 = proc (ObjInput {oiGameInput = gi}) -> do
                                             fmap (\_ -> (pid,CSMsgLaser lsr)) fireLaser :
                                             fmap (\_ -> (pid,CSMsgPlayer plyr)) changeVel : [],
                           ooKillReq = NoEvent,
-                          ooSpawnReq = maybeEvent [] (\_ -> [laser lsr]) fireLaser,
+                          ooSpawnReq = event [] (\_ -> [laser lsr]) fireLaser,
                           ooBounds = BoundingEmpty}
         where dirToVec (CharKey c) = case c of
                 'w' -> Vec3d (0,0,1)
