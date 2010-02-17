@@ -1,13 +1,9 @@
+{-# LANGUAGE RankNTypes #-}
 module Render where
 
 import Graphics.Rendering.OpenGL as OpenGL
 import Vec3d
 import Common
-import Terrain
-import Colors
-import TerrainData
-import Sprites
-import TextureFonts
 import Graphics.UI.GLFW
 
 -- sets up the orthographic mode so we can
@@ -23,18 +19,22 @@ renderOrtho width height graphicActions = do
      matrixMode $= Projection
    matrixMode   $= Modelview 0
 
---renderText
+--render text on 2D on front of screen
+renderText :: Float -> Float -> String -> Float -> IO ()
 renderText x y str s = unsafePreservingMatrix $ do
     translate (Vector3 x y (0::Float))
     OpenGL.scale s s (1::Float)
     renderString Fixed8x16 str
 
+renderColor :: forall a. Color4 GLfloat -> IO a -> IO a
 renderColor c graphicActions = unsafePreservingMatrix $ do
     -- clear [ColorBuffer]
+	{-
     let curDiff = materialDiffuse FrontAndBack
         curSpec = materialSpecular FrontAndBack
         curAmb = materialAmbient FrontAndBack
         curEmis = materialEmission FrontAndBack
+		-}
     -- Store colors
     materialDiffuse FrontAndBack $= c -- For now, always FrontAndBack
     materialSpecular FrontAndBack $= c

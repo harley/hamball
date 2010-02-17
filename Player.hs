@@ -6,12 +6,9 @@ module Player where
 import Common
 import FRP.Yampa
 import Vec3d
-import GameInput
 import Graphics.Rendering.OpenGL as OpenGL
-import Data.String
 import WallRender
 import TerrainData
-import Colors
 import Render
 import Graphics.UI.GLFW
 import Graphics.Rendering.OpenGL.GL.CoordTrans
@@ -71,8 +68,8 @@ renderSelf p = do
     let (theta,phi) = playerView p
         mkRMatrixT, mkRMatrixP, mkTMatrix :: IO (GLmatrix Float)
         (ct,st,c,s) = (cos theta,sin theta,cos phi,sin phi)
-        u = Vec3d (ct,st,0) `cross` Vec3d (0,0,1)
-        (x,y,z) = (getx u,gety u,getz u)
+        --u = Vec3d (ct,st,0) `cross` Vec3d (0,0,1)
+        --(x,y,z) = (getx u,gety u,getz u)
         mkRMatrixP = newMatrix RowMajor [ c , 0 , s , 0 ,
                                           0 , 1 , 0 , 0 ,
                                          -s , 0 , c , 0 ,
@@ -136,40 +133,3 @@ renderSelf' p =
         lookAt (Vertex3 x y z) (xyz (theta,phi)) (Vector3 0 0 1)--(xyz' (theta, phi+pi/4))
         matrixMode $= Modelview 0
 --}
-
-instance Stringifiable Player where
-
-    stringify p = (show $ playerID p) ++ delim ++
-                  (showVec3d $ playerPos p) ++ delim ++
-                  (showVec3d $ playerVel p) ++ delim ++
-                  (showVec3d $ playerAcc p) ++ delim ++
-                  (show $ playerView p) ++ delim ++
-                  (show $ playerRadius p) ++ delim ++
-                  (show $ playerLife p) ++ delim ++
-                  (show $ playerEnergy p) ++ delim ++
-                  (showVec3d $ playerColor p) ++ delim ++
-                  (show $ playerName p)
-        where delim = ";"
-
-    destringify s = let untildelim = span (/= ';')
-                        (p1,s1) = untildelim s
-                        (p2,s2) = untildelim $ drop 1 s1
-                        (p3,s3) = untildelim $ drop 1 s2
-                        (p4,s4) = untildelim $ drop 1 s3
-                        (p5,s5) = untildelim $ drop 1 s4
-                        (p6,s6) = untildelim $ drop 1 s5
-                        (p7,s7) = untildelim $ drop 1 s6
-                        (p8,s8) = untildelim $ drop 1 s7
-                        (p9,s9) = untildelim $ drop 1 s8
-                        (p10,s10) = untildelim $ drop 1 s9
-                    in Player {playerID = read p1,
-                               playerPos = readVec3d p2,
-                               playerVel = readVec3d p3,
-                               playerAcc = readVec3d p4,
-                               playerView = read p5,
-                               playerRadius = read p6,
-                               playerLife = read p7,
-                               playerEnergy = read p8,
-                               playerColor = readVec3d p9,
-                               playerName = read p10}
-

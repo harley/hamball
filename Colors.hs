@@ -12,8 +12,6 @@ colorf x = toF (colorTable ! x)
 toF :: Color4 Int -> Color4 GLfloat
 toF (Color4 r g b a) = Color4 (fromIntegral r / 255) (fromIntegral g / 255) (fromIntegral b / 255) (fromIntegral a)
 
-colorTable :: Array Colors.Color (Color4 Int)
-colorTable = array (minBound, maxBound) colorList
 
 -- Pretty arbitrary selection of colours.
 data Color =
@@ -75,7 +73,11 @@ data Color =
     | Purple
     deriving (Eq, Ord, Bounded, Enum, Ix)
 
-colorList =
+colorTable :: Array Colors.Color (Color4 Int)
+colorTable = array (minBound, maxBound) colorList
+ where 
+  --colorList :: [(Color, Color4 t)]
+  colorList =
     [   -- Basic colours.
     (Black,			Color4   0   0   0 1),
 	(Blue,			Color4   0   0 255 1),

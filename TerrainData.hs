@@ -1,16 +1,9 @@
 module TerrainData where
 
-import Common
-import FRP.Yampa
 import Vec3d
-import GameInput
 import Graphics.Rendering.OpenGL hiding (Texture)
--- import Graphics.UI.GLUT hiding (Texture)
-import Data.String
 import GHC.Float
-import Graphics.Rendering.OpenGL.GL.StateVar
 import Colors
-import WallRender
 import Terrain
 import Textures
 import Data.Maybe
@@ -22,12 +15,14 @@ import Data.Complex
 -- Mandelfall aka Waterbrot
 --      by Alex
 
+dr, mdepth, msize, mxoffset, myoffset :: Float
 dr = 0.1
 mdepth = 48
 msize = 23
 mxoffset = -2.3
 myoffset = -2.3
 
+mkcol :: GLfloat -> Surface
 mkcol x = let r = x-0.75
               g = 0.25
               b = 0.25+x
@@ -56,6 +51,7 @@ surfaceSegment f x y = CompoundTerrain nullTransform $
          SimpleTerrain (Tri (Vec3d (x+dr,y+dr,f11)) (Vec3d (x,y+dr,f01)) (Vec3d (x+dr,y,f10)) nullTransform)
                        (mkcol $ (f11 + f10 + f01) / (3*mdepth*dr))]
 
+waterfall :: TerrainElement
 waterfall = CompoundTerrain nullTransform{toffset=Vec3d(76,-15,53),tscale=Vec3d(4,4,-15),ttheta=90}
     [surfaceSegment mand x y | x <- map ((mxoffset +).(dr *)) [0..msize-1], y <- map ((myoffset +).(dr *)) [0..msize-1]]
 
@@ -81,6 +77,7 @@ quadExample = Quad (Vec3d(9,-1,-1)) (Vec3d(9,-1,1)) (Vec3d(9,1,1)) (Vec3d(9,1,-1
 quad0 :: TerrainElement
 quad0 = SimpleTerrain quadExample surfaceExample
 
+floorDepth :: Float
 floorDepth = -20
 floorExample :: Geometry
 floorExample = Quad (Vec3d(0,-100,floorDepth)) (Vec3d(100,-100,floorDepth)) (Vec3d(100,100,floorDepth)) (Vec3d(0,100,floorDepth)) nullTransform
@@ -127,12 +124,15 @@ bloodTexture = unsafePerformIO (getAndCreateTexture "blood_texture")
 glowTexture :: Maybe TextureObject
 glowTexture = unsafePerformIO (getAndCreateTexture "glow_texture")
 
+tex :: Maybe TextureObject
+base :: DisplayList
 (tex,base) = unsafePerformIO buildFonts
 --numbase = unsafePerformIO buildBigNums -- load gigantic numbers to display scores or sth
 
 --------------------------------------------------------------------------------------------------------------
 -- Demo Terrain
 
+surfacef :: Colors.Color -> Surface
 surfacef x = Terrain.Color (Col {cdiffuse=(colorf x),cspecular=(Color4 0.0 0.0 0.0 1.0),cambient=(colorf x),cemissive=(Color4 0.0 0.0 0.0 1.0),cshininess=50})
 
 
@@ -177,7 +177,7 @@ tunnel :: TerrainElement
 tunnel = CompoundTerrain Transform{toffset=Vec3d(8,0,1),tscale=Vec3d(10,0.5,0.5), ttheta=0, tphi=0}
     [SimpleTerrain boxGeometry floorTexture]
 --}
-akw :: TerrainElement
+akw, akw1 :: TerrainElement
 --akw = SimpleTerrain (GLUTObject (Cube 1.0) trans) akwTexture Solid
 --    where trans = Transform{toffset = Vec3d (11,0,1), tscale = Vec3d (3,4,2), ttheta = 0, tphi = 0}
 akw1 = CompoundTerrain Transform{toffset=(Vec3d(11,0,1)), tscale=(Vec3d(3.0,4.0,2.0)), ttheta=0.0, tphi=0.0} [SimpleTerrain boxGeometry akwTexture]
@@ -205,6 +205,7 @@ demoSkyDome = SimpleTerrain skyDomeGeo skyTexture
 buildings :: TerrainElement
 buildings = CompoundTerrain Transform{toffset=(Vec3d((-200.0),(-75.0),0.0)), tscale=(Vec3d(30.0,30.0,30.0)), ttheta=0.0, tphi=0.0} [tunnel, bectonBottom, akw, pillars, bectonTop]
 
+demoTerrain, quickTerrain :: TerrainElement
 demoTerrain = CompoundTerrain Transform{toffset=(Vec3d(0.0,0.0,-8.0)), tscale=(Vec3d(1.0,1.0,1.0)), ttheta=0.0, tphi=0.0} [buildings, demoFloor, demoSkyDome]
 quickTerrain = CompoundTerrain Transform{toffset=(Vec3d(0.0,0.0,-0.75)), tscale=(Vec3d(1.0,1.0,1.0)), ttheta=0.0, tphi=0.0} [buildings, demoSkybox]
 

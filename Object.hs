@@ -13,8 +13,6 @@ import Graphics.UI.GLFW hiding (time)
 import Data.Maybe
 import BoundingVolume
 import Render
-import System.Random
-import System.IO.Unsafe
 import Particles
 
 type ObjectSF = SF ObjInput ObjOutput
@@ -44,7 +42,7 @@ data ObsObjState = OOSPlayer !Player
                  | OOSKillText !String
                  | OOSPowerUp !PowerUp
                  | OOSScoreBoard !ScoreBoard
-                 | OOSMan -- not necessarily to be used
+                 -- | OOSMan -- not necessarily to be used
                  | OOSNone
     deriving Show
 

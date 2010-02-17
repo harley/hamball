@@ -37,9 +37,9 @@ len :: Vec3d -> GLfloat
 len = sqrt . len2
 
 getx,gety,getz :: Vec3d -> GLfloat
-getx (Vec3d (x,y,z)) = x
-gety (Vec3d (x,y,z)) = y
-getz (Vec3d (x,y,z)) = z
+getx (Vec3d (x,_,_)) = x
+gety (Vec3d (_,y,_)) = y
+getz (Vec3d (_,_,z)) = z
 
 double,float :: (Real a, Fractional b) => a -> b
 double = fromRational.toRational
@@ -59,8 +59,8 @@ roundV (Vec3d (x,y,z)) = (round x, round y, round z)
 
 zipWith2 :: (a -> b -> c) -> (a -> c) -> (b -> c) -> [a] -> [b] -> [c]
 zipWith2 f g h (x:xs) (y:ys) = (f x y) : (zipWith2 f g h xs ys)
-zipWith2 f g h xs [] = map g xs
-zipWith2 f g h [] ys = map h ys
+zipWith2 _ g _ xs [] = map g xs
+zipWith2 _ _ h [] ys = map h ys
 
 instance VectorSpace Vec3d GLfloat where
     zeroVector = Vec3d (0.0, 0.0, 0.0)
@@ -72,9 +72,7 @@ instance VectorSpace Vec3d GLfloat where
     dot v1 v2 = v1 .* v2
     norm = len
     normalize v = v ^/ (norm v)
-
-normalize' v = v ^/ (norm v)
-
+	
 showVec3d :: Vec3d -> String
 showVec3d (Vec3d (x,y,z)) = (show x) ++ "," ++ (show y) ++ "," ++ (show z)
 

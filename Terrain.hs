@@ -1,19 +1,11 @@
 module Terrain where
 
-import Common
-import FRP.Yampa
 import Vec3d
-import GameInput
 import Graphics.Rendering.OpenGL hiding (Texture)
--- import Graphics.UI.GLUT hiding (Texture)
-import Data.String
 import GHC.Float
-import Colors
 import WallRender
-import Textures
 import BoundingVolume
 import Data.Maybe
-import System.IO.Unsafe
 {---------------------------------------------------------------------------------------------------------------
 TO DO:
 Add orientation and scale to definition of TerrainElement
@@ -52,12 +44,14 @@ data Surface = Color Col
              | NoSurface
     deriving Show
 
--- Just to make it compile
+{-
+-- Hmm lazy way: orphan instance
 instance Show QuadricPrimitive where
   show _ = "QuadricPrimitive"
 
 instance Show QuadricStyle where
   show _ = "QuadricStyle"
+-}
 
 -- Maybe not best form (only CompoundTerrain should have transform). But saves lots of work
 data Geometry = GLUQuadric QuadricPrimitive QuadricStyle Transform
@@ -66,11 +60,13 @@ data Geometry = GLUQuadric QuadricPrimitive QuadricStyle Transform
                   | Tri Vec3d Vec3d Vec3d Transform
                   | Plane -- For later
                   | Trimesh -- For later
-    deriving Show
+--    deriving Show
 
 data TerrainElement = SimpleTerrain Geometry Surface -- Is Flavour part of TerrainElement or of Geometry?
                     | CompoundTerrain Transform [TerrainElement]
-    deriving Show
+--    deriving Show
+instance Show TerrainElement where
+    show _ = "TerrainElement"
 
 -- Restore surface color properties
 restoreSurfaceColor :: IO()
@@ -89,10 +85,12 @@ restoreSurfaceColor = do
 preservingSurface :: Surface -> IO() -> IO()
 preservingSurface (Terrain.Color (Col{cspecular=spec, cdiffuse=diff, cambient=amb,cemissive=emis,cshininess=shin})) commands = do
   -- clear [ColorBuffer]
+  {-
   let curDiff = materialDiffuse FrontAndBack
       curSpec = materialSpecular FrontAndBack
       curAmb = materialAmbient FrontAndBack
       curEmis = materialEmission FrontAndBack
+  -}  
     -- Store colors
   materialDiffuse FrontAndBack $= diff -- For now, always FrontAndBack
   materialSpecular FrontAndBack $= spec

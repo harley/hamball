@@ -5,20 +5,17 @@ import Vec3d
 import Common
 import Collision
 import Data.Maybe
-import Net
 import Network
 import Network.BSD (getHostName)
 import Network.HTTP (getRequest, simpleHTTP, getResponseBody)
-import GameCore
 import Control.Concurrent
 import System.IO
 import IdentityList
 import Monad
-import Data.Time
-import Data.IORef
 import Data.List
 import System.IO.Error
-import System (getArgs)
+--import System (getArgs)
+import Net()
 
 -- PlayerID is now name not ID, but server also labels player with ID to use internally
 data ServerState = ServerState {handles :: ![(Int, Handle)],
@@ -31,6 +28,7 @@ data ServerState = ServerState {handles :: ![(Int, Handle)],
 emptyServerState :: ServerState
 emptyServerState = ServerState{handles=[], nextID=0, lastExitID=(-1), allPlayers=[], allLasers=emptyIL}
 
+serverTracker :: String
 serverTracker = "http://hamsterver.heroku.com/"
 
 data ServerInput = ServerInput {msg :: !CSMsg,
@@ -118,11 +116,13 @@ server = proc si -> do
 fetchCSMsg :: ReactChan ServerInput -> Handle -> IO ()
 fetchCSMsg rch h = do
     ln <- hGetLine h
+    {-
     let csMsg = destringify ln :: CSMsg
         b = case csMsg of
                 (_,CSMsgPlayer p) -> playerLife p < 100
                 (_,CSMsgLaser l) -> True
                 _ -> False
+                -}
     reactWriteChan rch (\si -> si {msg = destringify ln, handle = Just h}) False
 
 sendSCMsg :: Handle -> SCMsg -> IO ()
@@ -174,6 +174,7 @@ updateObjs (s, Event ServerInput{msg=(_, CSMsgLaser l)})                = s{allL
 updateObjs (s, Event ServerInput{msg=(_, CSMsgKillLaser lid)})          = s{allLasers  = filterIL ((/= lid) . laserID) $ allLasers s}
 updateObjs (s, Event ServerInput{msg=(pid, CSMsgDeath h)})  = s{allPlayers = reInitDead pid (allPlayers s)}
     where reInitDead pid (p:ps) = if playerID p == pid then (initializePlayer pid (playerName p)):ps else p:reInitDead pid ps
+          reInitDead _ _ = []
 updateObjs (s, Event ServerInput{msg = (_, CSMsgExit exitPlayerName), handle = Just hand})  = 
     let newHandles  = filter (\(pid, h) -> h /= hand)  $ handles s
         (newPlayers, [exitPlayer])  =  partition (\p -> playerName p /= exitPlayerName) $ allPlayers s
@@ -220,9 +221,10 @@ outputs (s, esi, hits, collisions) =
                             (pid, CSMsgDeath h) -> let pl = case find ((pid ==) . playerID) (allPlayers s) of
                                                                             Nothing -> error "Couldn't find a player that was just killed...???"
                                                                             Just p -> p
-                                                       pl' = case find ((player1ID h ==) . playerID) (allPlayers s) of
+                                                       {-pl' = case find ((player1ID h ==) . playerID) (allPlayers s) of
                                                                             Nothing -> error "Couldn't find a player that just killed someone...???"
                                                                             Just p' -> p'
+                                                        -}
                                                    in [(i, SCMsgSpawn (PlayerObj pl)) | i <- allIDs, i /= playerID pl] ++
                                                       [(i, SCMsgFrag h) | i <- allIDs] ++
                                                       [(pid, SCMsgInitialize pl)]
@@ -230,7 +232,7 @@ outputs (s, esi, hits, collisions) =
                                                   in [(playerID pl, SCMsgInitialize pl)] ++
                                                      [(playerID pl, SCMsgSpawn (PlayerObj p)) | p <- allPlayers s, playerID p /= playerID pl] ++
                                                      [(i, SCMsgSpawn (PlayerObj pl)) | i <- allIDs, i /= playerID pl]
-                            -- TODO: Send SCMsgExit so client can delete the object?
+                            -- Send SCMsgExit so client can delete the object?
                             (_, CSMsgExit name) -> [(i, SCMsgRemove (lastExitID s)) | i <- allIDs]
                                                  
                             _ -> []) esi

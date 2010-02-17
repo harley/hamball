@@ -63,7 +63,7 @@ This function uses the user-provided indexing-function to translate an animation
 -}
 
 displaySpriteWithFrame :: Maybe TextureObject -> (Int, Int) -> (Int, Int) -> (Int -> ((GLfloat, GLfloat), (GLfloat, GLfloat))) -> Int -> GLfloat -> IO ()
-displaySpriteWithFrame image min max func frame angle = displaySpriteBackend image (findCenterBackend min max) (findSizeBackend min max) texMin texMax angle
+displaySpriteWithFrame image minn maxx func frame angle = displaySpriteBackend image (findCenterBackend minn maxx) (findSizeBackend minn maxx) texMin texMax angle
 	where (texMin, texMax) = func frame
 
 

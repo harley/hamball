@@ -3,27 +3,18 @@ module RunGame where
 import Graphics.Rendering.OpenGL
 import Graphics.UI.GLFW as GLFW
 import FRP.Yampa
-import Common
-import Player
 import GameInput
 import Object
-import Vec3d
 import GameCore
 import IdentityList
-import FRP.Yampa.Forceable
 import Data.IORef
 import System.IO
 import Monad
 import Control.Concurrent
-import Network
-import Laser
 import Data.Maybe
 import Net
-import Terrain
-import TerrainData
-import Textures -- to load TGA file into TextureObject
---import TextureFonts
 import Render
+import Common
 
 --PLEASE run ./client playerName or ./server scripts instead
 
@@ -129,15 +120,7 @@ glInit = do
 
 initGameInput :: IO GameInput
 initGameInput = return $ GameInput {key=Nothing, keyState=Nothing, leftClick=False, posMouse=Position 0 0, mWheel = 0, message=dummySCMsg, rightClick = False}
-{-
-myCatch loop = do
-    catch loop (\e -> do
-        print "ERRPR:"
-        print e
-        i <- myThreadId
-        killThread i
-        )
--}
+
 networkInit :: ReactChan GameInput -> Maybe Handle -> IO ()
 networkInit rch Nothing = return ()
 networkInit rch (Just handle) = do

@@ -2,8 +2,6 @@ module Collision where
 import FRP.Yampa
 import Vec3d
 import Common
-import List
-import Terrain
 
 -- Currently assuming equal mass (variable radius should be okay).
 -- Collisions are fully elastic.

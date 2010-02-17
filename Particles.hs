@@ -3,11 +3,8 @@ import Common
 import Vec3d
 import System.IO.Unsafe
 import System.Random
-import Terrain
-import Colors
-import TerrainData
-import Sprites
 import Graphics.Rendering.OpenGL
+import TerrainData
 
 -- Number of particles
 particleNum :: Int
@@ -62,7 +59,7 @@ randomTriple' = do
 
   let (x1, r2) = randomR (-1.0,1.0) r
       (x2, r3) = randomR (-1.0,1.0) r2
-      (x3, r4) = randomR (-1.0,1.0) r3
+      (x3, _) = randomR (-1.0,1.0) r3
       result = Vec3d(x1,x2,x3)
   return result
 

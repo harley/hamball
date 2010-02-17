@@ -1,4 +1,4 @@
-GHC_N_OPTS = ghc --make -XMultiParamTypeClasses -XArrows -XTypeSynonymInstances -XFlexibleInstances -outputdir obj
+GHC_N_OPTS = ghc --make -XMultiParamTypeClasses -XArrows -XTypeSynonymInstances -XFlexibleInstances -Wall -fno-warn-name-shadowing -fno-warn-unused-matches -fno-warn-type-defaults -outputdir obj
 
 
 all0: s c

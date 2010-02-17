@@ -1,9 +1,0 @@
-#!/bin/sh
-
-# need to cd so relative paths stuff work
-cd /home/accts/agt5/hamsters
-touch log/server/$(whoami)
-./Server_May4 $(hostname)
-rm .host_name
-# get out
-cd ~

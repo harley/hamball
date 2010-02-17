@@ -5,11 +5,9 @@ import Common
 import Data.IORef
 import Graphics.Rendering.OpenGL
 import Graphics.UI.GLFW as GLFW
-import Vec3d
 import Control.Monad
-import Control.Concurrent
 
-type MyReactHandle = ReactHandle GameInput (IO (), IO ())
+--type MyReactHandle = ReactHandle GameInput (IO (), IO ())
 
 data GameInput = GameInput {key :: Maybe Key,
                             keyState :: Maybe KeyButtonState,
@@ -33,7 +31,7 @@ keyboardCallback rch _ k ks = reactWriteChan rch (\gi -> gi {key = Just k, keySt
 mouseClickCallback :: ReactChan GameInput -> MouseButton -> KeyButtonState -> IO ()
 mouseClickCallback rch ButtonLeft ks = reactWriteChan rch (\gi -> gi {leftClick = (ks == Press)}) True
 mouseClickCallback rch ButtonRight ks = mouseWheel $= 0 >> reactWriteChan rch (\gi -> gi {rightClick = (ks == Press), mWheel = 0}) True
-mouseClickCallback rch _ ks = reactWriteChan rch (\gi -> gi) True
+mouseClickCallback rch _ _ = reactWriteChan rch (\gi -> gi) True
 
 -- Make sure wheel value does not go to far
 -- default range is 0 -> 4294967295, so we only use first 4 and last 4 values
@@ -43,7 +41,7 @@ mWheelCallback rch i | i == 9  = mouseWheel $= 8
                      | otherwise = reactWriteChan rch (\gi -> gi {mWheel = i}) True
 
 mouseMotionCallback :: ReactChan GameInput -> IORef Double -> IORef Int -> Position -> IO ()
-mouseMotionCallback rch timerRef yPrev p@(Position x y) = do
+mouseMotionCallback rch timerRef yPrev (Position x y) = do
     t' <- readIORef timerRef
     t <- get GLFW.time
     when (t-t' >= mouseTimer) $ do

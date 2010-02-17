@@ -7,7 +7,7 @@ import Control.Monad (when)
 
 import FRP.Yampa ((>>>), arr) -- NOTE that this is our modified YAMPA
 import RunGame (glInit, runGame, game)
-import Common (CSMsg'(CSMsgJoin,CSMsgExit))
+import Common (CSMsg'(CSMsgJoin))
 import Object (serverObject, scoreboard, terrain0, renderObsObjState)
 import Net (sendCSMsg)
 

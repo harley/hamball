@@ -1,7 +1,6 @@
 {-# LANGUAGE UndecidableInstances #-}
 module IdentityList where
 
-import Common
 import FRP.Yampa
 
 type ILKey = Int

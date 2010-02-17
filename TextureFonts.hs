@@ -11,7 +11,7 @@ module TextureFonts where
 import Textures
 import Data.Maybe
 import Data.Char
-import Data.HashTable
+--import Data.HashTable
 import Graphics.Rendering.OpenGL hiding (GLclampf)
 
 -- build a display list for the fonts

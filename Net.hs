@@ -1,13 +1,35 @@
 module Net where
 
-import Network
 import System.IO
 import FRP.Yampa
 import Common
 import GameInput
-import Player
-import Laser
-import Monad
+import Vec3d
+
+
+instance Stringifiable Laser where
+
+    stringify l = (show $ laserID l) ++ delim ++
+                  (show $ laserpID l) ++ delim ++
+                  (showVec3d $ laserPos l) ++ delim ++
+                  (showVec3d $ laserVel l) ++ delim ++
+                  (show $ laserStr l) ++ delim ++
+                  (showVec3d $ laserColor l)
+        where delim = ";"
+
+    destringify s = let untildelim = span (/= ';')
+                        (p1,s1) = untildelim s
+                        (p2,s2) = untildelim $ drop 1 s1
+                        (p3,s3) = untildelim $ drop 1 s2
+                        (p4,s4) = untildelim $ drop 1 s3
+                        (p5,s5) = untildelim $ drop 1 s4
+                        (p6,_) = untildelim $ drop 1 s5
+                     in Laser {laserID = read p1,
+                               laserpID = read p2,
+                               laserPos = readVec3d p3,
+                               laserVel = readVec3d p4,
+                               laserStr = read p5,
+                               laserColor = readVec3d p6}
 
 instance Stringifiable Hit where
 
@@ -35,6 +57,7 @@ instance Stringifiable Obj where
                     in case p1 of
                           "player" -> PlayerObj $ destringify $ drop 1 s1
                           "laser" -> LaserObj $ destringify $ drop 1 s1
+                          _ -> error $ "Bad msg: can only be player or laser, but is " ++ p1
 
 instance Stringifiable SCMsg' where
 
@@ -54,6 +77,7 @@ instance Stringifiable SCMsg' where
                           "spawn"      -> SCMsgSpawn $ destringify $ drop 1 s1
                           "frag"       -> SCMsgFrag $ destringify $ drop 1 s1
                           "remove"     -> SCMsgRemove $ read $ drop 1 s1
+                          _ -> error $ "Bad msg format for SCMsg': " ++ p1
 
 instance Stringifiable CSMsg' where
 
@@ -75,6 +99,7 @@ instance Stringifiable CSMsg' where
                           "death"-> CSMsgDeath $ destringify $ drop 1 s1
                           "join" -> CSMsgJoin $ drop 1 s1
                           "exit" -> CSMsgExit $ drop 1 s1
+                          _ -> error $ "Bad msg format for CSMsg': " ++ p1
 
 instance Stringifiable SCMsg where
 
@@ -89,14 +114,50 @@ instance Stringifiable CSMsg where
     destringify s = let (p1,s1) = span (/= ':') s
                     in (read p1, destringify $ drop 1 s1)
 
+
+instance Stringifiable Player where
+
+    stringify p = (show $ playerID p) ++ delim ++
+                  (showVec3d $ playerPos p) ++ delim ++
+                  (showVec3d $ playerVel p) ++ delim ++
+                  (showVec3d $ playerAcc p) ++ delim ++
+                  (show $ playerView p) ++ delim ++
+                  (show $ playerRadius p) ++ delim ++
+                  (show $ playerLife p) ++ delim ++
+                  (show $ playerEnergy p) ++ delim ++
+                  (showVec3d $ playerColor p) ++ delim ++
+                  (show $ playerName p)
+        where delim = ";"
+
+    destringify s = let untildelim = span (/= ';')
+                        (p1,s1) = untildelim s
+                        (p2,s2) = untildelim $ drop 1 s1
+                        (p3,s3) = untildelim $ drop 1 s2
+                        (p4,s4) = untildelim $ drop 1 s3
+                        (p5,s5) = untildelim $ drop 1 s4
+                        (p6,s6) = untildelim $ drop 1 s5
+                        (p7,s7) = untildelim $ drop 1 s6
+                        (p8,s8) = untildelim $ drop 1 s7
+                        (p9,s9) = untildelim $ drop 1 s8
+                        (p10,_) = untildelim $ drop 1 s9
+                    in Player {playerID = read p1,
+                               playerPos = readVec3d p2,
+                               playerVel = readVec3d p3,
+                               playerAcc = readVec3d p4,
+                               playerView = read p5,
+                               playerRadius = read p6,
+                               playerLife = read p7,
+                               playerEnergy = read p8,
+                               playerColor = readVec3d p9,
+                               playerName = read p10}
+
+
+
+
 fetchSCMsg :: ReactChan GameInput -> Handle -> IO ()
 fetchSCMsg rch h = do
     ln <- hGetLine h
     printFlush ln -- for debug
-    let scMsg = destringify ln :: SCMsg
-        b = case scMsg of
-                (_,SCMsgHit h) -> True
-                _ -> False
     reactWriteChan rch (\gi -> gi {message = destringify ln}) False
 
 -- Send msg from Client to Server

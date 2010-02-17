@@ -4,11 +4,8 @@ import FRP.Yampa
 import Graphics.Rendering.OpenGL
 import Graphics.Rendering.OpenGL.GL.CoordTrans
 import Data.IORef
-import Data.String
 import System.IO
 import System.IO.Unsafe
-import System.Random
-import Control.Concurrent
 
 debug :: (Show a) => a -> t -> t
 debug s x = unsafePerformIO (print s) `seq` x
@@ -19,19 +16,21 @@ debugMaybe :: String -> t -> t
 debugMaybe s x = if s /= "" then debug s x else x
 
 -- The following is for debugging purposes only
-instance Show a => Show (Event a) where
-    show NoEvent = "NoEvent"
-    show (Event a) = "Event " ++ (show a)
+--instance Show a => Show (Event a) where
+--    show NoEvent = "NoEvent"
+--    show (Event a) = "Event " ++ (show a)
  ----------------------------------------------
 
 -- width MUST be divisible by 4
 -- height MUST be divisible by 3
 
+fullscreen :: Bool
 fullscreen = False
 
 width, height :: GLint
 (width,height) = if fullscreen then (1600,1200) else (640,480)
 
+widthf, heightf :: GLdouble
 widthf = fromRational $ toRational width
 heightf = fromRational $ toRational height
 
@@ -50,9 +49,10 @@ initFrustum = do
         right  = 0.4
         top    = 0.3
     frustum (-right) right (-top) top near far
+	-- TODO: explain this
     lookAt (Vertex3 0 0 0) (Vertex3 1 0 0) (Vector3 0 0 1)
 
-bound lo hi a = max lo $ min hi a
+--bound lo hi a = max lo $ min hi a
 
 int :: (Num b, Integral a) => a -> b
 int = fromInteger.toInteger

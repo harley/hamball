@@ -1,11 +1,11 @@
 module WallRender where
 
 import Graphics.Rendering.OpenGL
-import Control.Monad ( when )
-import Data.Maybe ( isJust, listToMaybe )
-import Data.Bits ( (.&.) )
-import Foreign ( withArray )
-import System.Exit ( exitWith, ExitCode(ExitSuccess) )
+--import Control.Monad ( when )
+--import Data.Maybe ( isJust, listToMaybe )
+--import Data.Bits ( (.&.) )
+--import Foreign ( withArray )
+--import System.Exit ( exitWith, ExitCode(ExitSuccess) )
 import Sprites
 
 --Texture objects are only used when GL_EXT_texture_object is supported.
@@ -41,6 +41,7 @@ renderQuad mbTexObj p1 p2 p3 p4 = do
     displaySprite3D mbTexObj p1 p2 p3 p4 (0,0) (1,1)
     texture Texture2D $= Disabled
 
+displayCB :: Maybe TextureObject -> IO ()
 displayCB mbTexObj = do
     clear [ ColorBuffer, DepthBuffer ]
     renderQuad mbTexObj (Vertex3 0 0 0) (Vertex3 0 2 0) (Vertex3 2 2 0) (Vertex3 2 0 0)
