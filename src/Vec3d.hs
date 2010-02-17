@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeSynonymInstances, MultiParamTypeClasses #-}
 module Vec3d where
 
 import FRP.Yampa
@@ -72,7 +73,7 @@ instance VectorSpace Vec3d GLfloat where
     dot v1 v2 = v1 .* v2
     norm = len
     normalize v = v ^/ (norm v)
-	
+
 showVec3d :: Vec3d -> String
 showVec3d (Vec3d (x,y,z)) = (show x) ++ "," ++ (show y) ++ "," ++ (show z)
 

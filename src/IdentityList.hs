@@ -1,4 +1,4 @@
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, UndecidableInstances #-}
 module IdentityList where
 
 import FRP.Yampa
@@ -13,7 +13,7 @@ data IL a = IL {
 instance Functor IL where
     fmap f (IL {ilNextKey = nk, ilAssocs = assocs}) =
         IL {ilNextKey = nk, ilAssocs = map (\(i,a) -> (i,f a)) assocs}
-        
+
 instance VectorSpace s a => VectorSpace (IL s) a where
     zeroVector = emptyIL
     (*^) k = fmap (k *^)
@@ -49,7 +49,7 @@ deleteIL :: ILKey -> IL a -> IL a
 deleteIL k il = il {ilAssocs = deleteIL' k (ilAssocs il)}
     where deleteIL' k ((k',v):rest) = if k == k' then rest else (k',v) : deleteIL' k rest
           deleteIL' k [] = error "Attempted to delete a non-existent element from an IL."
-          
+
 mapIL :: ((ILKey,a) -> b) -> IL a -> IL b
 mapIL f il = il {ilAssocs = map (\(k,a) -> (k, f (k,a))) $ ilAssocs il}
 
@@ -59,7 +59,7 @@ filterIL f il = il {ilAssocs = filter (\(_,a) -> f a) $ ilAssocs il}
 zipWithIL :: (a -> b -> c) -> (a -> Maybe c) -> (b -> Maybe c) -> IL a -> IL b -> IL c
 zipWithIL f fa fb ila ilb = let assocs = zipWithIL' f fa fb (ilAssocs ila) (ilAssocs ilb)
                             in IL {ilNextKey = length assocs, ilAssocs = assocs}
-    where zipWithIL' f fa fb la@((ka,a):as) lb@((kb,b):bs) = 
+    where zipWithIL' f fa fb la@((ka,a):as) lb@((kb,b):bs) =
                 case compare ka kb of
                     EQ -> (ka, f a b) : (zipWithIL' f fa fb as bs)
                     GT -> case fa a of
@@ -74,7 +74,8 @@ zipWithIL f fa fb ila ilb = let assocs = zipWithIL' f fa fb (ilAssocs ila) (ilAs
           zipWithIL' f fa fb [] ((kb,b):bs) = case fb b of
                                                   Just c -> (kb,c) : (zipWithIL' f fa fb [] bs)
                                                   Nothing -> zipWithIL' f fa fb [] bs
-          zipWithIL' f fa fb [] [] = []                                                  
+          zipWithIL' f fa fb [] [] = []
 
 updateIL :: ILKey -> a -> IL a -> IL a
 updateIL k v il = insertIL v $ deleteIL k il
+

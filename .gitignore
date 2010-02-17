@@ -7,4 +7,5 @@ NoServer
 Makefile
 Yampa/dist
 *.swp
+dist/
 

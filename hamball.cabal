@@ -3,11 +3,11 @@ version:             0.0
 synopsis:            <Project description>
 description:         3D FPS Network Game: Players control hamsters flying around in hamster balls and shooting lasers
 category:            Game
-license:             MIT
+license:             BSD3
 license-file:        LICENSE
 author:              Harley Trung, David Constanzo, Alex Thompson, Matt Sills
 maintainer:          harley.trung@yale.edu
-build-depends:       base
+build-depends:       base, haskell98
 build-type:          Simple
 
 executable:          hamball

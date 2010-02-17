@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeSynonymInstances, Arrows #-}
 module Net where
 
 import System.IO

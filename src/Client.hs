@@ -1,4 +1,4 @@
-module Main where
+module Client where
 
 import Network (PortID(PortNumber), connectTo, withSocketsDo)
 import Network.HTTP (simpleHTTP, getRequest, getResponseBody)

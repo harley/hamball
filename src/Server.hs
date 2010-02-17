@@ -1,4 +1,5 @@
-module Main where
+{-# LANGUAGE Arrows #-}
+module Server where
 
 import FRP.Yampa
 import Vec3d
@@ -67,7 +68,7 @@ runServer port sf = withSocketsDo $ do
           -- want the server to simultaneous functions
           -- * every 100ms, try to update current state of the game
           -- * also update from the channel
-          -- 
+          --
           forkIO $ do
                 let loop = do
                       reactWriteChan rch id False
@@ -81,7 +82,7 @@ runServer port sf = withSocketsDo $ do
                 unGetChan rch a
                 react rh rch
                 loop
-          loop 
+          loop
       where acceptClient rch sock = do
                 (hand,_,_) <- accept sock
                 open <- hIsOpen hand
@@ -91,7 +92,7 @@ runServer port sf = withSocketsDo $ do
                            succ <- hWaitForInput hand (-1)
                            when succ $ fetchCSMsg rch hand
                            loop
-                    -- When player quits, handle becomes invalid (closed by main thread), thus exception thrown       
+                    -- When player quits, handle becomes invalid (closed by main thread), thus exception thrown
                     catch loop (\e -> print "Player quit.")
                 acceptClient rch sock
 
@@ -175,7 +176,7 @@ updateObjs (s, Event ServerInput{msg=(_, CSMsgKillLaser lid)})          = s{allL
 updateObjs (s, Event ServerInput{msg=(pid, CSMsgDeath h)})  = s{allPlayers = reInitDead pid (allPlayers s)}
     where reInitDead pid (p:ps) = if playerID p == pid then (initializePlayer pid (playerName p)):ps else p:reInitDead pid ps
           reInitDead _ _ = []
-updateObjs (s, Event ServerInput{msg = (_, CSMsgExit exitPlayerName), handle = Just hand})  = 
+updateObjs (s, Event ServerInput{msg = (_, CSMsgExit exitPlayerName), handle = Just hand})  =
     let newHandles  = filter (\(pid, h) -> h /= hand)  $ handles s
         (newPlayers, [exitPlayer])  =  partition (\p -> playerName p /= exitPlayerName) $ allPlayers s
     in s{allPlayers = newPlayers, handles = newHandles, lastExitID = playerID exitPlayer}
@@ -234,7 +235,7 @@ outputs (s, esi, hits, collisions) =
                                                      [(i, SCMsgSpawn (PlayerObj pl)) | i <- allIDs, i /= playerID pl]
                             -- Send SCMsgExit so client can delete the object?
                             (_, CSMsgExit name) -> [(i, SCMsgRemove (lastExitID s)) | i <- allIDs]
-                                                 
+
                             _ -> []) esi
      in (playerUpdates ++ [(i, SCMsgHit h) | i <- allIDs, h <- hits] -- hit broadcasts
                        ++ [(i, SCMsgPlayer p) | i <- allIDs, p <- collisions]) -- collision broadcasts
