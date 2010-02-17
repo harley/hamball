@@ -1,3 +1,4 @@
+{-# LANGUAGE Arrows #-}
 module RunGame where
 
 import Graphics.Rendering.OpenGL

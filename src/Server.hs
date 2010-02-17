@@ -1,5 +1,5 @@
 {-# LANGUAGE Arrows #-}
-module Server where
+module Main where
 
 import FRP.Yampa
 import Vec3d

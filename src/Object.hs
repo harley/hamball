@@ -1,3 +1,4 @@
+{-# LANGUAGE Arrows #-}
 module Object where
 
 import Common
