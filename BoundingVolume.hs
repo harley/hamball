@@ -18,7 +18,7 @@ bvTransform trans (BoundingSphere p r) = BoundingSphere (trans p) r
 bvTransform _ BoundingEmpty = BoundingEmpty
 bvTransform trans (MultipleVolumes vols) = MultipleVolumes $ map (bvTransform trans) vols
 bvTransform _ (BoundingSegment _ _) = error "Bounding segment not yet implemented."
-                    
+
 collidesWith :: BoundingVolume -> BoundingVolume -> Bool
 collidesWith BoundingEmpty _ = False
 collidesWith _ BoundingEmpty = False
@@ -32,5 +32,5 @@ collidesWith (BoundingBox (Vec3d (minx1,miny1,minz1)) (Vec3d (maxx1,maxy1,maxz1)
                    minz1 < maxz2 && maxz1 > minz2
 collidesWith (MultipleVolumes vols) bv = or $ map (collidesWith bv) vols
 collidesWith bv (MultipleVolumes vols) = or $ map (collidesWith bv) vols
-collidesWith _ _ = error "collidesWith not yet implemented for this bounding vaolume pattern"
-  
+collidesWith _ _ = error "collidesWith not yet implemented for this bounding volume pattern"
+

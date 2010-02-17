@@ -8,7 +8,6 @@ import Terrain
 import Textures
 import Data.Maybe
 import System.IO.Unsafe
-import TextureFonts
 import Data.Complex
 
 -------------------------------------------------------------------------------------------------------------
@@ -124,11 +123,6 @@ bloodTexture = unsafePerformIO (getAndCreateTexture "blood_texture")
 glowTexture :: Maybe TextureObject
 glowTexture = unsafePerformIO (getAndCreateTexture "glow_texture")
 
-tex :: Maybe TextureObject
-base :: DisplayList
-(tex,base) = unsafePerformIO buildFonts
---numbase = unsafePerformIO buildBigNums -- load gigantic numbers to display scores or sth
-
 --------------------------------------------------------------------------------------------------------------
 -- Demo Terrain
 
@@ -211,3 +205,4 @@ quickTerrain = CompoundTerrain Transform{toffset=(Vec3d(0.0,0.0,-0.75)), tscale=
 
 
 --------------------------------------------------------------------------------------------------------------
+

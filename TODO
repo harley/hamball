@@ -64,6 +64,7 @@ STEPS:
 - [DONE] Right click to stand still
 - Fix Yampa empty chan problem
 IL identity list
- 
+
 - Say who kills who
+- ScoreBoard keeps track of last displayed coordinates to avoid overlap
 
