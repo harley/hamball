@@ -1,0 +1,3143 @@
+<!DOCTYPE html PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>oc</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#1F00FF" ALINK="#FF0000" VLINK="#9900DD">
+<A NAME="top">
+<A NAME="file1">
+<H1>BoundingVolume.hs 1/25</H1>
+[<A HREF="#top">top</A>][prev][<A HREF="#file2">next</A>]
+<PRE>
+<B><FONT COLOR="#A020F0">module</FONT></B> BoundingVolume <B><FONT COLOR="#A020F0">where</FONT></B>
+
+<B><FONT COLOR="#A020F0">import</FONT></B> Vec3d
+
+<I><FONT COLOR="#B22222">-- TODO: make collision detector return a normal vector
+</FONT></I>
+<B><FONT COLOR="#A020F0">data</FONT></B> BoundingVolume = BoundingBox Vec3d Vec3d   <I><FONT COLOR="#B22222">-- axis-parallel
+</FONT></I>                    | BoundingSphere Vec3d Float
+                    | BoundingSegment Vec3d Vec3d
+                    | BoundingEmpty             <I><FONT COLOR="#B22222">-- for objects that never collide
+</FONT></I>                    | MultipleVolumes [BoundingVolume]
+    <B><FONT COLOR="#A020F0">deriving</FONT></B> (Show, Eq)
+
+bvTransform <B><FONT COLOR="#228B22">:: (Vec3d -&gt; Vec3d) -&gt; BoundingVolume -&gt; BoundingVolume
+</FONT></B>bvTransform trans (BoundingBox v1 v2) = BoundingBox (trans v1) (trans v2)
+bvTransform trans (BoundingSphere p r) = BoundingSphere (trans p) r
+bvTransform <B><FONT COLOR="#A020F0">_ </FONT></B>BoundingEmpty = BoundingEmpty
+bvTransform trans (MultipleVolumes vols) = MultipleVolumes $ map (bvTransform trans) vols
+bvTransform <B><FONT COLOR="#A020F0">_ </FONT></B>(BoundingSegment <B><FONT COLOR="#A020F0">_ </FONT></B><B><FONT COLOR="#A020F0">_) </FONT></B>= error <B><FONT COLOR="#BC8F8F">&quot;Bounding segment not yet implemented.&quot;</FONT></B>
+
+collidesWith <B><FONT COLOR="#228B22">:: BoundingVolume -&gt; BoundingVolume -&gt; Bool
+</FONT></B>collidesWith BoundingEmpty <B><FONT COLOR="#A020F0">_ </FONT></B>= False
+collidesWith <B><FONT COLOR="#A020F0">_ </FONT></B>BoundingEmpty = False
+collidesWith (BoundingBox (Vec3d (minx1,miny1,minz1)) (Vec3d (maxx1,maxy1,maxz1)))
+             (BoundingBox (Vec3d (minx2,miny2,minz2)) (Vec3d (maxx2,maxy2,maxz2))) = <I><FONT COLOR="#B22222">{-debug (&quot;CollidesWith called on &quot; ++ (show b1) ++ &quot; ::: &quot; ++ (show b2) ++ &quot; ::: returning &quot; ++
+                                                                                               (show $ minx1 &lt; maxx2 &amp;&amp; maxx1 &gt; minx2 &amp;&amp;
+                                                                                                       miny1 &lt; maxy2 &amp;&amp; maxy1 &gt; miny2 &amp;&amp;
+                                                                                                       minz1 &lt; maxz2 &amp;&amp; maxz1 &gt; minz2)) $-}</FONT></I>
+                   minx1 &lt; maxx2 &amp;&amp; maxx1 &gt; minx2 &amp;&amp;
+                   miny1 &lt; maxy2 &amp;&amp; maxy1 &gt; miny2 &amp;&amp;
+                   minz1 &lt; maxz2 &amp;&amp; maxz1 &gt; minz2
+collidesWith (MultipleVolumes vols) bv = or $ map (collidesWith bv) vols
+collidesWith bv (MultipleVolumes vols) = or $ map (collidesWith bv) vols
+collidesWith <B><FONT COLOR="#A020F0">_ </FONT></B><B><FONT COLOR="#A020F0">_ </FONT></B>= error <B><FONT COLOR="#BC8F8F">&quot;collidesWith not yet implemented for this bounding volume pattern&quot;</FONT></B>
+
+</PRE>
+<HR>
+<A NAME="file2">
+<H1>Client.hs 2/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file1">prev</A>][<A HREF="#file3">next</A>]
+<PRE>
+<B><FONT COLOR="#A020F0">module</FONT></B> Main <B><FONT COLOR="#A020F0">where</FONT></B>
+
+<B><FONT COLOR="#A020F0">import</FONT></B> Network (PortID(PortNumber), connectTo, withSocketsDo)
+<B><FONT COLOR="#A020F0">import</FONT></B> Network.HTTP (simpleHTTP, getRequest, getResponseBody)
+<B><FONT COLOR="#A020F0">import</FONT></B> System (getArgs)
+<B><FONT COLOR="#A020F0">import</FONT></B> Control.Monad (when)
+
+<B><FONT COLOR="#A020F0">import</FONT></B> FRP.Yampa ((&gt;&gt;&gt;), arr) <I><FONT COLOR="#B22222">-- NOTE that this is our modified YAMPA
+</FONT></I><B><FONT COLOR="#A020F0">import</FONT></B> RunGame (glInit, runGame, game)
+<B><FONT COLOR="#A020F0">import</FONT></B> Common (CSMsg'(CSMsgJoin))
+<B><FONT COLOR="#A020F0">import</FONT></B> Object (serverObject, scoreboard, terrain0, renderObsObjState)
+<B><FONT COLOR="#A020F0">import</FONT></B> Net (sendCSMsg)
+
+<I><FONT COLOR="#B22222">-- Client triggers the game with:
+</FONT></I><I><FONT COLOR="#B22222">-- ./Client &lt;player-name&gt; &lt;optional:host-name&gt;
+</FONT></I><I><FONT COLOR="#B22222">-- Use host-name only leaving it out fails.
+</FONT></I><I><FONT COLOR="#B22222">-- Server hostname is kept track by the remote serverTracker
+</FONT></I>main <B><FONT COLOR="#228B22">:: IO ()
+</FONT></B>main = withSocketsDo $ do <I><FONT COLOR="#B22222">-- withSocketsDo is only needed for Windows platform, harmless on others
+</FONT></I>    args &lt;- getArgs
+    when (null args ) $ error <B><FONT COLOR="#BC8F8F">&quot;Wrong syntax.  Syntax: ./Client &lt;play-name&gt;&quot;</FONT></B>
+
+    <B><FONT COLOR="#A020F0">let</FONT></B> playerName = head args
+    serverHost &lt;- <B><FONT COLOR="#A020F0">if</FONT></B> (null (tail args))
+                  <B><FONT COLOR="#A020F0">then</FONT></B> do
+                    <I><FONT COLOR="#B22222">-- Ask remote server tracker which server is on
+</FONT></I>                    r &lt;- simpleHTTP (getRequest <B><FONT COLOR="#BC8F8F">&quot;http://hamsterver.heroku.com/last&quot;</FONT></B>)
+                    sh &lt;- getResponseBody r
+                    <B><FONT COLOR="#A020F0">if</FONT></B> sh == <B><FONT COLOR="#BC8F8F">&quot;NOSERVER&quot;</FONT></B> <B><FONT COLOR="#A020F0">then</FONT></B> error <B><FONT COLOR="#BC8F8F">&quot;No server is open.&quot;</FONT></B> <B><FONT COLOR="#A020F0">else</FONT></B> return sh
+                  <B><FONT COLOR="#A020F0">else</FONT></B>
+                    <I><FONT COLOR="#B22222">-- Game server is specified, then use it
+</FONT></I>                    return (args !! 1)
+    <B><FONT COLOR="#A020F0">let</FONT></B> serverHostFull = serverHost ++ <B><FONT COLOR="#BC8F8F">&quot;.zoo.cs.yale.edu&quot;</FONT></B>
+
+    print (<B><FONT COLOR="#BC8F8F">&quot;Connecting player &quot;</FONT></B> ++ playerName ++ <B><FONT COLOR="#BC8F8F">&quot; to &quot;</FONT></B> ++ serverHostFull)
+
+    <I><FONT COLOR="#B22222">-- Ask server to connect
+</FONT></I>    handle &lt;- connectTo serverHostFull (PortNumber 4444)
+
+    <I><FONT COLOR="#B22222">-- Tell server that this player is joining
+</FONT></I>    sendCSMsg handle $ (-1, CSMsgJoin playerName)
+
+    <I><FONT COLOR="#B22222">-- Prepare some OpenGL intialization and windows management
+</FONT></I>    glInit
+
+    <B><FONT COLOR="#A020F0">let</FONT></B> initialObjs = [serverObject playerName, scoreboard, terrain0]
+
+    <I><FONT COLOR="#B22222">-- TODO: Explain runGame
+</FONT></I>    runGame playerName (Just handle) (game initialObjs &gt;&gt;&gt; (arr (\(ooss,msgs) -&gt; (renderObsObjStates ooss, sendNetworkMsgs handle msgs))))
+  <B><FONT COLOR="#A020F0">where</FONT></B> renderObsObjStates = foldl (\io oos -&gt; io &gt;&gt; renderObsObjState oos) (return ())
+        sendNetworkMsgs h = foldl (\io msg -&gt; io &gt;&gt; sendCSMsg h msg) (return ())
+
+</PRE>
+<HR>
+<A NAME="file3">
+<H1>Collision.hs 3/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file2">prev</A>][<A HREF="#file4">next</A>]
+<PRE>
+<B><FONT COLOR="#A020F0">module</FONT></B> Collision <B><FONT COLOR="#A020F0">where</FONT></B>
+<B><FONT COLOR="#A020F0">import</FONT></B> FRP.Yampa
+<B><FONT COLOR="#A020F0">import</FONT></B> Vec3d
+<B><FONT COLOR="#A020F0">import</FONT></B> Common
+
+<I><FONT COLOR="#B22222">-- Currently assuming equal mass (variable radius should be okay).
+</FONT></I><I><FONT COLOR="#B22222">-- Collisions are fully elastic.
+</FONT></I><I><FONT COLOR="#B22222">{-
+collisionPP :: (Player, Player) -&gt; Maybe (Player, Player)
+collisionPP (player1,player2) =
+    let separation = playerPos player2 ^-^ playerPos player1
+     in if playerRadius player1 + playerRadius player2 &lt; (len $ debug (&quot;Sep: &quot; ++ (show $ len separation) ++ &quot;, Rad = &quot; ++ (show $ playerRadius player1)) $ separation)
+        then Nothing else
+         let dir1 = normalize $ separation
+             dir2 = negateVector dir1
+             (v1,v2) = (playerVel player1, playerVel player2)
+             (v1a,v2a) = (scale dir1 (dir1 `dot` v1), scale dir2 (dir2 `dot` v2))
+             (v1n,v2n) = (v1 ^-^ v1a, v2 ^-^ v2a)
+             (newP1, newP2) = (player1{playerPos=v1a ^+^ v1n}, player2{playerPos= v2a ^+^ v2n})
+          in debug (&quot;Bah&quot;) Just -- $ debug (&quot;Sep...collision occured btw &quot; ++ (show $ playerID newP1) ++ &quot; &amp;&amp; &quot; ++ (show $ playerID newP2))
+                (newP1, newP2)
+-}</FONT></I>
+collisionLP <B><FONT COLOR="#228B22">:: (Laser, Laser, Player) -&gt; Maybe Hit
+</FONT></B>collisionLP (lprev, l, p) =
+    <B><FONT COLOR="#A020F0">let</FONT></B> p1 = laserPos lprev
+        p2 = laserPos l
+        p3 = playerPos p
+        seg = p2 ^-^ p1
+        u = ((p3 ^-^ p1) .* seg) / (seg .* seg)
+        ipt = p1 ^+^ (u *^ seg)
+    <B><FONT COLOR="#A020F0">in</FONT></B> <B><FONT COLOR="#A020F0">if</FONT></B> 0 &lt;= u &amp;&amp; u &lt; 1 &amp;&amp; len (p3 ^-^ ipt) &lt; playerRadius p
+       <B><FONT COLOR="#A020F0">then</FONT></B> Just $ Hit{player1ID=laserpID l, player2ID=playerID p, hitLaserID=laserID l, hitStr=laserStr l}
+       <B><FONT COLOR="#A020F0">else</FONT></B> Nothing
+
+<I><FONT COLOR="#B22222">--collisionPT :: (Player, TerrainElement) -&gt; Maybe Vec3d
+</FONT></I><I><FONT COLOR="#B22222">--collisionPT (p, SimpleTerrain (Quad p1' p2' p3' p4' (Transform offset scl theta phi)) _ _) =
+</FONT></I><I><FONT COLOR="#B22222">--    let appT = (offset +).(scl *^).id.id -- assuming no rotated quads
+</FONT></I><I><FONT COLOR="#B22222">--        (p1,p2,p3,p4) = (appT p1', appT p2', appT p3', appT p4')
+</FONT></I><I><FONT COLOR="#B22222">--     in Nothing
+</FONT></I></PRE>
+<HR>
+<A NAME="file4">
+<H1>Colors.hs 4/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file3">prev</A>][<A HREF="#file5">next</A>]
+<PRE>
+<B><FONT COLOR="#A020F0">module</FONT></B> Colors <B><FONT COLOR="#A020F0">where</FONT></B>
+
+<B><FONT COLOR="#A020F0">import</FONT></B> Data.Array
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.Rendering.OpenGL <B><FONT COLOR="#A020F0">hiding</FONT></B> (Red, Blue, Green, colorTable, Color)
+
+<I><FONT COLOR="#B22222">------------------------------------------------------------------------------
+</FONT></I><I><FONT COLOR="#B22222">-- Color definitions.  PLEASE use 'colorf ColarName'
+</FONT></I><I><FONT COLOR="#B22222">------------------------------------------------------------------------------
+</FONT></I>colorf <B><FONT COLOR="#228B22">:: Color -&gt; Color4 GLfloat
+</FONT></B>colorf x = toF (colorTable ! x)
+
+toF <B><FONT COLOR="#228B22">:: Color4 Int -&gt; Color4 GLfloat
+</FONT></B>toF (Color4 r g b a) = Color4 (fromIntegral r / 255) (fromIntegral g / 255) (fromIntegral b / 255) (fromIntegral a)
+
+
+<I><FONT COLOR="#B22222">-- Pretty arbitrary selection of colours.
+</FONT></I><B><FONT COLOR="#A020F0">data</FONT></B> Color =
+<I><FONT COLOR="#B22222">-- Basic colours.
+</FONT></I>      Black
+    | Blue
+    | Green
+    | Cyan
+    | Red
+    | Magenta
+    | Yellow
+    | White
+<I><FONT COLOR="#B22222">-- Various greys.
+</FONT></I>    | DarkGrey
+    | DimGrey
+    | Grey
+    | LightGrey
+    | DarkSlateGrey
+    | SlateGrey
+    | LightSlateGrey
+<I><FONT COLOR="#B22222">-- Various blues/cyan.
+</FONT></I>    | MidnightBlue
+    | NavyBlue
+    | CornflowerBlue
+    | DarkSlateBlue
+    | SlateBlue
+    | LightSlateBlue
+    | MediumBlue
+    | RoyalBlue
+    | DeepSkyBlue
+    | SteelBlue
+    | CadetBlue
+<I><FONT COLOR="#B22222">-- Various greens/olive greens/khaki.
+</FONT></I>    | DarkGreen
+    | DarkOliveGreen
+    | SeaGreen
+    | MediumSeaGreen
+    | LawnGreen
+    | LimeGreen
+    | ForestGreen
+    | OliveDrab
+    | DarkKhaki
+    | Khaki
+<I><FONT COLOR="#B22222">-- Various oranges/browns.
+</FONT></I>    | Goldenrod
+    | DarkGoldenrod
+    | SaddleBrown
+    | Orange
+<I><FONT COLOR="#B22222">-- Various violets/purples.
+</FONT></I>    | Maroon
+    | MediumVioletRed
+    | VioletRed
+    | Violet
+    | Plum
+    | Orchid
+    | MediumOrchid
+    | DarkOrchid
+    | BlueViolet
+    | Purple
+    <B><FONT COLOR="#A020F0">deriving</FONT></B> (Eq, Ord, Bounded, Enum, Ix)
+
+colorTable <B><FONT COLOR="#228B22">:: Array Colors.Color (Color4 Int)
+</FONT></B>colorTable = array (minBound, maxBound) colorList
+ <B><FONT COLOR="#A020F0">where</FONT></B> 
+  <I><FONT COLOR="#B22222">--colorList :: [(Color, Color4 t)]
+</FONT></I>  colorList =
+    [   <I><FONT COLOR="#B22222">-- Basic colours.
+</FONT></I>    (Black,			Color4   0   0   0 1),
+	(Blue,			Color4   0   0 255 1),
+	(Green,			Color4   0 255   0 1),
+	(Cyan,			Color4   0 255 255 1),
+	(Red,			Color4 255   0   0  1),
+	(Magenta,		Color4 255   0 255 1),
+	(Yellow,		Color4 255 255   0 1),
+	(White,			Color4 255 255 255 1),
+
+	<I><FONT COLOR="#B22222">-- Various greys.
+</FONT></I>	(DarkGrey,		Color4  64  64  64 1),
+	(DimGrey,		Color4 105 105 105 1),
+	(Grey,			Color4 190 190 190 1),
+	(LightGrey,		Color4 211 211 211 1),
+	(DarkSlateGrey,		Color4  47  79  79 1),
+	(SlateGrey,		Color4 112 128 144 1),
+	(LightSlateGrey,	Color4 119 136 153 1),
+
+	<I><FONT COLOR="#B22222">-- Various blues/cyan.
+</FONT></I>	(MidnightBlue,		Color4  25  25 112 1),
+	(NavyBlue,		Color4   0   0 128 1),
+	(CornflowerBlue,	Color4 100 149 237 1),
+	(DarkSlateBlue,		Color4  72  61 139 1),
+	(SlateBlue,		Color4 106  90 205 1),
+	(LightSlateBlue,	Color4 132 112 255 1),
+	(MediumBlue,		Color4   0   0 205 1),
+	(RoyalBlue,		Color4  65 105 225 1),
+	(DeepSkyBlue,		Color4   0 191 255 1),
+	(SteelBlue,		Color4  70 130 180 1),
+	(CadetBlue,		Color4  95 158 160 1),
+
+	<I><FONT COLOR="#B22222">-- Various greens/olive greens/khaki.
+</FONT></I>	(DarkGreen,		Color4   0 100   0 1),
+	(DarkOliveGreen,	Color4  85 107  47 1),
+	(SeaGreen,		Color4  46 139  87 1),
+	(MediumSeaGreen,	Color4  60 179 113 1),
+	(LawnGreen,		Color4 124 252   0 1),
+	(LimeGreen,		Color4  50 205  50 1),
+	(ForestGreen,		Color4  34 139  34 1),
+	(OliveDrab,		Color4 107 142  35 1),
+	(DarkKhaki,		Color4 189 183 107 1),
+	(Khaki,			Color4 240 230 140 1),
+
+	<I><FONT COLOR="#B22222">-- Various oranges/browns.
+</FONT></I>	(Goldenrod,		Color4 218 165  32 1),
+	(DarkGoldenrod,		Color4 184 134  11 1),
+	(SaddleBrown,		Color4 139  69  19 1),
+	(Orange,		Color4 255 165   0 1),
+
+	<I><FONT COLOR="#B22222">-- Various violets/purples.
+</FONT></I>	(Maroon,		Color4 176  48  96 1),
+	(MediumVioletRed,	Color4 199  21 133 1),
+	(VioletRed,		Color4 208  32 144 1),
+	(Violet,		Color4 238 130 238 1),
+	(Plum,			Color4 221 160 221 1),
+	(Orchid,		Color4 218 112 214 1),
+	(MediumOrchid,		Color4 186  85 211 1),
+	(DarkOrchid,		Color4 153  50 204 1),
+	(BlueViolet,		Color4 138  43 226 1),
+	(Purple,		Color4 160  32 240 1)
+    ]
+</PRE>
+<HR>
+<A NAME="file5">
+<H1>Common.hs 5/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file4">prev</A>][<A HREF="#file6">next</A>]
+<PRE>
+<B><FONT COLOR="#A020F0">module</FONT></B> Common <B><FONT COLOR="#A020F0">where</FONT></B>
+<B><FONT COLOR="#A020F0">import</FONT></B> Vec3d
+<B><FONT COLOR="#A020F0">import</FONT></B> FRP.Yampa
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.Rendering.OpenGL
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.Rendering.OpenGL.GL.CoordTrans
+<B><FONT COLOR="#A020F0">import</FONT></B> Data.IORef
+<B><FONT COLOR="#A020F0">import</FONT></B> System.IO
+<B><FONT COLOR="#A020F0">import</FONT></B> System.IO.Unsafe
+
+debug <B><FONT COLOR="#228B22">:: (Show a) =&gt; a -&gt; t -&gt; t
+</FONT></B>debug s x = unsafePerformIO (print s) `seq` x
+debugShow, debugShow2 <B><FONT COLOR="#228B22">:: (Show a) =&gt; a -&gt; a
+</FONT></B>debugShow x = debug (<B><FONT COLOR="#BC8F8F">&quot;debug: &quot;</FONT></B> ++ show x) x <I><FONT COLOR="#B22222">-- only for SHOWable objects
+</FONT></I>debugShow2 x = debug (show x) x <I><FONT COLOR="#B22222">-- only for SHOWable objects
+</FONT></I>debugMaybe <B><FONT COLOR="#228B22">:: String -&gt; t -&gt; t
+</FONT></B>debugMaybe s x = <B><FONT COLOR="#A020F0">if</FONT></B> s /= <B><FONT COLOR="#BC8F8F">&quot;&quot;</FONT></B> <B><FONT COLOR="#A020F0">then</FONT></B> debug s x <B><FONT COLOR="#A020F0">else</FONT></B> x
+
+<I><FONT COLOR="#B22222">-- The following is for debugging purposes only
+</FONT></I><I><FONT COLOR="#B22222">--instance Show a =&gt; Show (Event a) where
+</FONT></I><I><FONT COLOR="#B22222">--    show NoEvent = &quot;NoEvent&quot;
+</FONT></I><I><FONT COLOR="#B22222">--    show (Event a) = &quot;Event &quot; ++ (show a)
+</FONT></I> <I><FONT COLOR="#B22222">----------------------------------------------
+</FONT></I>
+<I><FONT COLOR="#B22222">-- width MUST be divisible by 4
+</FONT></I><I><FONT COLOR="#B22222">-- height MUST be divisible by 3
+</FONT></I>
+fullscreen <B><FONT COLOR="#228B22">:: Bool
+</FONT></B>fullscreen = False
+
+width, height <B><FONT COLOR="#228B22">:: GLint
+</FONT></B>(width,height) = <B><FONT COLOR="#A020F0">if</FONT></B> fullscreen <B><FONT COLOR="#A020F0">then</FONT></B> (1600,1200) <B><FONT COLOR="#A020F0">else</FONT></B> (640,480)
+
+widthf, heightf <B><FONT COLOR="#228B22">:: GLdouble
+</FONT></B>widthf = fromRational $ toRational width
+heightf = fromRational $ toRational height
+
+centerCoordX, centerCoordY <B><FONT COLOR="#228B22">:: Float
+</FONT></B>centerCoordX = fromIntegral width / 2
+centerCoordY = fromIntegral height / 2
+
+sensitivity <B><FONT COLOR="#228B22">:: Float
+</FONT></B>sensitivity = pi/(fromIntegral $ width `div` 4)
+
+initFrustum <B><FONT COLOR="#228B22">:: IO ()
+</FONT></B>initFrustum = do
+    loadIdentity
+    <B><FONT COLOR="#A020F0">let</FONT></B> near   = 0.8
+        far    = 1000
+        right  = 0.4
+        top    = 0.3
+    frustum (-right) right (-top) top near far
+	<I><FONT COLOR="#B22222">-- TODO: explain this
+</FONT></I>    lookAt (Vertex3 0 0 0) (Vertex3 1 0 0) (Vector3 0 0 1)
+
+<I><FONT COLOR="#B22222">--bound lo hi a = max lo $ min hi a
+</FONT></I>
+int <B><FONT COLOR="#228B22">:: (Num b, Integral a) =&gt; a -&gt; b
+</FONT></B>int = fromInteger.toInteger
+
+<B><FONT COLOR="#A020F0">type</FONT></B> ID = Int
+<B><FONT COLOR="#A020F0">type</FONT></B> Position3 = Vec3d
+<B><FONT COLOR="#A020F0">type</FONT></B> Velocity3 = Vec3d
+<B><FONT COLOR="#A020F0">type</FONT></B> Acceleration3 = Vec3d
+<B><FONT COLOR="#A020F0">type</FONT></B> Color3 = Vec3d
+
+<I><FONT COLOR="#B22222">-- data PowerUp = XRay
+</FONT></I>
+
+<B><FONT COLOR="#A020F0">data</FONT></B> Player = Player {
+    playerID <B><FONT COLOR="#228B22">:: !ID,
+</FONT></B>    playerPos <B><FONT COLOR="#228B22">:: !Position3,
+</FONT></B>    playerVel <B><FONT COLOR="#228B22">:: !Velocity3,
+</FONT></B>    playerAcc <B><FONT COLOR="#228B22">:: !Acceleration3,
+</FONT></B>    playerView <B><FONT COLOR="#228B22">:: !(Float,Float), -- theta, phi
+</FONT></B>    playerRadius <B><FONT COLOR="#228B22">:: !Float,
+</FONT></B>    playerLife <B><FONT COLOR="#228B22">:: !Float,
+</FONT></B>    playerEnergy <B><FONT COLOR="#228B22">:: !Float,
+</FONT></B>    playerColor <B><FONT COLOR="#228B22">:: !Common.Color3,
+</FONT></B>    playerName <B><FONT COLOR="#228B22">:: !String
+</FONT></B>}
+    <B><FONT COLOR="#A020F0">deriving</FONT></B> (Show, Eq)
+
+<B><FONT COLOR="#A020F0">data</FONT></B> Laser = Laser {
+    laserID <B><FONT COLOR="#228B22">:: !ID,
+</FONT></B>    laserpID <B><FONT COLOR="#228B22">:: !ID,
+</FONT></B>    laserPos <B><FONT COLOR="#228B22">:: !Position3,
+</FONT></B>    laserVel <B><FONT COLOR="#228B22">:: !Velocity3,
+</FONT></B>    laserStr <B><FONT COLOR="#228B22">:: !Float,
+</FONT></B>    laserColor <B><FONT COLOR="#228B22">:: !Common.Color3
+</FONT></B>}
+    <B><FONT COLOR="#A020F0">deriving</FONT></B> (Show, Eq)
+
+<B><FONT COLOR="#A020F0">data</FONT></B> Hit = Hit {
+    player1ID <B><FONT COLOR="#228B22">:: !ID,
+</FONT></B>    player2ID <B><FONT COLOR="#228B22">:: !ID,
+</FONT></B>    hitLaserID <B><FONT COLOR="#228B22">:: !ID,
+</FONT></B>    hitStr <B><FONT COLOR="#228B22">:: !Float
+</FONT></B>}
+    <B><FONT COLOR="#A020F0">deriving</FONT></B> (Show, Eq)
+
+<I><FONT COLOR="#B22222">-- Particle Position Depth
+</FONT></I><B><FONT COLOR="#A020F0">data</FONT></B> Particle = Particle {
+    particlePos <B><FONT COLOR="#228B22">:: !Position3,
+</FONT></B>    particleVel <B><FONT COLOR="#228B22">:: !Vec3d,
+</FONT></B>    particleEnergy <B><FONT COLOR="#228B22">:: !Float,
+</FONT></B>    particleDepth <B><FONT COLOR="#228B22">:: !Int
+</FONT></B>}
+  <B><FONT COLOR="#A020F0">deriving</FONT></B> (Show, Eq)
+
+<I><FONT COLOR="#B22222">-- Not in use now. Instead, model as a list of ObjectSFs (representing particles). Makes simpler
+</FONT></I><B><FONT COLOR="#A020F0">data</FONT></B> ParticleSystem = ParticleSystem {
+    particlePV <B><FONT COLOR="#228B22">:: [(Vec3d,Vec3d)],
+</FONT></B>    particlesMax <B><FONT COLOR="#228B22">:: Float,
+</FONT></B>    particlesEnergy <B><FONT COLOR="#228B22">:: !Float
+</FONT></B>}
+  <B><FONT COLOR="#A020F0">deriving</FONT></B> (Show, Eq)
+
+<B><FONT COLOR="#A020F0">data</FONT></B> ScoreBoard = ScoreBoard {
+    sbScores <B><FONT COLOR="#228B22">:: ![(Int, Int)] -- PlayerID and Score
+</FONT></B>}
+    <B><FONT COLOR="#A020F0">deriving</FONT></B> (Show, Eq)
+
+<B><FONT COLOR="#A020F0">data</FONT></B> PowerUpType = StrengthenLaser !Float
+                 | XRayVision
+                 | DecreaseRadius !Float
+    <B><FONT COLOR="#A020F0">deriving</FONT></B> (Show, Eq)
+
+<B><FONT COLOR="#A020F0">data</FONT></B> PowerUp = PowerUp {
+    powerupPos <B><FONT COLOR="#228B22">:: !Position3,
+</FONT></B>    powerupRadius <B><FONT COLOR="#228B22">:: !Float,
+</FONT></B>    powerupType <B><FONT COLOR="#228B22">:: !PowerUpType
+</FONT></B>}
+    <B><FONT COLOR="#A020F0">deriving</FONT></B> (Show, Eq)
+
+<I><FONT COLOR="#B22222">-- Values for initializing objects
+</FONT></I>defRadius <B><FONT COLOR="#228B22">:: Float
+</FONT></B>defRadius = 1.5
+
+maxLife <B><FONT COLOR="#228B22">:: Float
+</FONT></B>maxLife = 100
+
+maxEnergy <B><FONT COLOR="#228B22">:: Float
+</FONT></B>maxEnergy = 100
+
+defLaserStr <B><FONT COLOR="#228B22">:: Float
+</FONT></B>defLaserStr = 10
+
+<B><FONT COLOR="#A020F0">data</FONT></B> Obj = PlayerObj !Player
+         | LaserObj !Laser
+    <B><FONT COLOR="#A020F0">deriving</FONT></B> (Show, Eq)
+
+<B><FONT COLOR="#A020F0">data</FONT></B> SCMsg' = SCMsgInitialize !Player
+            | SCMsgPlayer !Player        <I><FONT COLOR="#B22222">-- For updating pos
+</FONT></I>            | SCMsgHit !Hit
+            | SCMsgSpawn !Obj            <I><FONT COLOR="#B22222">-- For creating new ones
+</FONT></I>            | SCMsgFrag !Hit             <I><FONT COLOR="#B22222">-- For telling everyone player1 killed player2
+</FONT></I>            | SCMsgRemove !Int             <I><FONT COLOR="#B22222">-- Remove exiting player    
+</FONT></I>    <B><FONT COLOR="#A020F0">deriving</FONT></B> (Show, Eq)
+
+<B><FONT COLOR="#A020F0">data</FONT></B> CSMsg' = CSMsgPlayer !Player        <I><FONT COLOR="#B22222">-- For when velocity changes
+</FONT></I>            | CSMsgUpdate !Player        <I><FONT COLOR="#B22222">-- For periodic updates
+</FONT></I>            | CSMsgLaser !Laser          <I><FONT COLOR="#B22222">-- For spawning
+</FONT></I>            | CSMsgKillLaser !ID
+            | CSMsgDeath !Hit            <I><FONT COLOR="#B22222">-- ID of killer and killed
+</FONT></I>            | CSMsgExit !String          <I><FONT COLOR="#B22222">-- Name of player that exits, requires unique player names
+</FONT></I>            | CSMsgJoin !String          <I><FONT COLOR="#B22222">-- Name of player that enters the game
+</FONT></I>    <B><FONT COLOR="#A020F0">deriving</FONT></B> (Show, Eq)
+
+<B><FONT COLOR="#A020F0">type</FONT></B> SCMsg = (ID, SCMsg')   <I><FONT COLOR="#B22222">-- Server to Client, i.e. runs on Client
+</FONT></I><B><FONT COLOR="#A020F0">type</FONT></B> CSMsg = (ID, CSMsg')   <I><FONT COLOR="#B22222">-- Client to Server, i.e. runs on Server
+</FONT></I>
+dummySCMsg <B><FONT COLOR="#228B22">:: SCMsg
+</FONT></B>dummySCMsg = (-1,SCMsgHit (Hit {player1ID= -1,player2ID= -1,hitLaserID= -1,hitStr= -1}))
+
+dummyCSMsg <B><FONT COLOR="#228B22">:: CSMsg
+</FONT></B>dummyCSMsg = (-1,CSMsgExit <B><FONT COLOR="#BC8F8F">&quot;dummy&quot;</FONT></B>)
+
+dummyPlayer <B><FONT COLOR="#228B22">:: Player
+</FONT></B>dummyPlayer = Player {playerID = 0,
+                      playerPos = zeroVector,
+                      playerVel = zeroVector,
+                      playerAcc = zeroVector,
+                      playerView = (0,0),
+                      playerRadius = defRadius,
+                      playerLife = maxLife,
+                      playerEnergy = maxEnergy,
+                      playerColor = Vec3d(0.5, 0.2, 0.7),
+                      playerName = <B><FONT COLOR="#BC8F8F">&quot;Dummy&quot;</FONT></B>}
+
+<I><FONT COLOR="#B22222">-- Information about the global state of the game
+</FONT></I><B><FONT COLOR="#A020F0">data</FONT></B> GameData = GameData {
+    startTime <B><FONT COLOR="#228B22">:: IORef Double,
+</FONT></B>    lastDrawTime <B><FONT COLOR="#228B22">:: IORef Double,
+</FONT></B>    numFrames <B><FONT COLOR="#228B22">:: IORef Int
+</FONT></B>}
+
+<B><FONT COLOR="#A020F0">class</FONT></B> Stringifiable a <B><FONT COLOR="#A020F0">where</FONT></B>
+    stringify <B><FONT COLOR="#228B22">:: a -&gt; String
+</FONT></B>    destringify <B><FONT COLOR="#228B22">:: String -&gt; a
+</FONT></B>
+<I><FONT COLOR="#B22222">-- Number of milliseconds between redraws
+</FONT></I>redrawTimer <B><FONT COLOR="#228B22">:: Double
+</FONT></B>redrawTimer = 0.005
+
+<I><FONT COLOR="#B22222">-- Number of milliseconds between mouseUpdates
+</FONT></I>mouseTimer <B><FONT COLOR="#228B22">:: Double
+</FONT></B>mouseTimer = 0.001
+
+printFlush <B><FONT COLOR="#228B22">:: String -&gt; IO ()
+</FONT></B>printFlush s = do
+    print s
+    hFlush stdout
+    hFlush stderr
+
+<I><FONT COLOR="#B22222">{-
+ - Removing, duplicate function 'event'
+maybeEvent :: b -&gt; (a -&gt; b) -&gt; Event a -&gt; b
+maybeEvent n _ NoEvent = n
+maybeEvent _ f (Event x) = f x
+-}</FONT></I>
+
+doIOevent <B><FONT COLOR="#228B22">:: Event (IO ()) -&gt; IO ()
+</FONT></B>doIOevent (Event io) = io
+doIOevent NoEvent = return ()
+
+vecToColor <B><FONT COLOR="#228B22">:: Vec3d -&gt; Color4 GLfloat
+</FONT></B>vecToColor (Vec3d (x,y,z)) = Color4 x y z 1
+
+computeColor <B><FONT COLOR="#228B22">:: Player -&gt; Color4 GLfloat
+</FONT></B>computeColor (Player {playerColor = Vec3d (r,g,b),
+                      playerLife = life}) = vecToColor (Vec3d ((1 - life/maxLife) * (1-r) + r, g, b))
+
+detectChangeSF <B><FONT COLOR="#228B22">:: Eq a =&gt; SF (a, a) (Event a, a)
+</FONT></B>detectChangeSF = arr (\(new,old) -&gt; (<B><FONT COLOR="#A020F0">if</FONT></B> new == old <B><FONT COLOR="#A020F0">then</FONT></B> NoEvent <B><FONT COLOR="#A020F0">else</FONT></B> Event new, new))
+
+
+<I><FONT COLOR="#B22222">-- selfKill e = (print &quot;Socket closed.&quot; &gt;&gt; myThreadId &gt;&gt;= killThread &gt;&gt; return ())
+</FONT></I>               <I><FONT COLOR="#B22222">-- else ioError e)
+</FONT></I>
+<I><FONT COLOR="#B22222">-- if you change this, also go to file ./server to change the rm script to remove this file after server closes
+</FONT></I><I><FONT COLOR="#B22222">-- hostName = &quot;.host_name&quot;
+</FONT></I>
+</PRE>
+<HR>
+<A NAME="file6">
+<H1>GameCore.hs 6/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file5">prev</A>][<A HREF="#file7">next</A>]
+<PRE>
+<I><FONT COLOR="#B22222">{- Most of the code here (except the collision detection) is adapted from Section 5.5 of the Yampa Arcade paper -}</FONT></I>
+
+<B><FONT COLOR="#A020F0">module</FONT></B> GameCore <B><FONT COLOR="#A020F0">where</FONT></B>
+
+<B><FONT COLOR="#A020F0">import</FONT></B> IdentityList
+<B><FONT COLOR="#A020F0">import</FONT></B> FRP.Yampa
+<B><FONT COLOR="#A020F0">import</FONT></B> Object
+<B><FONT COLOR="#A020F0">import</FONT></B> GameInput
+<B><FONT COLOR="#A020F0">import</FONT></B> BoundingVolume
+<B><FONT COLOR="#A020F0">import</FONT></B> Data.List
+
+<I><FONT COLOR="#B22222">{- dpSwitch :: Functor col =&gt;       (col is a collection)
+     (forall sf . (a -&gt; col sf -&gt; col (b, sf))) -&gt;
+     col (SF b c) -&gt;
+     SF (a, col c) (Event d) -&gt;
+     (col (SF b c) -&gt; d -&gt; SF a (col c)) -&gt;
+     SF a (col c)
+-}</FONT></I>
+
+gameCore <B><FONT COLOR="#228B22">:: IL ObjectSF -&gt; SF (GameInput, IL ObjOutput) (IL ObjOutput)
+</FONT></B>gameCore initObjs = dpSwitch route initObjs (arr killOrSpawn &gt;&gt;&gt; notYet) (\sfs f -&gt; gameCore (f sfs))
+
+route <B><FONT COLOR="#228B22">:: (GameInput, IL ObjOutput) -&gt; IL sf -&gt; IL (ObjInput, sf)
+</FONT></B>route (gi,oos) objs = mapIL (route' oos) objs
+    <B><FONT COLOR="#A020F0">where</FONT></B> route' oos (k,obj) = (ObjInput {oiGameInput = gi, oiColliding = <B><FONT COLOR="#A020F0">case</FONT></B> getIL k oos <B><FONT COLOR="#A020F0">of</FONT></B>
+                                                                              Just oo -&gt; find (collidesWith (ooBounds oo) . ooBounds) $ map snd $ assocsIL $ deleteIL k oos
+                                                                              Nothing -&gt; Nothing}, obj)
+
+killOrSpawn <B><FONT COLOR="#228B22">:: (a, IL ObjOutput) -&gt; Event (IL ObjectSF -&gt; IL ObjectSF)
+</FONT></B>killOrSpawn (<B><FONT COLOR="#A020F0">_,oos) </FONT></B>= Event $ foldl (.) id funcs
+    <B><FONT COLOR="#A020F0">where</FONT></B> funcs = map (\(k,oo) -&gt; ((event id (\<B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; deleteIL k)) (ooKillReq oo)) . ((foldl (.) id . map insertIL) (ooSpawnReq oo))) (assocsIL oos)
+</PRE>
+<HR>
+<A NAME="file7">
+<H1>GameInput.hs 7/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file6">prev</A>][<A HREF="#file8">next</A>]
+<PRE>
+<B><FONT COLOR="#A020F0">module</FONT></B> GameInput <B><FONT COLOR="#A020F0">where</FONT></B>
+
+<B><FONT COLOR="#A020F0">import</FONT></B> FRP.Yampa
+<B><FONT COLOR="#A020F0">import</FONT></B> Common
+<B><FONT COLOR="#A020F0">import</FONT></B> Data.IORef
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.Rendering.OpenGL
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.UI.GLFW as GLFW
+<B><FONT COLOR="#A020F0">import</FONT></B> Control.Monad
+
+<I><FONT COLOR="#B22222">--type MyReactHandle = ReactHandle GameInput (IO (), IO ())
+</FONT></I>
+<B><FONT COLOR="#A020F0">data</FONT></B> GameInput = GameInput {key <B><FONT COLOR="#228B22">:: Maybe Key,
+</FONT></B>                            keyState <B><FONT COLOR="#228B22">:: Maybe KeyButtonState,
+</FONT></B>                            leftClick <B><FONT COLOR="#228B22">:: Bool,
+</FONT></B>                            mWheel <B><FONT COLOR="#228B22">:: Int,
+</FONT></B>                            posMouse <B><FONT COLOR="#228B22">:: Position,
+</FONT></B>                            message <B><FONT COLOR="#228B22">:: SCMsg,
+</FONT></B>                            rightClick <B><FONT COLOR="#228B22">:: Bool}
+</FONT></B>    <B><FONT COLOR="#A020F0">deriving</FONT></B> Show
+
+<I><FONT COLOR="#B22222">--the following OpenGL types are listed here for convenience
+</FONT></I><I><FONT COLOR="#B22222">--data Key = Char Char | SpecialKey SpecialKey | MouseButton MouseButton
+</FONT></I><I><FONT COLOR="#B22222">--data KeyState = Down | Up
+</FONT></I><I><FONT COLOR="#B22222">--data Modifiers = Modifiers {shift :: KeyState, ctrl :: KeyState, alt :: KeyState}
+</FONT></I><I><FONT COLOR="#B22222">--data Position = Position !GLint !GLint
+</FONT></I>
+keyboardCallback <B><FONT COLOR="#228B22">:: ReactChan GameInput -&gt; IORef Bool -&gt; Key -&gt; KeyButtonState -&gt; IO ()
+</FONT></B>keyboardCallback <B><FONT COLOR="#A020F0">_ </FONT></B>quit (SpecialKey ESC) Press = writeIORef quit True
+keyboardCallback rch <B><FONT COLOR="#A020F0">_ </FONT></B>k ks = reactWriteChan rch (\gi -&gt; gi {key = Just k, keyState = Just ks}) True
+
+mouseClickCallback <B><FONT COLOR="#228B22">:: ReactChan GameInput -&gt; MouseButton -&gt; KeyButtonState -&gt; IO ()
+</FONT></B>mouseClickCallback rch ButtonLeft ks = reactWriteChan rch (\gi -&gt; gi {leftClick = (ks == Press)}) True
+mouseClickCallback rch ButtonRight ks = mouseWheel $= 0 &gt;&gt; reactWriteChan rch (\gi -&gt; gi {rightClick = (ks == Press), mWheel = 0}) True
+mouseClickCallback rch <B><FONT COLOR="#A020F0">_ </FONT></B><B><FONT COLOR="#A020F0">_ </FONT></B>= reactWriteChan rch (\gi -&gt; gi) True
+
+<I><FONT COLOR="#B22222">-- Make sure wheel value does not go to far
+</FONT></I><I><FONT COLOR="#B22222">-- default range is 0 -&gt; 4294967295, so we only use first 4 and last 4 values
+</FONT></I>mWheelCallback <B><FONT COLOR="#228B22">:: ReactChan GameInput -&gt; Int -&gt; IO ()
+</FONT></B>mWheelCallback rch i | i == 9  = mouseWheel $= 8
+                     | i == 4294967287 = mouseWheel $= 4294967288 <I><FONT COLOR="#B22222">-- rep -4
+</FONT></I>                     | otherwise = reactWriteChan rch (\gi -&gt; gi {mWheel = i}) True
+
+mouseMotionCallback <B><FONT COLOR="#228B22">:: ReactChan GameInput -&gt; IORef Double -&gt; IORef Int -&gt; Position -&gt; IO ()
+</FONT></B>mouseMotionCallback rch timerRef yPrev (Position x y) = do
+    t' &lt;- readIORef timerRef
+    t &lt;- get GLFW.time
+    when (t-t' &gt;= mouseTimer) $ do
+        yp' &lt;- readIORef yPrev
+        <B><FONT COLOR="#A020F0">let</FONT></B> yp = fromIntegral yp'
+            <I><FONT COLOR="#B22222">-- NOTE: this wraps mouse position horizontally well but not well if we keep pushing mouse cursor up
+</FONT></I>            p = Position (<B><FONT COLOR="#A020F0">if</FONT></B> x &lt; (width `div` 4) <B><FONT COLOR="#A020F0">then</FONT></B> x+(width `div` 2) <B><FONT COLOR="#A020F0">else</FONT></B> <B><FONT COLOR="#A020F0">if</FONT></B> x &gt;= (3*width `div` 4) <B><FONT COLOR="#A020F0">then</FONT></B> x - (width `div` 2) <B><FONT COLOR="#A020F0">else</FONT></B> x)
+                         (<B><FONT COLOR="#A020F0">if</FONT></B> y &lt; (height `div` 3) <B><FONT COLOR="#A020F0">then</FONT></B> (height `div` 3) <B><FONT COLOR="#A020F0">else</FONT></B> <B><FONT COLOR="#A020F0">if</FONT></B> y &gt;= (2*height `div` 3) <B><FONT COLOR="#A020F0">then</FONT></B> (2*height `div` 3 - 1) <B><FONT COLOR="#A020F0">else</FONT></B> y)
+            needsUpdate = x &lt; width `div` 4 || x &gt;= 3*width `div` 4 || (y &lt; height `div` 3 &amp;&amp; y &gt; yp) || (y &gt;= 2*height `div` 3 &amp;&amp; y &lt; yp)
+                                    || y &lt; height `div` 6 || y &gt;= 5 * height `div` 6
+            performUpdate = do
+                mousePos $= p
+                return ()
+        writeIORef yPrev $ fromIntegral y
+        when needsUpdate performUpdate
+        reactWriteChan rch (\gi -&gt; gi {posMouse = p}) True
+    writeIORef timerRef t
+</PRE>
+<HR>
+<A NAME="file8">
+<H1>IdentityList.hs 8/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file7">prev</A>][<A HREF="#file9">next</A>]
+<PRE>
+<I><FONT COLOR="#B22222">{-# LANGUAGE UndecidableInstances #-}</FONT></I>
+<B><FONT COLOR="#A020F0">module</FONT></B> IdentityList <B><FONT COLOR="#A020F0">where</FONT></B>
+
+<B><FONT COLOR="#A020F0">import</FONT></B> FRP.Yampa
+
+<B><FONT COLOR="#A020F0">type</FONT></B> ILKey = Int
+
+<B><FONT COLOR="#A020F0">data</FONT></B> IL a = IL {
+    ilNextKey <B><FONT COLOR="#228B22">:: ILKey,
+</FONT></B>    ilAssocs <B><FONT COLOR="#228B22">:: [(ILKey, a)]
+</FONT></B>}   <B><FONT COLOR="#A020F0">deriving</FONT></B> (Show, Eq)
+
+<B><FONT COLOR="#A020F0">instance</FONT></B> Functor IL <B><FONT COLOR="#A020F0">where</FONT></B>
+    fmap f (IL {ilNextKey = nk, ilAssocs = assocs}) =
+        IL {ilNextKey = nk, ilAssocs = map (\(i,a) -&gt; (i,f a)) assocs}
+        
+<B><FONT COLOR="#A020F0">instance</FONT></B> VectorSpace s a =&gt; VectorSpace (IL s) a <B><FONT COLOR="#A020F0">where</FONT></B>
+    zeroVector = emptyIL
+    (*^) k = fmap (k *^)
+    (^/) vs k = fmap (^/ k) vs
+    negateVector = fmap negateVector
+    (^+^) = zipWithIL (^+^) (const Nothing) Just    <I><FONT COLOR="#B22222">-- This is a total hack to make it work with Yampa's integral definition!
+</FONT></I>    (^-^) = error <B><FONT COLOR="#BC8F8F">&quot;(^-^) called on VectorSpace (IL s) a&quot;</FONT></B>
+    dot <B><FONT COLOR="#A020F0">_ </FONT></B><B><FONT COLOR="#A020F0">_ </FONT></B>= error <B><FONT COLOR="#BC8F8F">&quot;dot called on VectorSpace (IL s) a&quot;</FONT></B>
+    norm <B><FONT COLOR="#A020F0">_ </FONT></B>= error <B><FONT COLOR="#BC8F8F">&quot;norm called on VectorSpace (IL s) a&quot;</FONT></B>
+    normalize <B><FONT COLOR="#A020F0">_ </FONT></B>= error <B><FONT COLOR="#BC8F8F">&quot;normalize called on VectorSpace (IL s) a&quot;</FONT></B>
+
+emptyIL <B><FONT COLOR="#228B22">:: IL a
+</FONT></B>emptyIL = IL {ilNextKey = 0, ilAssocs = []}
+
+insertIL <B><FONT COLOR="#228B22">:: a -&gt; IL a -&gt; IL a
+</FONT></B>insertIL a (IL {ilNextKey = nk, ilAssocs = assocs}) = IL {ilNextKey = nk+1, ilAssocs = (nk,a):assocs}
+
+listToIL <B><FONT COLOR="#228B22">:: [a] -&gt; IL a
+</FONT></B>listToIL as = foldl (\il a -&gt; insertIL a il) emptyIL as
+
+elemsIL <B><FONT COLOR="#228B22">:: IL a -&gt; [a]
+</FONT></B>elemsIL = reverse . map snd . ilAssocs
+
+assocsIL <B><FONT COLOR="#228B22">:: IL a -&gt; [(ILKey,a)]
+</FONT></B>assocsIL = ilAssocs
+
+getIL <B><FONT COLOR="#228B22">:: ILKey -&gt; IL a -&gt; Maybe a
+</FONT></B>getIL k il = getIL' k $ ilAssocs il
+    <B><FONT COLOR="#A020F0">where</FONT></B> getIL' k ((k',v):rest) = <B><FONT COLOR="#A020F0">if</FONT></B> k == k' <B><FONT COLOR="#A020F0">then</FONT></B> Just v <B><FONT COLOR="#A020F0">else</FONT></B> getIL' k rest
+          getIL' k [] = Nothing
+
+deleteIL <B><FONT COLOR="#228B22">:: ILKey -&gt; IL a -&gt; IL a
+</FONT></B>deleteIL k il = il {ilAssocs = deleteIL' k (ilAssocs il)}
+    <B><FONT COLOR="#A020F0">where</FONT></B> deleteIL' k ((k',v):rest) = <B><FONT COLOR="#A020F0">if</FONT></B> k == k' <B><FONT COLOR="#A020F0">then</FONT></B> rest <B><FONT COLOR="#A020F0">else</FONT></B> (k',v) : deleteIL' k rest
+          deleteIL' k [] = error <B><FONT COLOR="#BC8F8F">&quot;Attempted to delete a non-existent element from an IL.&quot;</FONT></B>
+          
+mapIL <B><FONT COLOR="#228B22">:: ((ILKey,a) -&gt; b) -&gt; IL a -&gt; IL b
+</FONT></B>mapIL f il = il {ilAssocs = map (\(k,a) -&gt; (k, f (k,a))) $ ilAssocs il}
+
+filterIL <B><FONT COLOR="#228B22">:: (a -&gt; Bool) -&gt; IL a -&gt; IL a
+</FONT></B>filterIL f il = il {ilAssocs = filter (\(<B><FONT COLOR="#A020F0">_,a) </FONT></B>-&gt; f a) $ ilAssocs il}
+
+zipWithIL <B><FONT COLOR="#228B22">:: (a -&gt; b -&gt; c) -&gt; (a -&gt; Maybe c) -&gt; (b -&gt; Maybe c) -&gt; IL a -&gt; IL b -&gt; IL c
+</FONT></B>zipWithIL f fa fb ila ilb = <B><FONT COLOR="#A020F0">let</FONT></B> assocs = zipWithIL' f fa fb (ilAssocs ila) (ilAssocs ilb)
+                            <B><FONT COLOR="#A020F0">in</FONT></B> IL {ilNextKey = length assocs, ilAssocs = assocs}
+    <B><FONT COLOR="#A020F0">where</FONT></B> zipWithIL' f fa fb la@((ka,a):as) lb@((kb,b):bs) = 
+                <B><FONT COLOR="#A020F0">case</FONT></B> compare ka kb <B><FONT COLOR="#A020F0">of</FONT></B>
+                    EQ -&gt; (ka, f a b) : (zipWithIL' f fa fb as bs)
+                    GT -&gt; <B><FONT COLOR="#A020F0">case</FONT></B> fa a <B><FONT COLOR="#A020F0">of</FONT></B>
+                              Just c -&gt; (ka, c) : (zipWithIL' f fa fb as lb)
+                              Nothing -&gt; zipWithIL' f fa fb as lb
+                    LT -&gt; <B><FONT COLOR="#A020F0">case</FONT></B> fb b <B><FONT COLOR="#A020F0">of</FONT></B>
+                              Just c -&gt; (kb, c) : (zipWithIL' f fa fb la bs)
+                              Nothing -&gt; zipWithIL' f fa fb la bs
+          zipWithIL' f fa fb ((ka,a):as) [] = <B><FONT COLOR="#A020F0">case</FONT></B> fa a <B><FONT COLOR="#A020F0">of</FONT></B>
+                                                  Just c -&gt; (ka,c) : (zipWithIL' f fa fb as [])
+                                                  Nothing -&gt; zipWithIL' f fa fb as []
+          zipWithIL' f fa fb [] ((kb,b):bs) = <B><FONT COLOR="#A020F0">case</FONT></B> fb b <B><FONT COLOR="#A020F0">of</FONT></B>
+                                                  Just c -&gt; (kb,c) : (zipWithIL' f fa fb [] bs)
+                                                  Nothing -&gt; zipWithIL' f fa fb [] bs
+          zipWithIL' f fa fb [] [] = []                                                  
+
+updateIL <B><FONT COLOR="#228B22">:: ILKey -&gt; a -&gt; IL a -&gt; IL a
+</FONT></B>updateIL k v il = insertIL v $ deleteIL k il
+</PRE>
+<HR>
+<A NAME="file9">
+<H1>Laser.hs 9/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file8">prev</A>][<A HREF="#file10">next</A>]
+<PRE>
+<B><FONT COLOR="#A020F0">module</FONT></B> Laser <B><FONT COLOR="#A020F0">where</FONT></B>
+
+<B><FONT COLOR="#A020F0">import</FONT></B> Common
+<B><FONT COLOR="#A020F0">import</FONT></B> FRP.Yampa as Yampa
+<B><FONT COLOR="#A020F0">import</FONT></B> Vec3d
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.Rendering.OpenGL
+<B><FONT COLOR="#A020F0">import</FONT></B> Control.Monad
+<B><FONT COLOR="#A020F0">import</FONT></B> Colors
+
+laserRad, laserHeight <B><FONT COLOR="#228B22">:: GLdouble
+</FONT></B>laserRad = 0.5
+laserHeight = 10
+
+laserRadf, laserHeightf <B><FONT COLOR="#228B22">:: Float
+</FONT></B>laserRadf = float laserRad
+laserHeightf = float laserHeight
+
+renderLaser <B><FONT COLOR="#228B22">:: Laser -&gt; IO ()
+</FONT></B>renderLaser l = do
+    loadIdentity
+    preservingMatrix $ do
+        translate $ vector3 $ laserPos l <I><FONT COLOR="#B22222">-- Move to cylinder center
+</FONT></I>        <B><FONT COLOR="#A020F0">let</FONT></B> drawDir = Vec3d(0,0,1)
+            dir = Yampa.normalize (laserVel l)
+            rotAxis =  drawDir `cross` dir
+            rotAngle = acos(dir .* drawDir) / pi * 180
+
+        preservingMatrix $ do
+            when (rotAxis /= zeroVector) $
+                rotate rotAngle $ vector3 rotAxis
+            materialEmission FrontAndBack $= vecToColor (laserColor l) <I><FONT COLOR="#B22222">-- make it Emission so that it's not affected by light
+</FONT></I>            materialDiffuse FrontAndBack $= colorf Black
+            <B><FONT COLOR="#A020F0">let</FONT></B> style = QuadricStyle (Just Smooth) NoTextureCoordinates Outside FillStyle
+            renderQuadric style $ Cylinder 0.0 laserRad laserHeight 10 10
+
+</PRE>
+<HR>
+<A NAME="file10">
+<H1>Net.hs 10/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file9">prev</A>][<A HREF="#file11">next</A>]
+<PRE>
+<B><FONT COLOR="#A020F0">module</FONT></B> Net <B><FONT COLOR="#A020F0">where</FONT></B>
+
+<B><FONT COLOR="#A020F0">import</FONT></B> System.IO
+<B><FONT COLOR="#A020F0">import</FONT></B> FRP.Yampa
+<B><FONT COLOR="#A020F0">import</FONT></B> Common
+<B><FONT COLOR="#A020F0">import</FONT></B> GameInput
+<B><FONT COLOR="#A020F0">import</FONT></B> Vec3d
+
+
+<B><FONT COLOR="#A020F0">instance</FONT></B> Stringifiable Laser <B><FONT COLOR="#A020F0">where</FONT></B>
+
+    stringify l = (show $ laserID l) ++ delim ++
+                  (show $ laserpID l) ++ delim ++
+                  (showVec3d $ laserPos l) ++ delim ++
+                  (showVec3d $ laserVel l) ++ delim ++
+                  (show $ laserStr l) ++ delim ++
+                  (showVec3d $ laserColor l)
+        <B><FONT COLOR="#A020F0">where</FONT></B> delim = <B><FONT COLOR="#BC8F8F">&quot;;&quot;</FONT></B>
+
+    destringify s = <B><FONT COLOR="#A020F0">let</FONT></B> untildelim = span (/= <B><FONT COLOR="#BC8F8F">';'</FONT></B>)
+                        (p1,s1) = untildelim s
+                        (p2,s2) = untildelim $ drop 1 s1
+                        (p3,s3) = untildelim $ drop 1 s2
+                        (p4,s4) = untildelim $ drop 1 s3
+                        (p5,s5) = untildelim $ drop 1 s4
+                        (p6,<B><FONT COLOR="#A020F0">_) </FONT></B>= untildelim $ drop 1 s5
+                     <B><FONT COLOR="#A020F0">in</FONT></B> Laser {laserID = read p1,
+                               laserpID = read p2,
+                               laserPos = readVec3d p3,
+                               laserVel = readVec3d p4,
+                               laserStr = read p5,
+                               laserColor = readVec3d p6}
+
+<B><FONT COLOR="#A020F0">instance</FONT></B> Stringifiable Hit <B><FONT COLOR="#A020F0">where</FONT></B>
+
+    stringify h = (show $ player1ID h)  ++ delim ++
+                  (show $ player2ID h)  ++ delim ++
+                  (show $ hitLaserID h) ++ delim ++
+                  (show $ hitStr h)
+        <B><FONT COLOR="#A020F0">where</FONT></B> delim = <B><FONT COLOR="#BC8F8F">&quot;;&quot;</FONT></B>
+
+    destringify s = <B><FONT COLOR="#A020F0">let</FONT></B> untildelim = span (/= <B><FONT COLOR="#BC8F8F">';'</FONT></B>)
+                        (p1,s1) = untildelim s
+                        (p2,s2) = untildelim $ drop 1 s1
+                        (p3,s3) = untildelim $ drop 1 s2
+                     <B><FONT COLOR="#A020F0">in</FONT></B> Hit {player1ID = read p1,
+                             player2ID = read p2,
+                             hitLaserID = read p3,
+                             hitStr = read $ drop 1 s3}
+
+<B><FONT COLOR="#A020F0">instance</FONT></B> Stringifiable Obj <B><FONT COLOR="#A020F0">where</FONT></B>
+
+    stringify (PlayerObj p) = <B><FONT COLOR="#BC8F8F">&quot;player:&quot;</FONT></B> ++ (stringify p)
+    stringify (LaserObj l) = <B><FONT COLOR="#BC8F8F">&quot;laser:&quot;</FONT></B> ++ (stringify l)
+
+    destringify s = <B><FONT COLOR="#A020F0">let</FONT></B> (p1,s1) = span (/= <B><FONT COLOR="#BC8F8F">':'</FONT></B>) s
+                    <B><FONT COLOR="#A020F0">in</FONT></B> <B><FONT COLOR="#A020F0">case</FONT></B> p1 <B><FONT COLOR="#A020F0">of</FONT></B>
+                          <B><FONT COLOR="#BC8F8F">&quot;player&quot;</FONT></B> -&gt; PlayerObj $ destringify $ drop 1 s1
+                          <B><FONT COLOR="#BC8F8F">&quot;laser&quot;</FONT></B> -&gt; LaserObj $ destringify $ drop 1 s1
+                          <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; error $ <B><FONT COLOR="#BC8F8F">&quot;Bad msg: can only be player or laser, but is &quot;</FONT></B> ++ p1
+
+<B><FONT COLOR="#A020F0">instance</FONT></B> Stringifiable SCMsg' <B><FONT COLOR="#A020F0">where</FONT></B>
+
+    stringify (SCMsgInitialize p) = <B><FONT COLOR="#BC8F8F">&quot;initialize:&quot;</FONT></B> ++ (stringify p)
+    stringify (SCMsgPlayer p) = <B><FONT COLOR="#BC8F8F">&quot;player:&quot;</FONT></B> ++ (stringify p)
+    stringify (SCMsgHit h) = <B><FONT COLOR="#BC8F8F">&quot;hit:&quot;</FONT></B> ++ (stringify h)
+    stringify (SCMsgSpawn obj) = <B><FONT COLOR="#BC8F8F">&quot;spawn:&quot;</FONT></B> ++ (stringify obj)
+    stringify (SCMsgFrag finalHit) = <B><FONT COLOR="#BC8F8F">&quot;frag:&quot;</FONT></B> ++ (stringify finalHit)
+    stringify (SCMsgRemove pID)   = <B><FONT COLOR="#BC8F8F">&quot;remove:&quot;</FONT></B> ++ (show pID)
+
+    destringify s = <B><FONT COLOR="#A020F0">let</FONT></B> untildelim = span (/= <B><FONT COLOR="#BC8F8F">':'</FONT></B>)
+                        (p1,s1) = untildelim s
+                    <B><FONT COLOR="#A020F0">in</FONT></B> <B><FONT COLOR="#A020F0">case</FONT></B> p1 <B><FONT COLOR="#A020F0">of</FONT></B>
+                          <B><FONT COLOR="#BC8F8F">&quot;initialize&quot;</FONT></B> -&gt; SCMsgInitialize $ destringify $ drop 1 s1
+                          <B><FONT COLOR="#BC8F8F">&quot;player&quot;</FONT></B>     -&gt; SCMsgPlayer $ destringify $ drop 1 s1
+                          <B><FONT COLOR="#BC8F8F">&quot;hit&quot;</FONT></B>        -&gt; SCMsgHit $ destringify $ drop 1 s1
+                          <B><FONT COLOR="#BC8F8F">&quot;spawn&quot;</FONT></B>      -&gt; SCMsgSpawn $ destringify $ drop 1 s1
+                          <B><FONT COLOR="#BC8F8F">&quot;frag&quot;</FONT></B>       -&gt; SCMsgFrag $ destringify $ drop 1 s1
+                          <B><FONT COLOR="#BC8F8F">&quot;remove&quot;</FONT></B>     -&gt; SCMsgRemove $ read $ drop 1 s1
+                          <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; error $ <B><FONT COLOR="#BC8F8F">&quot;Bad msg format for SCMsg': &quot;</FONT></B> ++ p1
+
+<B><FONT COLOR="#A020F0">instance</FONT></B> Stringifiable CSMsg' <B><FONT COLOR="#A020F0">where</FONT></B>
+
+    stringify (CSMsgPlayer p) = <B><FONT COLOR="#BC8F8F">&quot;player:&quot;</FONT></B> ++ (stringify p)
+    stringify (CSMsgUpdate p) = <B><FONT COLOR="#BC8F8F">&quot;update:&quot;</FONT></B> ++ (stringify p)
+    stringify (CSMsgLaser l) = <B><FONT COLOR="#BC8F8F">&quot;laser:&quot;</FONT></B> ++ (stringify l)
+    stringify (CSMsgKillLaser ident) = <B><FONT COLOR="#BC8F8F">&quot;killlaser:&quot;</FONT></B> ++ (show ident)
+    stringify (CSMsgDeath h) = <B><FONT COLOR="#BC8F8F">&quot;death:&quot;</FONT></B> ++ (stringify h)
+    stringify (CSMsgJoin name) = <B><FONT COLOR="#BC8F8F">&quot;join:&quot;</FONT></B> ++ name
+    stringify (CSMsgExit name) = <B><FONT COLOR="#BC8F8F">&quot;exit:&quot;</FONT></B> ++ name
+
+    destringify s = <B><FONT COLOR="#A020F0">let</FONT></B> untildelim = span (/= <B><FONT COLOR="#BC8F8F">':'</FONT></B>)
+                        (p1,s1) = untildelim s
+                    <B><FONT COLOR="#A020F0">in</FONT></B> <B><FONT COLOR="#A020F0">case</FONT></B> p1 <B><FONT COLOR="#A020F0">of</FONT></B>
+                          <B><FONT COLOR="#BC8F8F">&quot;player&quot;</FONT></B> -&gt; CSMsgPlayer $ destringify $ drop 1 s1
+                          <B><FONT COLOR="#BC8F8F">&quot;update&quot;</FONT></B> -&gt; CSMsgUpdate $ destringify $ drop 1 s1
+                          <B><FONT COLOR="#BC8F8F">&quot;laser&quot;</FONT></B> -&gt; CSMsgLaser $ destringify $ drop 1 s1
+                          <B><FONT COLOR="#BC8F8F">&quot;killlaser&quot;</FONT></B> -&gt; CSMsgKillLaser $ read $ drop 1 s1 <I><FONT COLOR="#B22222">-- TODO: read here is a bit unsafe
+</FONT></I>                          <B><FONT COLOR="#BC8F8F">&quot;death&quot;</FONT></B>-&gt; CSMsgDeath $ destringify $ drop 1 s1
+                          <B><FONT COLOR="#BC8F8F">&quot;join&quot;</FONT></B> -&gt; CSMsgJoin $ drop 1 s1
+                          <B><FONT COLOR="#BC8F8F">&quot;exit&quot;</FONT></B> -&gt; CSMsgExit $ drop 1 s1
+                          <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; error $ <B><FONT COLOR="#BC8F8F">&quot;Bad msg format for CSMsg': &quot;</FONT></B> ++ p1
+
+<B><FONT COLOR="#A020F0">instance</FONT></B> Stringifiable SCMsg <B><FONT COLOR="#A020F0">where</FONT></B>
+
+    stringify (ident,scmsg') = (show ident) ++ <B><FONT COLOR="#BC8F8F">&quot;:&quot;</FONT></B> ++ (stringify scmsg')
+    destringify s = <B><FONT COLOR="#A020F0">let</FONT></B> (p1,s1) = span (/= <B><FONT COLOR="#BC8F8F">':'</FONT></B>) s
+                    <B><FONT COLOR="#A020F0">in</FONT></B> (read p1, destringify $ drop 1 s1)
+
+<B><FONT COLOR="#A020F0">instance</FONT></B> Stringifiable CSMsg <B><FONT COLOR="#A020F0">where</FONT></B>
+
+    stringify (ident,csmsg') = (show ident) ++ <B><FONT COLOR="#BC8F8F">&quot;:&quot;</FONT></B> ++ (stringify csmsg')
+
+    destringify s = <B><FONT COLOR="#A020F0">let</FONT></B> (p1,s1) = span (/= <B><FONT COLOR="#BC8F8F">':'</FONT></B>) s
+                    <B><FONT COLOR="#A020F0">in</FONT></B> (read p1, destringify $ drop 1 s1)
+
+
+<B><FONT COLOR="#A020F0">instance</FONT></B> Stringifiable Player <B><FONT COLOR="#A020F0">where</FONT></B>
+
+    stringify p = (show $ playerID p) ++ delim ++
+                  (showVec3d $ playerPos p) ++ delim ++
+                  (showVec3d $ playerVel p) ++ delim ++
+                  (showVec3d $ playerAcc p) ++ delim ++
+                  (show $ playerView p) ++ delim ++
+                  (show $ playerRadius p) ++ delim ++
+                  (show $ playerLife p) ++ delim ++
+                  (show $ playerEnergy p) ++ delim ++
+                  (showVec3d $ playerColor p) ++ delim ++
+                  (show $ playerName p)
+        <B><FONT COLOR="#A020F0">where</FONT></B> delim = <B><FONT COLOR="#BC8F8F">&quot;;&quot;</FONT></B>
+
+    destringify s = <B><FONT COLOR="#A020F0">let</FONT></B> untildelim = span (/= <B><FONT COLOR="#BC8F8F">';'</FONT></B>)
+                        (p1,s1) = untildelim s
+                        (p2,s2) = untildelim $ drop 1 s1
+                        (p3,s3) = untildelim $ drop 1 s2
+                        (p4,s4) = untildelim $ drop 1 s3
+                        (p5,s5) = untildelim $ drop 1 s4
+                        (p6,s6) = untildelim $ drop 1 s5
+                        (p7,s7) = untildelim $ drop 1 s6
+                        (p8,s8) = untildelim $ drop 1 s7
+                        (p9,s9) = untildelim $ drop 1 s8
+                        (p10,<B><FONT COLOR="#A020F0">_) </FONT></B>= untildelim $ drop 1 s9
+                    <B><FONT COLOR="#A020F0">in</FONT></B> Player {playerID = read p1,
+                               playerPos = readVec3d p2,
+                               playerVel = readVec3d p3,
+                               playerAcc = readVec3d p4,
+                               playerView = read p5,
+                               playerRadius = read p6,
+                               playerLife = read p7,
+                               playerEnergy = read p8,
+                               playerColor = readVec3d p9,
+                               playerName = read p10}
+
+
+
+
+fetchSCMsg <B><FONT COLOR="#228B22">:: ReactChan GameInput -&gt; Handle -&gt; IO ()
+</FONT></B>fetchSCMsg rch h = do
+    ln &lt;- hGetLine h
+    printFlush ln <I><FONT COLOR="#B22222">-- for debug
+</FONT></I>    reactWriteChan rch (\gi -&gt; gi {message = destringify ln}) False
+
+<I><FONT COLOR="#B22222">-- Send msg from Client to Server
+</FONT></I>sendCSMsg <B><FONT COLOR="#228B22">:: Handle -&gt; CSMsg -&gt; IO ()
+</FONT></B>sendCSMsg h msg = do
+    hPutStrLn h (stringify msg)
+    hFlush h <I><FONT COLOR="#B22222">-- required.
+</FONT></I>
+</PRE>
+<HR>
+<A NAME="file11">
+<H1>NoServer.hs 11/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file10">prev</A>][<A HREF="#file12">next</A>]
+<PRE>
+<B><FONT COLOR="#A020F0">module</FONT></B> Main <B><FONT COLOR="#A020F0">where</FONT></B>
+
+<B><FONT COLOR="#A020F0">import</FONT></B> Network
+<B><FONT COLOR="#A020F0">import</FONT></B> RunGame
+<B><FONT COLOR="#A020F0">import</FONT></B> FRP.Yampa
+<B><FONT COLOR="#A020F0">import</FONT></B> Terrain
+<B><FONT COLOR="#A020F0">import</FONT></B> Common
+<B><FONT COLOR="#A020F0">import</FONT></B> Object
+<B><FONT COLOR="#A020F0">import</FONT></B> Net
+<B><FONT COLOR="#A020F0">import</FONT></B> System (getArgs)
+<B><FONT COLOR="#A020F0">import</FONT></B> Control.Monad
+<B><FONT COLOR="#A020F0">import</FONT></B> Vec3d
+
+main <B><FONT COLOR="#228B22">:: IO ()
+</FONT></B>main = do
+    glInit
+    runGame <B><FONT COLOR="#BC8F8F">&quot;NoServer&quot;</FONT></B> Nothing (game [observer dummyPlayer, player dummyPlayer dummySCMsg, terrain0] &gt;&gt;&gt; 
+					 arr (\(ooss,msgs) -&gt; (renderObsObjStates ooss, return ())))
+  <B><FONT COLOR="#A020F0">where</FONT></B> renderObsObjStates = foldl (\io oos -&gt; io &gt;&gt; renderObsObjState oos) (return ())
+</PRE>
+<HR>
+<A NAME="file12">
+<H1>Object.hs 12/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file11">prev</A>][<A HREF="#file13">next</A>]
+<PRE>
+<B><FONT COLOR="#A020F0">module</FONT></B> Object <B><FONT COLOR="#A020F0">where</FONT></B>
+
+<B><FONT COLOR="#A020F0">import</FONT></B> Common
+<B><FONT COLOR="#A020F0">import</FONT></B> FRP.Yampa
+<B><FONT COLOR="#A020F0">import</FONT></B> GameInput
+<B><FONT COLOR="#A020F0">import</FONT></B> Player
+<B><FONT COLOR="#A020F0">import</FONT></B> Laser
+<B><FONT COLOR="#A020F0">import</FONT></B> Terrain
+<B><FONT COLOR="#A020F0">import</FONT></B> TerrainData
+<B><FONT COLOR="#A020F0">import</FONT></B> Vec3d
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.Rendering.OpenGL
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.UI.GLFW <B><FONT COLOR="#A020F0">hiding</FONT></B> (time)
+<B><FONT COLOR="#A020F0">import</FONT></B> Data.Maybe
+<B><FONT COLOR="#A020F0">import</FONT></B> BoundingVolume
+<B><FONT COLOR="#A020F0">import</FONT></B> Render
+<B><FONT COLOR="#A020F0">import</FONT></B> Particles
+
+<B><FONT COLOR="#A020F0">type</FONT></B> ObjectSF = SF ObjInput ObjOutput
+
+<B><FONT COLOR="#A020F0">data</FONT></B> ObjInput = ObjInput {
+    oiGameInput <B><FONT COLOR="#228B22">:: !GameInput,
+</FONT></B>    oiColliding <B><FONT COLOR="#228B22">:: !(Maybe ObjOutput)
+</FONT></B>}
+
+<B><FONT COLOR="#A020F0">data</FONT></B> ObjOutput = ObjOutput {
+    ooObsObjState <B><FONT COLOR="#228B22">:: !ObsObjState,         -- Observable Object State
+</FONT></B>    ooNetworkMsgs <B><FONT COLOR="#228B22">:: ![CSMsg],             -- Messages to send to the server
+</FONT></B>    ooKillReq <B><FONT COLOR="#228B22">:: !(Event ()),              -- When this happens, kill the object itself
+</FONT></B>    ooSpawnReq <B><FONT COLOR="#228B22">:: ![ObjectSF],             -- Spawn these guys pls
+</FONT></B>    ooBounds <B><FONT COLOR="#228B22">:: !BoundingVolume            -- For collision detection on the client side, currently player vs player
+</FONT></B>}
+
+<B><FONT COLOR="#A020F0">instance</FONT></B> Eq ObjOutput <B><FONT COLOR="#A020F0">where</FONT></B>
+    (==) <B><FONT COLOR="#A020F0">_ </FONT></B><B><FONT COLOR="#A020F0">_ </FONT></B>= error <B><FONT COLOR="#BC8F8F">&quot;(==) called on ObjOutputs&quot;</FONT></B>
+    (/=) <B><FONT COLOR="#A020F0">_ </FONT></B><B><FONT COLOR="#A020F0">_ </FONT></B>= error <B><FONT COLOR="#BC8F8F">&quot;(/=) called on ObjOutputs&quot;</FONT></B>
+
+<B><FONT COLOR="#A020F0">data</FONT></B> ObsObjState = OOSPlayer !Player
+                 | OOSLaser !Laser
+                 | OOSSelf !Player
+                 | OOSTerrain ![TerrainElement]
+                 | OOSParticle !Particle
+                 | OOSKillText !String
+                 | OOSPowerUp !PowerUp
+                 | OOSScoreBoard !ScoreBoard
+                 <I><FONT COLOR="#B22222">-- | OOSMan -- not necessarily to be used
+</FONT></I>                 | OOSNone
+    <B><FONT COLOR="#A020F0">deriving</FONT></B> Show
+
+<I><FONT COLOR="#B22222">-- Waterfall
+</FONT></I>terrainW <B><FONT COLOR="#228B22">:: ObjectSF
+</FONT></B>terrainW = proc ObjInput {oiGameInput = gi} -&gt; do
+    kill &lt;- edge &lt;&lt;^ (\gi -&gt; key gi == Just (CharKey <B><FONT COLOR="#BC8F8F">'K'</FONT></B>)) -&lt; gi
+    returnA -&lt; ObjOutput {ooObsObjState=OOSTerrain [waterfall],
+                          ooNetworkMsgs = [],
+                          ooKillReq = kill,
+                          ooSpawnReq = [],
+                          ooBounds = BoundingEmpty}
+
+<I><FONT COLOR="#B22222">-- Main game terrain
+</FONT></I>terrain0 <B><FONT COLOR="#228B22">:: ObjectSF
+</FONT></B>terrain0 = proc oi -&gt; do
+    returnA -&lt; ObjOutput {ooObsObjState=OOSTerrain [demoTerrain],
+                          ooNetworkMsgs = [],
+                          ooKillReq = NoEvent,
+                          ooSpawnReq = [],
+                          ooBounds = getTerrainBounds demoTerrain}
+
+
+renderObsObjState <B><FONT COLOR="#228B22">:: ObsObjState -&gt; IO ()
+</FONT></B>renderObsObjState (OOSPlayer p) = renderPlayer p
+renderObsObjState (OOSLaser l) = renderLaser l
+renderObsObjState (OOSSelf p) = renderSelf p
+renderObsObjState (OOSTerrain ts) = (foldr (&gt;&gt;) (return ()) $ map renderTerrainElement ts)
+renderObsObjState (OOSParticle p) = renderParticle p
+renderObsObjState (OOSKillText str) = renderKillText str
+renderObsObjState (OOSScoreBoard sb) = renderScoreBoard sb
+renderObsObjState (OOSPowerUp pow) = renderPlayer $ Player {playerID = 0,
+                                                            playerPos = powerupPos pow,
+                                                            playerVel = zeroVector,
+                                                            playerAcc = zeroVector,
+                                                            playerView = (0,0),
+                                                            playerRadius = defRadius,
+                                                            playerLife = maxLife,
+                                                            playerEnergy = maxEnergy,
+                                                            playerColor = Vec3d(0.5, 0.2, 0.7),
+                                                            playerName = <B><FONT COLOR="#BC8F8F">&quot;Dummy&quot;</FONT></B>}
+renderObsObjState OOSNone = return ()
+
+<I><FONT COLOR="#B22222">-- observer is the player that is being controlled at each client
+</FONT></I><I><FONT COLOR="#B22222">-- TODO: Improve and clean this up
+</FONT></I>observer <B><FONT COLOR="#228B22">:: Player -&gt; ObjectSF
+</FONT></B>observer pl = <B><FONT COLOR="#A020F0">let</FONT></B> setFromKey k (gi, prev) = dup $ <B><FONT COLOR="#A020F0">case</FONT></B> (key gi == Just k, keyState gi) <B><FONT COLOR="#A020F0">of</FONT></B>
+                                                                (True,Just Press) -&gt; 1
+                                                                (True,Just Release) -&gt; 0
+                                                                (<B><FONT COLOR="#A020F0">_ </FONT></B>  ,<B><FONT COLOR="#A020F0">_ </FONT></B>       ) -&gt; prev
+                  checkMouseWheel (gi, prev)  =  <B><FONT COLOR="#A020F0">let</FONT></B> raw = mWheel gi
+                                                     <I><FONT COLOR="#B22222">-- to avoid overflow or casting to big integer 
+</FONT></I>                                                     v = <B><FONT COLOR="#A020F0">if</FONT></B> raw &lt; 9 <B><FONT COLOR="#A020F0">then</FONT></B> raw <B><FONT COLOR="#A020F0">else</FONT></B> (raw - 4294967295)-1 
+                                                     actualV = float v / 4 <I><FONT COLOR="#B22222">--if rightClick gi then 0 else float v / 4
+</FONT></I>                                                 <B><FONT COLOR="#A020F0">in</FONT></B> dup actualV
+                  speed = 20
+                  getx GameInput{posMouse=Position x y} = x
+                  gety GameInput{posMouse=Position x y} = y
+
+                  powerupSF' val = switch (arr ((+val) . fst) &amp;&amp;&amp; after 15 ()) (\<B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; powerupSF)
+                  powerupSF = switch (arr fst &amp;&amp;&amp; arr snd) powerupSF'
+
+               <B><FONT COLOR="#A020F0">in</FONT></B> proc (ObjInput {oiGameInput = gi, oiColliding = collider}) -&gt; do
+
+    <B><FONT COLOR="#A020F0">let</FONT></B> theta = sensitivity * (fromIntegral $ getx gi - (width `div` 2))
+        phi = (-sensitivity) * (fromIntegral $ gety gi - (height `div` 2))
+        f' = Vec3d (cos theta * cos phi, -sin theta * cos phi, sin phi)
+        r' = Vec3d (-cos (theta-pi/2),sin (theta-pi/2), 0)
+        f = speed *^ f'
+        r = speed *^ r'
+        up = speed *^ (r' `cross` f') <I><FONT COLOR="#B22222">-- actually r cross f can be calculated by hand. im too lazy for now
+</FONT></I>
+    fwd  &lt;- loopPre 0 $ arr $ setFromKey (CharKey <B><FONT COLOR="#BC8F8F">'W'</FONT></B>) -&lt; gi
+    bwd &lt;- loopPre 0 $ arr $ setFromKey (CharKey <B><FONT COLOR="#BC8F8F">'S'</FONT></B>) -&lt; gi
+    right &lt;- loopPre 0 $ arr $ setFromKey (CharKey <B><FONT COLOR="#BC8F8F">'D'</FONT></B>) -&lt; gi
+    left &lt;- loopPre 0 $ arr $ setFromKey (CharKey <B><FONT COLOR="#BC8F8F">'A'</FONT></B>) -&lt; gi
+    keyWheel &lt;- loopPre 0 $ arr $ checkMouseWheel -&lt; gi
+    stopEvent &lt;- edge -&lt; rightClick gi
+    collideEvent &lt;- edge &lt;&lt;^ (/= Nothing) -&lt; collider
+    <B><FONT COLOR="#A020F0">let</FONT></B> df = (fwd - bwd) *^ f
+        dr = (right - left) *^ r
+        du = keyWheel *^ up
+        a = df ^+^ dr ^+^ du
+        v = (<B><FONT COLOR="#A020F0">if</FONT></B> isEvent collideEvent <B><FONT COLOR="#A020F0">then</FONT></B> -5 <B><FONT COLOR="#A020F0">else</FONT></B> 1) *^ a
+    <I><FONT COLOR="#B22222">--v &lt;- integral -&lt; a
+</FONT></I>    p &lt;- (playerPos pl ^+^) ^&lt;&lt; integral -&lt; v
+
+    <B><FONT COLOR="#A020F0">let</FONT></B> pow = <B><FONT COLOR="#A020F0">case</FONT></B> (collideEvent, collider) <B><FONT COLOR="#A020F0">of</FONT></B>
+                  (Event (), Just (ObjOutput{ooObsObjState=OOSPowerUp pw})) -&gt; Just pw
+                  <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; Nothing
+
+        laserPowEvent = maybe NoEvent (\pow -&gt; <B><FONT COLOR="#A020F0">case</FONT></B> powerupType pow <B><FONT COLOR="#A020F0">of</FONT></B>
+                                                   StrengthenLaser str -&gt; Event str
+                                                   <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; NoEvent) pow
+        radiusPowEvent = maybe NoEvent (\pow -&gt; <B><FONT COLOR="#A020F0">case</FONT></B> powerupType pow <B><FONT COLOR="#A020F0">of</FONT></B>
+                                                    DecreaseRadius r -&gt; Event (-r)
+                                                    <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; NoEvent) pow
+
+    laserstr &lt;- powerupSF -&lt; (defLaserStr, laserPowEvent)
+    radius   &lt;- powerupSF -&lt; (playerRadius pl, radiusPowEvent)
+
+    t &lt;- time -&lt; ()
+    <B><FONT COLOR="#A020F0">let</FONT></B> lsr = Laser {laserID = round (10*t),
+                     laserpID = playerID pl,
+                     laserPos = p,
+                     laserVel = 20 *^ f,
+                     laserStr = laserstr,
+                     laserColor = playerColor pl}
+
+    fireLaser &lt;- edge -&lt; leftClick gi
+
+    changeVel &lt;- tagWith () ^&lt;&lt; loopPre (Vec3d (0,0,0)) detectChangeSF -&lt; v
+    changeMsg &lt;- loopPre dummySCMsg detectChangeSF -&lt; message gi
+    <B><FONT COLOR="#A020F0">let</FONT></B> hitEvent = <B><FONT COLOR="#A020F0">case</FONT></B> changeMsg <B><FONT COLOR="#A020F0">of</FONT></B>
+                       Event (<B><FONT COLOR="#A020F0">_,SCMsgHit </FONT></B>h) -&gt; <B><FONT COLOR="#A020F0">if</FONT></B> playerID pl == player2ID h <B><FONT COLOR="#A020F0">then</FONT></B> changeMsg <B><FONT COLOR="#A020F0">else</FONT></B> NoEvent
+                       <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; NoEvent
+
+    life &lt;- loopPre (playerLife pl) (arr (\(hev,life) -&gt; dup $ event life (\(<B><FONT COLOR="#A020F0">_,SCMsgHit </FONT></B>h) -&gt; life - hitStr h) hev)) -&lt; hitEvent
+    <B><FONT COLOR="#A020F0">let</FONT></B> killerHit = <B><FONT COLOR="#A020F0">case</FONT></B> hitEvent <B><FONT COLOR="#A020F0">of</FONT></B>
+                       Event (<B><FONT COLOR="#A020F0">_,SCMsgHit </FONT></B>h) -&gt; Just h
+                       <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; Nothing
+        kill = <B><FONT COLOR="#A020F0">if</FONT></B> life &lt;= 0 <B><FONT COLOR="#A020F0">then</FONT></B> Event (fromJust killerHit) <B><FONT COLOR="#A020F0">else</FONT></B> NoEvent
+        pl' = pl {playerPos = p,
+                  playerVel = v,
+                  playerAcc = a,
+                  playerView = (theta,phi),
+                  playerLife = life,
+                  playerRadius = radius}
+    returnA -&lt; ObjOutput {ooObsObjState = OOSSelf pl',
+                          ooNetworkMsgs = (\xs -&gt; [x | Event x &lt;- xs]) $
+                                            [fireLaser `tag` (playerID pl, CSMsgLaser lsr),
+                                             foldl (mergeBy const) NoEvent [changeVel, hitEvent `tag` ()] `tag` (playerID pl, CSMsgPlayer pl'),
+                                             fmap (\hit -&gt; (playerID pl, CSMsgDeath hit)) kill],
+                          ooKillReq = kill `tag` (),
+                          ooSpawnReq = event [] (\<B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; [laser lsr]) fireLaser,
+                          ooBounds = <B><FONT COLOR="#A020F0">let</FONT></B> v = Vec3d (playerRadius pl', playerRadius pl', playerRadius pl')
+                                     <B><FONT COLOR="#A020F0">in</FONT></B> BoundingBox (p ^-^ v) (p ^+^ v)}
+<I><FONT COLOR="#B22222">{-
+player0 :: ID -&gt; Velocity3 -&gt; ObjectSF
+player0 pid p0 = let setFromKey k (gi, prev) = (\a -&gt; (a,a)) $ (case (key gi == Just k, keyState gi) of
+                                                                 (True,Just Press) -&gt; 1
+                                                                 (True,Just Release) -&gt; 0
+                                                                 (_   ,_        ) -&gt; prev)
+                  in proc (ObjInput {oiGameInput = gi}) -&gt; do
+    (f,r,u) &lt;- arr id -&lt; (Vec3d (0,0,-0.001), Vec3d (0.001,0,00), Vec3d (0,0.001,0))
+    keyw &lt;- loopPre 0 $ arr $ setFromKey (CharKey 'I') -&lt; gi
+    keys &lt;- loopPre 0 $ arr $ setFromKey (CharKey 'K') -&lt; gi
+    keyd &lt;- loopPre 0 $ arr $ setFromKey (CharKey 'L') -&lt; gi
+    keya &lt;- loopPre 0 $ arr $ setFromKey (CharKey 'J') -&lt; gi
+    arup &lt;- loopPre 0 $ arr $ setFromKey (SpecialKey UP) -&lt; gi
+    ardn &lt;- loopPre 0 $ arr $ setFromKey (SpecialKey DOWN) -&lt; gi
+    let df = (keyw-keys) *^ f
+        dr = (keyd-keya) *^ r
+        du = (arup-ardn) *^ u
+        a = df ^+^ dr ^+^ du
+    v &lt;- integral -&lt; a
+    p &lt;- (p0 ^+^) ^&lt;&lt; integral -&lt; v
+    msg &lt;- arr id -&lt; message gi
+    returnA -&lt; let pUpdate = Player {playerID = pid,
+                                     playerPos = p,
+                                     playerVel = v,
+                                     playerAcc = a,
+                                     playerView = (0,0),
+                                     playerRadius = defRadius,
+                                     playerLife = maxLife,
+                                     playerEnergy = maxEnergy,
+                                     playerColor = Vec3d (0.5,0.5,0.5),
+                                     playerName = &quot;player0&quot;}
+                in ObjOutput {ooObsObjState = case msg of (iden, SCMsgPlayer p) -&gt; if pid == iden then OOSPlayer p else OOSPlayer pUpdate
+                                                          _ -&gt; OOSPlayer pUpdate,
+                              ooNetworkMsgs = [],
+                              ooKillReq = NoEvent,
+                              ooSpawnReq = [],
+                              ooBounds = BoundingEmpty}
+-}</FONT></I>
+serverObject <B><FONT COLOR="#228B22">:: String -&gt; ObjectSF
+</FONT></B>serverObject playerNameStr = proc (ObjInput {oiGameInput = gi}) -&gt; do
+    spawnWaterfall &lt;- edge &lt;&lt;^ (\gi -&gt; key gi == Just (CharKey <B><FONT COLOR="#BC8F8F">'L'</FONT></B>)) -&lt; gi
+    changeMsg &lt;- loopPre dummySCMsg detectChangeSF -&lt; message gi
+    <B><FONT COLOR="#A020F0">let</FONT></B> processSCMsg NoEvent = ObjOutput {ooObsObjState = OOSNone, ooNetworkMsgs = [], ooKillReq = NoEvent, ooSpawnReq = [], ooBounds = BoundingEmpty}
+        processSCMsg (Event (<B><FONT COLOR="#A020F0">_,msg)) </FONT></B>= ObjOutput {ooObsObjState = OOSNone, ooNetworkMsgs = [],
+                                                  ooKillReq = NoEvent,
+                                                  ooSpawnReq = <B><FONT COLOR="#A020F0">case</FONT></B> msg <B><FONT COLOR="#A020F0">of</FONT></B>
+                                                                   SCMsgSpawn (PlayerObj p) -&gt; [player p dummySCMsg]
+                                                                   SCMsgSpawn (LaserObj l) -&gt; [laser l]
+                                                                   SCMsgInitialize p -&gt; [observer p{playerName = playerNameStr}]
+                                                                   <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; [],
+                                                  ooBounds = BoundingEmpty}
+    <B><FONT COLOR="#A020F0">let</FONT></B> oo = processSCMsg changeMsg
+    returnA -&lt; oo {ooSpawnReq = ooSpawnReq oo ++ (<B><FONT COLOR="#A020F0">case</FONT></B> spawnWaterfall <B><FONT COLOR="#A020F0">of</FONT></B>
+                                                      NoEvent -&gt; []
+                                                      Event () -&gt; [terrainW])}
+
+player <B><FONT COLOR="#228B22">:: Player -&gt; SCMsg -&gt; ObjectSF
+</FONT></B>player pl initMsg = switch (player' pl initMsg) (\(p,msg) -&gt; player p msg)
+
+player' <B><FONT COLOR="#228B22">:: Player -&gt; SCMsg -&gt; SF ObjInput (ObjOutput, Event (Player, SCMsg))
+</FONT></B>player' pl initMsg = proc ObjInput{oiGameInput=gi} -&gt; do
+    changeMsg &lt;- loopPre initMsg detectChangeSF -&lt; message gi
+    <B><FONT COLOR="#A020F0">let</FONT></B> update = event NoEvent (\(i,msg') -&gt; <B><FONT COLOR="#A020F0">case</FONT></B> msg' <B><FONT COLOR="#A020F0">of</FONT></B>
+                                                      SCMsgPlayer p -&gt; <B><FONT COLOR="#A020F0">if</FONT></B> playerID pl == playerID p <B><FONT COLOR="#A020F0">then</FONT></B> Event p <B><FONT COLOR="#A020F0">else</FONT></B> NoEvent
+                                                      <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; NoEvent) changeMsg
+        kill = event NoEvent (\(i,msg') -&gt; <B><FONT COLOR="#A020F0">case</FONT></B> msg' <B><FONT COLOR="#A020F0">of</FONT></B>
+                                                    SCMsgSpawn (PlayerObj p) -&gt; <B><FONT COLOR="#A020F0">if</FONT></B> playerID pl == playerID p <B><FONT COLOR="#A020F0">then</FONT></B> Event () <B><FONT COLOR="#A020F0">else</FONT></B> NoEvent
+                                                    <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; NoEvent) changeMsg
+        exit = event NoEvent (\(i,msg') -&gt; <B><FONT COLOR="#A020F0">case</FONT></B> msg' <B><FONT COLOR="#A020F0">of</FONT></B>
+                                                    SCMsgRemove pID -&gt; <B><FONT COLOR="#A020F0">if</FONT></B> playerID pl == pID <B><FONT COLOR="#A020F0">then</FONT></B> Event() <B><FONT COLOR="#A020F0">else</FONT></B> NoEvent
+                                                    <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; NoEvent) changeMsg
+    pos &lt;- (playerPos pl ^+^) ^&lt;&lt; integral -&lt; playerVel pl
+    <B><FONT COLOR="#A020F0">let</FONT></B> pl' = pl {playerPos = pos}
+        rad = playerRadius pl
+    returnA -&lt; (ObjOutput {ooObsObjState = OOSPlayer pl', <I><FONT COLOR="#B22222">-- {playerPos = pos},
+</FONT></I>                           ooNetworkMsgs = [],
+                           ooKillReq = kill `lMerge` exit, <I><FONT COLOR="#B22222">-- left-biased merge
+</FONT></I>                           ooSpawnReq = event [] (\<B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; (map particle $ generatePreloadedParticles pos)) kill,
+                           ooBounds = <B><FONT COLOR="#A020F0">let</FONT></B> d = Vec3d (rad, rad, rad)
+                                      <B><FONT COLOR="#A020F0">in</FONT></B> BoundingBox (pos ^-^ d) (pos ^+^ d)}, 
+                fmap (\ev -&gt; (ev,message gi)) update)
+
+scoreboard <B><FONT COLOR="#228B22">:: ObjectSF
+</FONT></B>scoreboard = <B><FONT COLOR="#A020F0">let</FONT></B> addFrag plID ((pID,s):rest) = <B><FONT COLOR="#A020F0">if</FONT></B> plID == pID <B><FONT COLOR="#A020F0">then</FONT></B> (pID,s+1):rest <B><FONT COLOR="#A020F0">else</FONT></B> (pID,s) : addFrag plID rest
+                 addFrag plID [] = [(plID,1)]
+             <B><FONT COLOR="#A020F0">in</FONT></B> proc ObjInput{oiGameInput=gi} -&gt; do
+    changeMsg &lt;- loopPre dummySCMsg detectChangeSF -&lt; message gi
+    <B><FONT COLOR="#A020F0">let</FONT></B> killAnnounce = event NoEvent (\(i, msg') -&gt; <B><FONT COLOR="#A020F0">case</FONT></B> msg' <B><FONT COLOR="#A020F0">of</FONT></B>
+                                                     SCMsgFrag hit -&gt; Event (show (player1ID hit) ++ <B><FONT COLOR="#BC8F8F">&quot; just killed &quot;</FONT></B> ++ (show (player2ID hit)))
+                                                     <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; NoEvent) changeMsg
+    sb' &lt;- loopPre (ScoreBoard{sbScores=[]}) 
+                   (arr (\(chmsg,sb) -&gt; dup $ event sb (\(i,msg') -&gt; <B><FONT COLOR="#A020F0">case</FONT></B> msg' <B><FONT COLOR="#A020F0">of</FONT></B>
+                                                                              SCMsgFrag hit -&gt; sb {sbScores = addFrag (player1ID hit) $ sbScores sb}
+                                                                              <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; sb) chmsg)) -&lt; changeMsg
+    returnA -&lt; ObjOutput {ooObsObjState = OOSScoreBoard sb',
+                          ooNetworkMsgs = [],
+                          ooKillReq = NoEvent,
+                          ooSpawnReq = event [] (\txt -&gt; [killtext txt]) killAnnounce,
+                          ooBounds = BoundingEmpty}
+
+powerup <B><FONT COLOR="#228B22">:: PowerUp -&gt; ObjectSF
+</FONT></B>powerup pow = proc ObjInput{oiColliding = collider} -&gt; do
+    kill &lt;- after 15 () -&lt; ()
+    <B><FONT COLOR="#A020F0">let</FONT></B> collected = <B><FONT COLOR="#A020F0">case</FONT></B> collider <B><FONT COLOR="#A020F0">of</FONT></B>
+                     Just (ObjOutput{ooObsObjState=oos}) -&gt;
+                        <B><FONT COLOR="#A020F0">case</FONT></B> oos <B><FONT COLOR="#A020F0">of</FONT></B>
+                            OOSPlayer p -&gt; True
+                            OOSSelf p -&gt; True
+                            <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; False
+                     <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; False
+    returnA -&lt; ObjOutput {ooObsObjState = OOSPowerUp pow,
+                          ooNetworkMsgs = [],
+                          ooKillReq = <B><FONT COLOR="#A020F0">if</FONT></B> collected <B><FONT COLOR="#A020F0">then</FONT></B> Event () <B><FONT COLOR="#A020F0">else</FONT></B> kill,
+                          ooSpawnReq = [],
+                          ooBounds = <B><FONT COLOR="#A020F0">let</FONT></B> d = Vec3d (powerupRadius pow, powerupRadius pow, powerupRadius pow)
+                                     <B><FONT COLOR="#A020F0">in</FONT></B> BoundingBox (powerupPos pow ^-^ d) (powerupPos pow ^+^ d)}
+
+laser <B><FONT COLOR="#228B22">:: Laser -&gt; ObjectSF
+</FONT></B>laser l = proc (ObjInput {oiColliding = collider}) -&gt; do
+    p &lt;- ((laserPos l) ^+^) ^&lt;&lt; integral -&lt; laserVel l
+    <B><FONT COLOR="#A020F0">let</FONT></B> l' = l {laserPos = p}
+    kill &lt;- repeatedly 3 () -&lt; ()
+    reflect' &lt;- edge &lt;&lt;^ (/= Nothing) -&lt; collider
+    <B><FONT COLOR="#A020F0">let</FONT></B> ignore = <B><FONT COLOR="#A020F0">case</FONT></B> collider <B><FONT COLOR="#A020F0">of</FONT></B>
+                     Just (ObjOutput{ooObsObjState=oos}) -&gt;
+                        <B><FONT COLOR="#A020F0">case</FONT></B> oos <B><FONT COLOR="#A020F0">of</FONT></B>
+                            OOSPlayer p -&gt; playerID p == laserpID l
+                            OOSSelf p -&gt; playerID p == laserpID l
+                            OOSLaser <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; True
+                            <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; False
+                     <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; False
+        reflect = <B><FONT COLOR="#A020F0">if</FONT></B> ignore <B><FONT COLOR="#A020F0">then</FONT></B> NoEvent <B><FONT COLOR="#A020F0">else</FONT></B> reflect'
+        newVel (Vec3d (x,y,z)) = <B><FONT COLOR="#A020F0">if</FONT></B> x &gt;= y &amp;&amp; x &gt;= z <B><FONT COLOR="#A020F0">then</FONT></B> Vec3d (-x,y,z) <B><FONT COLOR="#A020F0">else</FONT></B>
+                                 <B><FONT COLOR="#A020F0">if</FONT></B> y &gt;= x &amp;&amp; y &gt;= z <B><FONT COLOR="#A020F0">then</FONT></B> Vec3d (x,-y,z) <B><FONT COLOR="#A020F0">else</FONT></B> Vec3d (x,y,-z)
+        v' = newVel $ laserVel l
+        l'' = l' {laserVel = v'}
+    returnA -&lt; ObjOutput {ooObsObjState = OOSLaser l',
+                          ooNetworkMsgs = event [] (\<B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; [(laserpID l, CSMsgKillLaser $ laserID l)]) kill ++
+                                          event [] (\<B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; [(laserpID l, CSMsgLaser l'')]) reflect,
+                          ooKillReq = mergeBy (\<B><FONT COLOR="#A020F0">_ </FONT></B><B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; ()) kill reflect,
+                          ooSpawnReq = event [] (\<B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; [laser l'']) reflect,
+                          ooBounds = BoundingEmpty} <I><FONT COLOR="#B22222">--BoundingBox (p ^-^ Vec3d(laserRadf, laserRadf, 0)) (p ^+^ Vec3d(laserRadf, laserRadf, laserHeightf)) }
+</FONT></I>
+
+particle <B><FONT COLOR="#228B22">:: Particle -&gt; ObjectSF
+</FONT></B>particle part = proc <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; do
+    <B><FONT COLOR="#A020F0">let</FONT></B> vel = particleVel part
+    pos &lt;- (particlePos part ^+^) ^&lt;&lt; integral -&lt; 10 *^ vel
+    <B><FONT COLOR="#A020F0">let</FONT></B> part' = part {particlePos = pos}
+    kill &lt;- repeatedly 3 () -&lt; ()
+    returnA -&lt; ObjOutput {ooObsObjState = OOSParticle part',
+                          ooNetworkMsgs = [],
+                          ooKillReq = kill,
+                          ooSpawnReq = [],
+                          ooBounds = BoundingEmpty}
+<I><FONT COLOR="#B22222">{-
+particle2 :: Particle -&gt; ObjectSF
+particle2 part = proc _ -&gt; do
+    pos &lt;- (particlePos part ^+^) ^&lt;&lt; integral -&lt; 10 *^ (unsafePerformIO $ randomTriple')
+    let depth = (particleDepth part)
+        part' = part {particlePos = pos, particleDepth = depth + 1}
+        d10 = (fromIntegral depth) / 10.0
+    spawn &lt;- repeatedly 0.01 () -&lt; ()
+    kill &lt;- repeatedly 0.3 () -&lt; ()
+    let spawnreq = if depth &lt; 3 then event [] (\_ -&gt; [particle part']) spawn else []
+    returnA -&lt; ObjOutput {ooObsObjState = OOSParticle part',
+                          ooNetworkMsgs = [],
+                          ooKillReq = kill,
+                          ooSpawnReq = spawnreq,
+                          ooBounds = BoundingEmpty}
+-}</FONT></I>
+killtext <B><FONT COLOR="#228B22">:: String -&gt; ObjectSF
+</FONT></B>killtext playerName = proc <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; do
+    kill &lt;- repeatedly 3 () -&lt; ()
+    returnA -&lt; ObjOutput {ooObsObjState = OOSKillText playerName,
+                          ooNetworkMsgs = [],
+                          ooKillReq = kill,
+                          ooSpawnReq = [],
+                          ooBounds = BoundingEmpty}
+
+
+<I><FONT COLOR="#B22222">{-
+particleSystem :: ParticleSystem -&gt; ObjectSF
+particleSystem partSys = proc _ -&gt; do
+--    pos &lt;- (particlePos part ^+^) ^&lt;&lt; integral -&lt; 10 *^ (unsafePerformIO $ randomTriple')
+
+    let depth = 1
+        partSys' = partSys -- {particlePos = pos, particleDepth = depth + 1}
+    kill &lt;- repeatedly 3 () -&lt; ()
+    returnA -&lt; ObjOutput {ooObsObjState = OOSParticleSystem partSys',
+                          ooNetworkMsgs = [],
+                          ooKillReq = kill,
+                          ooSpawnReq = [],
+                          ooBounds = BoundingEmpty}
+-}</FONT></I>
+player1 <B><FONT COLOR="#228B22">:: ID -&gt; Vec3d -&gt; ObjectSF
+</FONT></B>player1 pid p0 = proc (ObjInput {oiGameInput = gi}) -&gt; do
+    v &lt;- arr $ maybe (Vec3d (0,0,0)) ((1 *^) . dirToVec) -&lt; key gi
+    p &lt;- (p0 ^+^) ^&lt;&lt; integral -&lt; v
+    fireLaser &lt;- edge -&lt; leftClick gi
+    changeVel &lt;- loopPre (Vec3d (0,0,0)) (arr (\(vnew,vold) -&gt; (<B><FONT COLOR="#A020F0">if</FONT></B> vnew == vold <B><FONT COLOR="#A020F0">then</FONT></B> NoEvent <B><FONT COLOR="#A020F0">else</FONT></B> Event (), vnew))) -&lt; v
+    <B><FONT COLOR="#A020F0">let</FONT></B> lsr = Laser {laserID = 1,
+                     laserpID = pid,
+                     laserPos = p,
+                     laserVel = v,
+                     laserStr = defLaserStr,
+                     laserColor = Vec3d (0.5,0.5,0.5)}
+        plyr = Player {playerID = pid,
+                       playerPos = p,
+                       playerVel = v,
+                       playerAcc = Vec3d (0,0,0),
+                       playerView = (0,0),
+                       playerRadius = defRadius,
+                       playerLife = maxLife,
+                       playerEnergy = maxEnergy,
+                       playerColor = Vec3d (0.5,0.5,0.5),
+                       playerName = <B><FONT COLOR="#BC8F8F">&quot;i dunno what to call this thingy its useless anyway&quot;</FONT></B>}
+    returnA -&lt; ObjOutput {ooObsObjState = OOSPlayer (Player {playerID = pid,
+                                                             playerPos = p,
+                                                             playerVel = v,
+                                                             playerAcc = Vec3d (0,0,0),
+                                                             playerView = (0,0),
+                                                             playerRadius = defRadius,
+                                                             playerLife = maxLife,
+                                                             playerEnergy = maxEnergy,
+                                                             playerColor = Vec3d (0.5,0.5,0.5),
+                                                             playerName = <B><FONT COLOR="#BC8F8F">&quot;player1&quot;</FONT></B>}),
+                          ooNetworkMsgs = (\xs -&gt; [x | Event x &lt;- xs]) $
+                                            fmap (\<B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; (pid,CSMsgLaser lsr)) fireLaser :
+                                            fmap (\<B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; (pid,CSMsgPlayer plyr)) changeVel : [],
+                          ooKillReq = NoEvent,
+                          ooSpawnReq = event [] (\<B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; [laser lsr]) fireLaser,
+                          ooBounds = BoundingEmpty}
+        <B><FONT COLOR="#A020F0">where</FONT></B> dirToVec (CharKey c) = <B><FONT COLOR="#A020F0">case</FONT></B> c <B><FONT COLOR="#A020F0">of</FONT></B>
+                <B><FONT COLOR="#BC8F8F">'w'</FONT></B> -&gt; Vec3d (0,0,1)
+                <B><FONT COLOR="#BC8F8F">'s'</FONT></B> -&gt; Vec3d (0,0,-1)
+                <B><FONT COLOR="#BC8F8F">'a'</FONT></B> -&gt; Vec3d (0,1,0)
+                <B><FONT COLOR="#BC8F8F">'d'</FONT></B> -&gt; Vec3d (0,-1,0)
+                <B><FONT COLOR="#BC8F8F">'e'</FONT></B> -&gt; Vec3d (0,-1,1)
+                <B><FONT COLOR="#BC8F8F">'q'</FONT></B> -&gt; Vec3d (0,1,1)
+                <B><FONT COLOR="#BC8F8F">'z'</FONT></B> -&gt; Vec3d (0,1,-1)
+                <B><FONT COLOR="#BC8F8F">'c'</FONT></B> -&gt; Vec3d (0,-1,-1)
+                <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; Vec3d (0,0,0)
+              dirToVec <B><FONT COLOR="#A020F0">_ </FONT></B>= Vec3d (0,0,0)
+</PRE>
+<HR>
+<A NAME="file13">
+<H1>Particles.hs 13/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file12">prev</A>][<A HREF="#file14">next</A>]
+<PRE>
+<B><FONT COLOR="#A020F0">module</FONT></B> Particles <B><FONT COLOR="#A020F0">where</FONT></B>
+<B><FONT COLOR="#A020F0">import</FONT></B> Common
+<B><FONT COLOR="#A020F0">import</FONT></B> Vec3d
+<B><FONT COLOR="#A020F0">import</FONT></B> System.IO.Unsafe
+<B><FONT COLOR="#A020F0">import</FONT></B> System.Random
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.Rendering.OpenGL
+<B><FONT COLOR="#A020F0">import</FONT></B> TerrainData
+
+<I><FONT COLOR="#B22222">-- Number of particles
+</FONT></I>particleNum <B><FONT COLOR="#228B22">:: Int
+</FONT></B>particleNum = 100
+
+<I><FONT COLOR="#B22222">-- Render particles
+</FONT></I>renderParticle <B><FONT COLOR="#228B22">:: Particle -&gt; IO ()
+</FONT></B>renderParticle p = do
+
+    preservingMatrix $ do
+    loadIdentity
+    texture Texture2D $= Enabled
+    textureFunction $= Decal
+    textureBinding Texture2D $= bloodTexture
+    translate $ vector3 $ particlePos p
+    <I><FONT COLOR="#B22222">-- materialEmission FrontAndBack $= colorf Colors.Blue
+</FONT></I>    renderQuadric (QuadricStyle (Just Smooth) GenerateTextureCoordinates Outside FillStyle) (Sphere 0.15 2 2)
+    texture Texture2D $= Disabled
+<I><FONT COLOR="#B22222">{-
+  let
+    b :: Color4 Float
+    b = Color4 0.0 0.0 0.0 1.0
+  color b
+  renderPrimitive Points $ vertex $ vertex3 (particlePos p)
+-}</FONT></I>
+
+
+
+renderParticleSystem <B><FONT COLOR="#228B22">:: ParticleSystem -&gt; IO()
+</FONT></B>renderParticleSystem ps = do
+  print <B><FONT COLOR="#BC8F8F">&quot;Rendering particle system&quot;</FONT></B>
+
+
+
+
+
+<I><FONT COLOR="#B22222">-- RANDOM STUFF
+</FONT></I><I><FONT COLOR="#B22222">-- From http://en.wikibooks.org/wiki/Haskell/Hierarchical_libraries/Randoms
+</FONT></I>
+randomList <B><FONT COLOR="#228B22">:: (Random a) =&gt; Int -&gt; [a]
+</FONT></B>randomList seed = randoms (mkStdGen seed)
+
+randomSeed' <B><FONT COLOR="#228B22">:: IO(Int)
+</FONT></B>randomSeed' = do
+  r &lt;- newStdGen
+  <B><FONT COLOR="#A020F0">let</FONT></B> (x, <B><FONT COLOR="#A020F0">_) </FONT></B>= next r
+  return x
+
+randomTriple' <B><FONT COLOR="#228B22">:: IO(Vec3d)
+</FONT></B>randomTriple' = do
+  r &lt;- newStdGen
+
+  <B><FONT COLOR="#A020F0">let</FONT></B> (x1, r2) = randomR (-1.0,1.0) r
+      (x2, r3) = randomR (-1.0,1.0) r2
+      (x3, <B><FONT COLOR="#A020F0">_) </FONT></B>= randomR (-1.0,1.0) r3
+      result = Vec3d(x1,x2,x3)
+  return result
+
+<I><FONT COLOR="#B22222">-- UNSAFE, UNSAFE!!!!!!!!
+</FONT></I>tlist <B><FONT COLOR="#228B22">:: [Float]
+</FONT></B>tlist = map (\x-&gt;(0.5-x)) $ take (3*particleNum) $ (randomList (unsafePerformIO randomSeed')<B><FONT COLOR="#228B22">::[Float])
+</FONT></B>
+preloadedRandomVecs <B><FONT COLOR="#228B22">:: [Vec3d]
+</FONT></B>preloadedRandomVecs = f tlist
+  <B><FONT COLOR="#A020F0">where</FONT></B> f (x:y:z:r) = Vec3d(x,y,z):f(r)
+        f <B><FONT COLOR="#A020F0">_ </FONT></B>= []
+
+generatePreloadedParticles <B><FONT COLOR="#228B22">:: Vec3d -&gt; [Particle]
+</FONT></B>generatePreloadedParticles pos = map (\v-&gt; Particle pos v 1.0 0) preloadedRandomVecs
+
+generatePreloadedParticles2 <B><FONT COLOR="#228B22">:: Vec3d -&gt; [Particle]
+</FONT></B>generatePreloadedParticles2 pos = map (\v-&gt; Particle pos (unsafePerformIO $ randomTriple') 1.0 0) preloadedRandomVecs
+</PRE>
+<HR>
+<A NAME="file14">
+<H1>Player.hs 14/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file13">prev</A>][<A HREF="#file15">next</A>]
+<PRE>
+<B><FONT COLOR="#A020F0">module</FONT></B> Player <B><FONT COLOR="#A020F0">where</FONT></B>
+
+<I><FONT COLOR="#B22222">-- Player move according to keyboard or mouse
+</FONT></I><I><FONT COLOR="#B22222">-- Player can shoot, etc
+</FONT></I>
+<B><FONT COLOR="#A020F0">import</FONT></B> Common
+<B><FONT COLOR="#A020F0">import</FONT></B> FRP.Yampa
+<B><FONT COLOR="#A020F0">import</FONT></B> Vec3d
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.Rendering.OpenGL as OpenGL
+<B><FONT COLOR="#A020F0">import</FONT></B> WallRender
+<B><FONT COLOR="#A020F0">import</FONT></B> TerrainData
+<B><FONT COLOR="#A020F0">import</FONT></B> Render
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.UI.GLFW
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.Rendering.OpenGL.GL.CoordTrans
+<B><FONT COLOR="#A020F0">import</FONT></B> Sprites
+
+renderPlayer <B><FONT COLOR="#228B22">:: Player -&gt; IO ()
+</FONT></B>renderPlayer p = preservingMatrix $ do
+    loadIdentity
+    translate $ vector3 $ playerPos p
+<I><FONT COLOR="#B22222">--    materialDiffuse Front $= Color4 0 0 0 1
+</FONT></I><I><FONT COLOR="#B22222">--    materialSpecular FrontAndBack $= Color4 0 0 0 1
+</FONT></I><I><FONT COLOR="#B22222">--    materialAmbient FrontAndBack $= Color4 0 0 0 1
+</FONT></I>    materialEmission FrontAndBack $= computeColor p
+    <B><FONT COLOR="#A020F0">let</FONT></B> r = double (playerRadius p) / (sqrt 2)
+    blend $= Enabled  <I><FONT COLOR="#B22222">-- this may be necessary in the future.  Right now, this functionality is encapsulated in the line above (blendEquation $= Just FuncAdd).
+</FONT></I>    blendFunc $= (One, SrcColor)  <I><FONT COLOR="#B22222">-- this defines how colors will be blended when they are drawn to the framebuffer.
+</FONT></I>                                  <I><FONT COLOR="#B22222">-- This means that transparent colors will let the background show through and opaque colors will be drawn over it.
+</FONT></I>    <B><FONT COLOR="#A020F0">let</FONT></B>
+        radianToDegrees x = 180 * x / pi
+        lp = round $ 100 * ((playerLife p) / maxLife)
+        style = QuadricStyle (Just Smooth) NoTextureCoordinates Outside LineStyle
+    preservingMatrix $ do
+        rotate (radianToDegrees $ fst $ playerView p) (vector3 $ Vec3d(0, 0, 1))
+        rotate (radianToDegrees $ snd $ playerView p) (vector3 $ Vec3d(0, 1, 0))
+        renderQuadric style $ Sphere (double $ playerRadius p) lp lp
+        renderQuad hamsterTexture (Vertex3 (0) r (-r)) (Vertex3 (0) (r) r) (Vertex3 0 (-r) r) (Vertex3 0 (-r) (-r))
+
+    <I><FONT COLOR="#B22222">-- mvm &lt;- get (matrix (Modelview 0))
+</FONT></I>    <I><FONT COLOR="#B22222">-- now find the normal and rotate the image accordingly
+</FONT></I>    mv &lt;- get (matrix (Just (Modelview 0))) <B><FONT COLOR="#228B22">:: IO (GLmatrix GLdouble)
+</FONT></B>    mvc &lt;- getMatrixComponents RowMajor mv
+    <B><FONT COLOR="#A020F0">let</FONT></B> offset =  float (length $ playerName p) / 2.0
+        <I><FONT COLOR="#B22222">{-newMT = newMatrix RowMajor [ 1 , 0 , 0 , mvc!!3 ,
+                                     0 , 1 , 0 , mvc!!7 ,
+                                     0 , 0 , 1 , mvc!!11 ,
+                                     0 , 0 , 0 , mvc!!15 ]-}</FONT></I>
+
+    <I><FONT COLOR="#B22222">-- TODO: Fix this billboard-style name tag overhead
+</FONT></I>    preservingMatrix $ do
+        loadIdentity
+        <I><FONT COLOR="#B22222">--let v = Vec3d(Matrix[8], Matrix[9], -Matrix[10]);
+</FONT></I>
+        translate (vector3 (playerPos p ^+^ 1.1 *^ Vec3d(offset * 0.2,offset * 0.2,playerRadius p)))
+        OpenGL.scale 0.05 0.05 (0.05 <B><FONT COLOR="#228B22">:: GLdouble)
+</FONT></B>        rotate (-90) (vector3 $ Vec3d(0,0,1))
+        rotate 90 (vector3 $ Vec3d(1,0,0))
+        <I><FONT COLOR="#B22222">-- Undo Rotations
+</FONT></I>        <I><FONT COLOR="#B22222">-- Redo Scalings
+</FONT></I>        renderString Fixed8x16 (playerName p)
+        <I><FONT COLOR="#B22222">-- Use withMatrix... or access elements directly
+</FONT></I>        blend $= Disabled
+        <I><FONT COLOR="#B22222">--multMatrix newMT
+</FONT></I>
+<I><FONT COLOR="#B22222">-- Camera view and text on screen.
+</FONT></I>renderSelf <B><FONT COLOR="#228B22">:: Player -&gt; IO()
+</FONT></B>renderSelf p = do
+    <B><FONT COLOR="#A020F0">let</FONT></B> (theta,phi) = playerView p
+        mkRMatrixT, mkRMatrixP, mkTMatrix <B><FONT COLOR="#228B22">:: IO (GLmatrix Float)
+</FONT></B>        (ct,st,c,s) = (cos theta,sin theta,cos phi,sin phi)
+        <I><FONT COLOR="#B22222">--u = Vec3d (ct,st,0) `cross` Vec3d (0,0,1)
+</FONT></I>        <I><FONT COLOR="#B22222">--(x,y,z) = (getx u,gety u,getz u)
+</FONT></I>        mkRMatrixP = newMatrix RowMajor [ c , 0 , s , 0 ,
+                                          0 , 1 , 0 , 0 ,
+                                         -s , 0 , c , 0 ,
+                                          0 , 0 , 0 , 1 ]
+        mkRMatrixT = newMatrix RowMajor [ ct,-st, 0 , 0 ,
+                                          st, ct, 0 , 0 ,
+                                          0 , 0 , 1 , 0 ,
+                                          0 , 0 , 0 , 1 ]
+        mkTMatrix = newMatrix RowMajor [1,0,0,negate $ getx $ playerPos p,
+                                        0,1,0,negate $ gety $ playerPos p,
+                                        0,0,1,negate $ getz $ playerPos p,
+                                        0,0,0,1]
+     <B><FONT COLOR="#A020F0">in</FONT></B> do
+        renderOrtho widthf heightf $ do
+            <I><FONT COLOR="#B22222">-- the transparency blending only works if OOSSelf is rendered last, which is the case because it's first added to list -Harley
+</FONT></I>            blend $= Enabled
+            blendFunc $= (SrcAlpha, OneMinusSrcAlpha)<I><FONT COLOR="#B22222">-- transparent colors will let the background show through and opaque colors will be drawn over it.
+</FONT></I>            textureFunction $= Replace
+<I><FONT COLOR="#B22222">--            printFonts' (centerCoordX-9) (centerCoordY-9) (tex, base) 1 &quot;+&quot;
+</FONT></I>
+            renderText 5 0 (<B><FONT COLOR="#BC8F8F">&quot;Life: &quot;</FONT></B> ++ show (round (playerLife p))) 4
+            renderText 5 80 (<B><FONT COLOR="#BC8F8F">&quot;Pos : &quot;</FONT></B> ++ show (playerPos  p)) 2
+            renderText 5 100 (<B><FONT COLOR="#BC8F8F">&quot;Vel : &quot;</FONT></B> ++ show (playerVel  p)) 2
+
+            <B><FONT COLOR="#A020F0">let</FONT></B> r = 16 <B><FONT COLOR="#228B22">:: Float
+</FONT></B>            preservingMatrix $ do
+                loadIdentity
+                alphaFunc $= Just (Greater,0.1<B><FONT COLOR="#228B22">:: Float)
+</FONT></B>                translate (vector3 $ Vec3d(centerCoordX, centerCoordY, 0))
+                texture Texture2D $= Enabled
+                displaySprite3D crosshairTexture (Vertex3 (-r) (-r) 0) (Vertex3 (-r) r 0) (Vertex3 r r 0) (Vertex3 r (-r) 0) (0.0, 0.0) (1.0, 1.0)
+                texture Texture2D $= Disabled
+            blend $= Disabled
+
+        matrixMode $= Projection
+        initFrustum
+        rMatrixT &lt;- mkRMatrixT
+        rMatrixP &lt;- mkRMatrixP
+        tMatrix  &lt;- mkTMatrix
+        multMatrix rMatrixP
+        multMatrix rMatrixT
+        multMatrix tMatrix
+			
+        matrixMode $= Modelview 0
+
+<I><FONT COLOR="#B22222">{-
+renderSelf' p =
+    let xyz (theta,phi) = Vertex3 (cos theta * cos phi) (sin theta * cos phi) (sin phi)
+        xyz' (theta,phi) = Vector3 (cos theta * cos phi) (sin theta * cos phi) (sin phi)
+        po = playerPos p
+        (th,ph) = playerView p
+        theta,phi,x,y,z :: GLdouble
+        theta = double th
+        phi = double ph
+        x = double $ getx po
+        y = double $ gety po
+        z = double $ getz po
+     in do
+        matrixMode $= Projection
+        initFrustum
+        lookAt (Vertex3 x y z) (xyz (theta,phi)) (Vector3 0 0 1)--(xyz' (theta, phi+pi/4))
+        matrixMode $= Modelview 0
+--}</FONT></I>
+</PRE>
+<HR>
+<A NAME="file15">
+<H1>ReadImage.hs 15/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file14">prev</A>][<A HREF="#file16">next</A>]
+<PRE>
+<I><FONT COLOR="#B22222">{-
+   ReadImage.hs (adapted from readImage.c which is (c) Silicon Graphics, Inc.)
+   Copyright (c) Sven Panne 2002-2004 &lt;sven.panne@aedion.de&gt;
+   This file is part of HOpenGL and distributed under a BSD-style license
+   See the file libraries/GLUT/LICENSE
+
+   This module has been modified to read both color and alpha data necessary for transparent textures in OpenGL.
+
+   Support for reading a file of raw RGB data:
+      4 bytes big-endian width
+      4 bytes big-endian height
+      width * height RGBA byte quadruples (the original module reads width * height RGB byte triples)
+-}</FONT></I>
+
+<B><FONT COLOR="#A020F0">module</FONT></B> ReadImage ( readImage ) <B><FONT COLOR="#A020F0">where</FONT></B>
+
+<B><FONT COLOR="#A020F0">import</FONT></B> Data.Word ( Word8, Word32 )
+<B><FONT COLOR="#A020F0">import</FONT></B> Control.Exception ( bracket )
+<B><FONT COLOR="#A020F0">import</FONT></B> Control.Monad ( liftM, when )
+<B><FONT COLOR="#A020F0">import</FONT></B> System.IO ( Handle, IOMode(ReadMode), openBinaryFile, hGetBuf, hClose )
+<B><FONT COLOR="#A020F0">import</FONT></B> System.IO.Error ( mkIOError, eofErrorType )
+<B><FONT COLOR="#A020F0">import</FONT></B> Foreign ( Ptr, alloca, mallocBytes, Storable(..) )
+<I><FONT COLOR="#B22222">-- import Graphics.UI.GLUT
+</FONT></I><B><FONT COLOR="#A020F0">import</FONT></B> Graphics.Rendering.OpenGL
+
+<I><FONT COLOR="#B22222">-- This is probably overkill, but anyway...
+</FONT></I>newtype Word32BigEndian = Word32BigEndian Word32
+
+word32BigEndianToGLsizei <B><FONT COLOR="#228B22">:: Word32BigEndian -&gt; GLsizei
+</FONT></B>word32BigEndianToGLsizei (Word32BigEndian x) = fromIntegral x
+
+<B><FONT COLOR="#A020F0">instance</FONT></B> Storable Word32BigEndian <B><FONT COLOR="#A020F0">where</FONT></B>
+   sizeOf ~(Word32BigEndian x) = sizeOf x
+   alignment ~(Word32BigEndian x) = alignment x
+   peek ptr = do
+      <B><FONT COLOR="#A020F0">let</FONT></B> numBytes = sizeOf (undefined <B><FONT COLOR="#228B22">:: Word32BigEndian)
+</FONT></B>      bytes &lt;- mapM (peekByteOff ptr) [ 0 ..  numBytes - 1 ] <B><FONT COLOR="#228B22">:: IO [Word8]
+</FONT></B>      <B><FONT COLOR="#A020F0">let</FONT></B> value = foldl (\val byte -&gt; val * 256 + fromIntegral byte) 0 bytes
+      return $ Word32BigEndian value
+   poke = error <B><FONT COLOR="#BC8F8F">&quot;&quot;</FONT></B>
+
+<I><FONT COLOR="#B22222">-- This is the reason for all this stuff above...
+</FONT></I>readGLsizei <B><FONT COLOR="#228B22">:: Handle -&gt; IO GLsizei
+</FONT></B>readGLsizei handle =
+   alloca $ \buf -&gt; do
+      hGetBufFully handle buf (sizeOf (undefined <B><FONT COLOR="#228B22">:: Word32BigEndian))
+</FONT></B>      liftM word32BigEndianToGLsizei $ peek buf
+
+<I><FONT COLOR="#B22222">-- A handy variant of hGetBuf with additional error checking
+</FONT></I>hGetBufFully <B><FONT COLOR="#228B22">:: Handle -&gt; Ptr a -&gt; Int -&gt; IO ()
+</FONT></B>hGetBufFully handle ptr numBytes = do
+   bytesRead &lt;- hGetBuf handle ptr numBytes
+   when (bytesRead /= numBytes) $
+      ioError $ mkIOError eofErrorType <B><FONT COLOR="#BC8F8F">&quot;hGetBufFully&quot;</FONT></B> (Just handle) Nothing
+
+
+<I><FONT COLOR="#B22222">-- Closing a file is nice, even when an error occurs during reading.
+</FONT></I>withBinaryFile <B><FONT COLOR="#228B22">:: FilePath -&gt; (Handle -&gt; IO a) -&gt; IO a
+</FONT></B>withBinaryFile filePath = bracket (openBinaryFile filePath ReadMode) hClose
+
+readImage <B><FONT COLOR="#228B22">:: FilePath -&gt; IO (Size, PixelData a)
+</FONT></B>readImage filePath =
+   withBinaryFile filePath $ \handle -&gt; do
+      width &lt;- readGLsizei handle
+      height &lt;- readGLsizei handle
+      <B><FONT COLOR="#A020F0">let</FONT></B> numBytes = fromIntegral (4 * width * height)  <I><FONT COLOR="#B22222">-- changed the 3 to a 4 to make space for our alpha data.
+</FONT></I>      buf &lt;- mallocBytes numBytes
+      hGetBufFully handle buf numBytes
+      return (Size width height, PixelData RGBA UnsignedByte buf)  <I><FONT COLOR="#B22222">-- changed the PixelFormat constructor here from RGB to RGBA, to account for our alpha data.
+</FONT></I></PRE>
+<HR>
+<A NAME="file16">
+<H1>Render.hs 16/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file15">prev</A>][<A HREF="#file17">next</A>]
+<PRE>
+<I><FONT COLOR="#B22222">{-# LANGUAGE RankNTypes #-}</FONT></I>
+<B><FONT COLOR="#A020F0">module</FONT></B> Render <B><FONT COLOR="#A020F0">where</FONT></B>
+
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.Rendering.OpenGL as OpenGL
+<B><FONT COLOR="#A020F0">import</FONT></B> Vec3d
+<B><FONT COLOR="#A020F0">import</FONT></B> Common
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.UI.GLFW
+
+<I><FONT COLOR="#B22222">-- sets up the orthographic mode so we can
+</FONT></I><I><FONT COLOR="#B22222">-- draw at 2D screen coordinates
+</FONT></I>renderOrtho <B><FONT COLOR="#228B22">:: GLdouble -&gt; GLdouble -&gt; IO a -&gt; IO()
+</FONT></B>renderOrtho width height graphicActions = do
+   matrixMode   $= Projection
+   unsafePreservingMatrix $ do
+     loadIdentity
+     ortho 0 width 0 height (-1) 1
+     matrixMode $= Modelview 0
+     graphicActions
+     matrixMode $= Projection
+   matrixMode   $= Modelview 0
+
+<I><FONT COLOR="#B22222">--render text on 2D on front of screen
+</FONT></I>renderText <B><FONT COLOR="#228B22">:: Float -&gt; Float -&gt; String -&gt; Float -&gt; IO ()
+</FONT></B>renderText x y str s = unsafePreservingMatrix $ do
+    translate (Vector3 x y (0<B><FONT COLOR="#228B22">::Float))
+</FONT></B>    OpenGL.scale s s (1<B><FONT COLOR="#228B22">::Float)
+</FONT></B>    renderString Fixed8x16 str
+
+renderColor <B><FONT COLOR="#228B22">:: forall a. Color4 GLfloat -&gt; IO a -&gt; IO a
+</FONT></B>renderColor c graphicActions = unsafePreservingMatrix $ do
+    <I><FONT COLOR="#B22222">-- clear [ColorBuffer]
+</FONT></I>	<I><FONT COLOR="#B22222">{-
+    let curDiff = materialDiffuse FrontAndBack
+        curSpec = materialSpecular FrontAndBack
+        curAmb = materialAmbient FrontAndBack
+        curEmis = materialEmission FrontAndBack
+		-}</FONT></I>
+    <I><FONT COLOR="#B22222">-- Store colors
+</FONT></I>    materialDiffuse FrontAndBack $= c <I><FONT COLOR="#B22222">-- For now, always FrontAndBack
+</FONT></I>    materialSpecular FrontAndBack $= c
+    materialAmbient FrontAndBack $= c
+    materialEmission FrontAndBack $= c
+    <I><FONT COLOR="#B22222">-- materialShininess FrontAndBack $= shin
+</FONT></I>    graphicActions <I><FONT COLOR="#B22222">-- Execute commands
+</FONT></I>
+<I><FONT COLOR="#B22222">{-  -- restore?
+    materialDiffuse FrontAndBack $= curDiff -- For now, always FrontAndBack
+    materialSpecular FrontAndBack $= curSpec
+    materialAmbient FrontAndBack $= curAmb
+    materialEmission FrontAndBack $= curEmis
+-}</FONT></I>
+
+<I><FONT COLOR="#B22222">-- Technically this renders any text
+</FONT></I>renderKillText <B><FONT COLOR="#228B22">:: String -&gt; IO()
+</FONT></B>renderKillText str = do
+  renderOrtho widthf heightf $ do
+            <I><FONT COLOR="#B22222">-- the transparency blending only works if OOSSelf is rendered last, which is the case because it's first added to list -Harley
+</FONT></I>            blend $= Enabled
+            blendFunc $= (SrcAlpha, OneMinusSrcAlpha)<I><FONT COLOR="#B22222">-- transparent colors will let the background show through and opaque colors will be drawn over it.
+</FONT></I>            textureFunction $= Replace
+            renderText 5 200 str 3
+
+renderScoreBoard <B><FONT COLOR="#228B22">:: ScoreBoard -&gt; IO ()
+</FONT></B>renderScoreBoard sb = 
+    <B><FONT COLOR="#A020F0">let</FONT></B> mergeSort [] = []
+        mergeSort [x] = [x]
+        mergeSort l = <B><FONT COLOR="#A020F0">let</FONT></B> (l1,l2) = foldl (\(l1,l2) a -&gt; (l2,a:l1)) ([],[]) l
+                      <B><FONT COLOR="#A020F0">in</FONT></B> merge (mergeSort l1) (mergeSort l2)
+            <B><FONT COLOR="#A020F0">where</FONT></B> merge [] l = l
+                  merge l [] = l
+                  merge l1@(x:xs) l2@(y:ys) = <B><FONT COLOR="#A020F0">if</FONT></B> snd x &gt; snd y <B><FONT COLOR="#A020F0">then</FONT></B> x:(merge xs l2) <B><FONT COLOR="#A020F0">else</FONT></B> y:(merge l1 ys)
+    <B><FONT COLOR="#A020F0">in</FONT></B> renderOrtho widthf heightf $ do
+           blend $= Enabled
+           blendFunc $= (SrcAlpha, OneMinusSrcAlpha)
+           textureFunction $= Replace
+           <B><FONT COLOR="#A020F0">let</FONT></B> loop n ((plID,s):rest) = do
+                   renderText 10 (double heightf - n*64) (show plID ++ <B><FONT COLOR="#BC8F8F">&quot;: &quot;</FONT></B> ++ show s) 4
+                   loop (n+1) rest
+               loop <B><FONT COLOR="#A020F0">_ </FONT></B>[] = return ()
+           loop 1 $ mergeSort $ sbScores sb
+</PRE>
+<HR>
+<A NAME="file17">
+<H1>RunGame.hs 17/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file16">prev</A>][<A HREF="#file18">next</A>]
+<PRE>
+<B><FONT COLOR="#A020F0">module</FONT></B> RunGame <B><FONT COLOR="#A020F0">where</FONT></B>
+
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.Rendering.OpenGL
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.UI.GLFW as GLFW
+<B><FONT COLOR="#A020F0">import</FONT></B> FRP.Yampa
+<B><FONT COLOR="#A020F0">import</FONT></B> GameInput
+<B><FONT COLOR="#A020F0">import</FONT></B> Object
+<B><FONT COLOR="#A020F0">import</FONT></B> GameCore
+<B><FONT COLOR="#A020F0">import</FONT></B> IdentityList
+<B><FONT COLOR="#A020F0">import</FONT></B> Data.IORef
+<B><FONT COLOR="#A020F0">import</FONT></B> System.IO
+<B><FONT COLOR="#A020F0">import</FONT></B> Monad
+<B><FONT COLOR="#A020F0">import</FONT></B> Control.Concurrent
+<B><FONT COLOR="#A020F0">import</FONT></B> Data.Maybe
+<B><FONT COLOR="#A020F0">import</FONT></B> Net
+<B><FONT COLOR="#A020F0">import</FONT></B> Render
+<B><FONT COLOR="#A020F0">import</FONT></B> Common
+
+<I><FONT COLOR="#B22222">--PLEASE run ./client playerName or ./server scripts instead
+</FONT></I>
+game <B><FONT COLOR="#228B22">:: [ObjectSF] -&gt; SF GameInput ([ObsObjState], [CSMsg])
+</FONT></B>game initialObjs = proc gi -&gt; do
+    oos &lt;- loopPre emptyIL (arr dup &lt;&lt;&lt; gameCore (listToIL initialObjs)) -&lt; gi
+    returnA -&lt; (map ooObsObjState $ elemsIL oos, concatMap ooNetworkMsgs $ elemsIL oos)
+
+runGame <B><FONT COLOR="#228B22">:: String -&gt; Maybe Handle -&gt; SF GameInput (IO (), IO ()) -&gt; IO ()
+</FONT></B>runGame playerName handle sf = do
+        t &lt;- get GLFW.time
+        sTime &lt;- newIORef t <I><FONT COLOR="#B22222">-- start time
+</FONT></I>        ldTime &lt;- newIORef t <I><FONT COLOR="#B22222">-- last draw time
+</FONT></I>        yPrev &lt;- newIORef (fromIntegral $ height `div` 2) <I><FONT COLOR="#B22222">-- TODO: explain this
+</FONT></I>        nFrames &lt;- newIORef 0
+
+        <B><FONT COLOR="#A020F0">let</FONT></B> gd = GameData {startTime = sTime,
+                           lastDrawTime = ldTime,
+                           numFrames = nFrames}
+        (rh,rch) &lt;- reactInit initGameInput (actuate gd) sf
+        networkInit rch handle
+        tm &lt;- newIORef t
+        quit &lt;- newIORef False
+
+        keyCallback $= keyboardCallback rch quit
+        mouseButtonCallback $= mouseClickCallback rch
+        mousePosCallback $= mouseMotionCallback rch tm yPrev
+        mouseWheelCallback $= mWheelCallback rch
+        windowCloseCallback $= writeIORef quit True
+
+        disableSpecial AutoPollEvent
+
+        <I><FONT COLOR="#B22222">-- invoke drawing loop
+</FONT></I>        loop rh rch quit
+
+        <I><FONT COLOR="#B22222">-- if quit, close server handle
+</FONT></I>        <B><FONT COLOR="#A020F0">case</FONT></B> handle <B><FONT COLOR="#A020F0">of</FONT></B>
+            Just h -&gt; do
+                printFlush <B><FONT COLOR="#BC8F8F">&quot;Announcing exit.&quot;</FONT></B>
+                sendCSMsg h (-1, CSMsgExit playerName)
+                hClose h
+            <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; return ()
+
+        <I><FONT COLOR="#B22222">-- finish up GLFW
+</FONT></I>        closeWindow
+        terminate
+    <B><FONT COLOR="#A020F0">where</FONT></B>
+        loop rh rch quit = do
+            sleep 0.001
+            pollEvents
+            empty &lt;- isEmptyChan rch
+            when empty $ reactWriteChan rch id True <I><FONT COLOR="#B22222">-- TODO: what is this for? to make sure yampa keeps updating the SF. will clean up by moving to to react
+</FONT></I>            react rh rch
+            q &lt;- readIORef quit
+            unless q $ loop rh rch quit
+
+        actuate gd shouldDraw (renderActions, networkActions) = do
+            <I><FONT COLOR="#B22222">--tid &lt;- myThreadId
+</FONT></I>            <I><FONT COLOR="#B22222">--printFlush (&quot;draw&quot; ++ (show tid))
+</FONT></I>            st &lt;- readIORef $ startTime gd
+            ldt &lt;- readIORef $ lastDrawTime gd
+            t &lt;- get GLFW.time
+
+            when (shouldDraw &amp;&amp; t-ldt &gt;= redrawTimer) $ do
+                clear [ColorBuffer, DepthBuffer]
+                renderActions
+                writeIORef (lastDrawTime gd) t
+                <I><FONT COLOR="#B22222">--printFlush (&quot;Time = &quot; ++ show (t-ldt))-- ++ (show ((fromIntegral $ nf+1)/(fromIntegral $ t-st)*1000)))
+</FONT></I>                renderOrtho widthf heightf $ do
+                    blend $= Enabled
+                    blendFunc $= (SrcAlpha, OneMinusSrcAlpha)<I><FONT COLOR="#B22222">-- transparent colors will let the background show through and opaque colors will be drawn over it.
+</FONT></I>                    textureFunction $= Replace
+                    renderText 5 60 (<B><FONT COLOR="#BC8F8F">&quot;Draw Time: &quot;</FONT></B> ++ show (t-ldt)) 2
+                    blend $= Disabled
+                swapBuffers
+            networkActions
+            nf &lt;- readIORef $ numFrames gd
+            writeIORef (numFrames gd) (nf+1)
+
+glInit <B><FONT COLOR="#228B22">:: IO ()
+</FONT></B>glInit = do
+    initialize
+
+    openWindow (Size width height) [DisplayAlphaBits 8] Window <I><FONT COLOR="#B22222">--FullScreen
+</FONT></I>    <I><FONT COLOR="#B22222">-- TODO: mouse wraps horizontally well; not vertically but it's not needed anyway
+</FONT></I>    disableSpecial MouseCursor
+    windowTitle $= <B><FONT COLOR="#BC8F8F">&quot;Hamsters Game version 0.0.2.0&quot;</FONT></B>
+    stencilTest $= Enabled
+
+    matrixMode $= Projection
+    initFrustum <I><FONT COLOR="#B22222">-- TODO: explain this
+</FONT></I>    matrixMode $= Modelview 0
+
+    clearColor $= Color4 0 0 0 1
+    shadeModel $= Smooth
+
+    lighting $= Enabled
+    light (Light 0) $= Enabled
+    depthFunc $= Just Less
+
+    diffuse (Light 0) $= Color4 1 1 1 1
+    position (Light 0) $= Vertex4 1 1 1 0
+
+initGameInput <B><FONT COLOR="#228B22">:: IO GameInput
+</FONT></B>initGameInput = return $ GameInput {key=Nothing, keyState=Nothing, leftClick=False, posMouse=Position 0 0, mWheel = 0, message=dummySCMsg, rightClick = False}
+
+networkInit <B><FONT COLOR="#228B22">:: ReactChan GameInput -&gt; Maybe Handle -&gt; IO ()
+</FONT></B>networkInit rch Nothing = return ()
+networkInit rch (Just handle) = do
+    fail &lt;- hIsClosed handle
+    when fail (error <B><FONT COLOR="#BC8F8F">&quot;networkInit handle fail&quot;</FONT></B>)
+    fid &lt;- forkIO $ do
+        <B><FONT COLOR="#A020F0">let</FONT></B> loop = do
+<I><FONT COLOR="#B22222">--             print (&quot;Waiting for server message on handle &quot; ++ (show handle))
+</FONT></I>             succ &lt;- hWaitForInput handle (-1)
+             when succ $ fetchSCMsg rch handle
+             loop
+        <I><FONT COLOR="#B22222">--loop
+</FONT></I>        catch loop (\e -&gt; print <B><FONT COLOR="#BC8F8F">&quot;Client network thread is dying.&quot;</FONT></B>)
+    return ()
+
+</PRE>
+<HR>
+<A NAME="file18">
+<H1>Server.hs 18/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file17">prev</A>][<A HREF="#file19">next</A>]
+<PRE>
+<B><FONT COLOR="#A020F0">module</FONT></B> Main <B><FONT COLOR="#A020F0">where</FONT></B>
+
+<B><FONT COLOR="#A020F0">import</FONT></B> FRP.Yampa
+<B><FONT COLOR="#A020F0">import</FONT></B> Vec3d
+<B><FONT COLOR="#A020F0">import</FONT></B> Common
+<B><FONT COLOR="#A020F0">import</FONT></B> Collision
+<B><FONT COLOR="#A020F0">import</FONT></B> Data.Maybe
+<B><FONT COLOR="#A020F0">import</FONT></B> Network
+<B><FONT COLOR="#A020F0">import</FONT></B> Network.BSD (getHostName)
+<B><FONT COLOR="#A020F0">import</FONT></B> Network.HTTP (getRequest, simpleHTTP, getResponseBody)
+<B><FONT COLOR="#A020F0">import</FONT></B> Control.Concurrent
+<B><FONT COLOR="#A020F0">import</FONT></B> System.IO
+<B><FONT COLOR="#A020F0">import</FONT></B> IdentityList
+<B><FONT COLOR="#A020F0">import</FONT></B> Monad
+<B><FONT COLOR="#A020F0">import</FONT></B> Data.List
+<B><FONT COLOR="#A020F0">import</FONT></B> System.IO.Error
+<I><FONT COLOR="#B22222">--import System (getArgs)
+</FONT></I><B><FONT COLOR="#A020F0">import</FONT></B> Net()
+
+<I><FONT COLOR="#B22222">-- PlayerID is now name not ID, but server also labels player with ID to use internally
+</FONT></I><B><FONT COLOR="#A020F0">data</FONT></B> ServerState = ServerState {handles <B><FONT COLOR="#228B22">:: ![(Int, Handle)],
+</FONT></B>                                nextID <B><FONT COLOR="#228B22">:: !Int,
+</FONT></B>                                lastExitID <B><FONT COLOR="#228B22">:: !Int,
+</FONT></B>                                allPlayers <B><FONT COLOR="#228B22">:: ![Player],
+</FONT></B>                                allLasers <B><FONT COLOR="#228B22">:: !(IL Laser)}--TODO: why IL on Lasers and why not on Players
+</FONT></B>    <B><FONT COLOR="#A020F0">deriving</FONT></B> (Show, Eq)
+
+emptyServerState <B><FONT COLOR="#228B22">:: ServerState
+</FONT></B>emptyServerState = ServerState{handles=[], nextID=0, lastExitID=(-1), allPlayers=[], allLasers=emptyIL}
+
+serverTracker <B><FONT COLOR="#228B22">:: String
+</FONT></B>serverTracker = <B><FONT COLOR="#BC8F8F">&quot;http://hamsterver.heroku.com/&quot;</FONT></B>
+
+<B><FONT COLOR="#A020F0">data</FONT></B> ServerInput = ServerInput {msg <B><FONT COLOR="#228B22">:: !CSMsg,
+</FONT></B>                                handle <B><FONT COLOR="#228B22">:: !(Maybe Handle)}
+</FONT></B>    <B><FONT COLOR="#A020F0">deriving</FONT></B> (Show, Eq)
+
+<I><FONT COLOR="#B22222">-- TODO: rename dummy to empty for consistency?
+</FONT></I>dummyServerInput <B><FONT COLOR="#228B22">:: ServerInput
+</FONT></B>dummyServerInput = ServerInput {msg = dummyCSMsg, handle = Nothing}
+
+main <B><FONT COLOR="#228B22">:: IO ()
+</FONT></B>main = do
+    <I><FONT COLOR="#B22222">-- Tell the online server tracker that I am open and able to accept request
+</FONT></I>    hostName &lt;- getHostName
+    putStrLn $ <B><FONT COLOR="#BC8F8F">&quot;Informing server tracker about host &quot;</FONT></B> ++ hostName
+    r &lt;- simpleHTTP $ getRequest (serverTracker ++ <B><FONT COLOR="#BC8F8F">&quot;open?name=&quot;</FONT></B> ++ hostName)
+    txt &lt;- getResponseBody r
+    putStrLn txt
+
+    runServer (PortNumber 4444) server
+
+<I><FONT COLOR="#B22222">--    r &lt;- simpleHTTP $ getRequest (serverTracker ++ &quot;close?name=&quot; ++ hostName)
+</FONT></I><I><FONT COLOR="#B22222">--    txt &lt;- getResponseBody r
+</FONT></I><I><FONT COLOR="#B22222">--    putStrLn txt
+</FONT></I>
+runServer <B><FONT COLOR="#228B22">:: PortID -&gt; SF ServerInput (IO()) -&gt; IO ()
+</FONT></B>runServer port sf = withSocketsDo $ do
+          sock &lt;- listenOn port
+
+          (rh,rch) &lt;- reactInit (return dummyServerInput) (\<B><FONT COLOR="#A020F0">_ </FONT></B>sendmsgs -&gt; sendmsgs) sf
+
+          <I><FONT COLOR="#B22222">-- one thread listens for new players joining
+</FONT></I>          forkIO $ acceptClient rch sock
+
+          <I><FONT COLOR="#B22222">-- TODO: explain this hack
+</FONT></I>          <I><FONT COLOR="#B22222">-- want the server to simultaneous functions
+</FONT></I>          <I><FONT COLOR="#B22222">-- * every 100ms, try to update current state of the game
+</FONT></I>          <I><FONT COLOR="#B22222">-- * also update from the channel
+</FONT></I>          <I><FONT COLOR="#B22222">-- 
+</FONT></I>          forkIO $ do
+                <B><FONT COLOR="#A020F0">let</FONT></B> loop = do
+                      reactWriteChan rch id False
+                      threadDelay 10000    <I><FONT COLOR="#B22222">-- Microseconds
+</FONT></I>                      loop
+                loop
+
+          <I><FONT COLOR="#B22222">-- main thread process. TODO: is this readChan/unGetChan stuff necessary? It's yampa limitation. should fix in yampa code
+</FONT></I>          <B><FONT COLOR="#A020F0">let</FONT></B> loop = do
+                a &lt;- readChan rch   <I><FONT COLOR="#B22222">-- Makes this loop block when there's no input
+</FONT></I>                unGetChan rch a
+                react rh rch
+                loop
+          loop 
+      <B><FONT COLOR="#A020F0">where</FONT></B> acceptClient rch sock = do
+                (hand,<B><FONT COLOR="#A020F0">_,_</FONT></B>) &lt;- accept sock
+                open &lt;- hIsOpen hand
+                printFlush (<B><FONT COLOR="#BC8F8F">&quot;Accepting, verify opened: &quot;</FONT></B> ++ show open)
+                forkIO $ do
+                    <B><FONT COLOR="#A020F0">let</FONT></B> loop = do
+                           succ &lt;- hWaitForInput hand (-1)
+                           when succ $ fetchCSMsg rch hand
+                           loop
+                    <I><FONT COLOR="#B22222">-- When player quits, handle becomes invalid (closed by main thread), thus exception thrown       
+</FONT></I>                    catch loop (\e -&gt; print <B><FONT COLOR="#BC8F8F">&quot;Player quit.&quot;</FONT></B>)
+                acceptClient rch sock
+
+initializePlayer <B><FONT COLOR="#228B22">:: ID -&gt; String -&gt; Player
+</FONT></B>initializePlayer pid name = Player {playerID = pid,
+                                    playerPos = Vec3d (25*(fromIntegral pid),0,0),
+                                    playerVel = Vec3d (0,0,0),
+                                    playerAcc = Vec3d (0,0,0),
+                                    playerView = (0,0),
+                                    playerRadius = defRadius,
+                                    playerLife = maxLife,
+                                    playerEnergy = maxEnergy,
+                                    playerColor = <B><FONT COLOR="#A020F0">let</FONT></B> pid' = fromIntegral (pid+2)
+                                                  <B><FONT COLOR="#A020F0">in</FONT></B> Vec3d (0.5, 0.2*pid' - (fromIntegral $ floor $ 0.2*pid'), 0.1*pid' - (fromIntegral $ floor $ 0.1*pid')),
+                                    playerName = name}
+
+server <B><FONT COLOR="#228B22">:: SF ServerInput (IO())
+</FONT></B>server = proc si -&gt; do
+    msgs &lt;- loopPre (emptyServerState, emptyServerState) objSF -&lt; si
+    returnA -&lt; msgs
+
+fetchCSMsg <B><FONT COLOR="#228B22">:: ReactChan ServerInput -&gt; Handle -&gt; IO ()
+</FONT></B>fetchCSMsg rch h = do
+    ln &lt;- hGetLine h
+    <I><FONT COLOR="#B22222">{-
+    let csMsg = destringify ln :: CSMsg
+        b = case csMsg of
+                (_,CSMsgPlayer p) -&gt; playerLife p &lt; 100
+                (_,CSMsgLaser l) -&gt; True
+                _ -&gt; False
+                -}</FONT></I>
+    reactWriteChan rch (\si -&gt; si {msg = destringify ln, handle = Just h}) False
+
+sendSCMsg <B><FONT COLOR="#228B22">:: Handle -&gt; SCMsg -&gt; IO ()
+</FONT></B>sendSCMsg h msg = do
+    <I><FONT COLOR="#B22222">--_ &lt;- hIsOpen h  -- The game breaks if we uncomment this line! WTFWTFWTFWTFTWFFFFFFFFFFFFFFFFFFFF
+</FONT></I>    hPutStrLn h (debugShow (stringify msg))
+    hFlush h
+
+objSF <B><FONT COLOR="#228B22">:: SF (ServerInput, (ServerState, ServerState)) (IO(), (ServerState, ServerState))
+</FONT></B>objSF = proc (si, (sprev, s0)) -&gt; do
+    inputChange &lt;- loopPre dummyServerInput detectChangeSF -&lt; si
+
+    <B><FONT COLOR="#A020F0">let</FONT></B> s1 = updateObjs (s0,inputChange)
+
+    lps &lt;- moveObjs allLasers laserPos laserVel -&lt; s1           <I><FONT COLOR="#B22222">-- calc current lasers' pos
+</FONT></I>    <B><FONT COLOR="#A020F0">let</FONT></B> s2 = s1 {allLasers = zipWithIL (\l p -&gt; l {laserPos = p}) (const Nothing) (const Nothing) (allLasers s1) lps}
+        hits = checkHits (sprev, s2)
+        scMsgs = outputs (s2, inputChange, hits, [])
+
+    returnA -&lt; (sendAll s2 scMsgs, (s2, s1))
+
+sendAll <B><FONT COLOR="#228B22">:: ServerState -&gt; [SCMsg] -&gt; IO()
+</FONT></B>sendAll s msgs = fst $ foldl' (\(io,hndls) msg -&gt; <B><FONT COLOR="#A020F0">let</FONT></B> (io',hndls') = sendMsg (msg,hndls)
+                                                  <B><FONT COLOR="#A020F0">in</FONT></B> (io &gt;&gt; io', hndls'))
+                             (return (),handles s) (mergeSort msgs)
+    <B><FONT COLOR="#A020F0">where</FONT></B>
+        sendMsg ((ident,msg),(hi,h):hndls) = <B><FONT COLOR="#A020F0">case</FONT></B> (ident == hi) <B><FONT COLOR="#A020F0">of</FONT></B>
+                                                 True -&gt; (sendSCMsg h (ident,msg), (hi,h):hndls)
+                                                 False -&gt; sendMsg ((ident,msg),hndls)
+        sendMsg (<B><FONT COLOR="#A020F0">_,[]) </FONT></B>= (return (), [])
+
+        mergeSort [] = []
+        mergeSort [x] = [x]
+        mergeSort l = <B><FONT COLOR="#A020F0">let</FONT></B> (l1,l2) = foldl (\(l1,l2) a -&gt; (l2,a:l1)) ([],[]) l
+                      <B><FONT COLOR="#A020F0">in</FONT></B> merge (mergeSort l1) (mergeSort l2)
+            <B><FONT COLOR="#A020F0">where</FONT></B> merge [] l = l
+                  merge l [] = l
+                  merge l1@(x:xs) l2@(y:ys) = <B><FONT COLOR="#A020F0">if</FONT></B> fst x &lt; fst y <B><FONT COLOR="#A020F0">then</FONT></B> x:(merge xs l2) <B><FONT COLOR="#A020F0">else</FONT></B> y:(merge l1 ys)
+
+moveObjs <B><FONT COLOR="#228B22">:: (ServerState -&gt; IL a) -&gt; (a -&gt; Position3) -&gt; (a -&gt; Velocity3) -&gt; SF ServerState (IL Position3)
+</FONT></B>moveObjs listFun posFun velFun = proc s0 -&gt; do
+    dPs &lt;- integral -&lt; fmap velFun $ listFun s0
+    returnA -&lt; (fmap posFun $ listFun s0) ^+^ dPs
+
+updateObjs <B><FONT COLOR="#228B22">:: (ServerState, Event ServerInput) -&gt; ServerState
+</FONT></B>updateObjs (s, Event ServerInput{msg=(<B><FONT COLOR="#A020F0">_, </FONT></B>CSMsgPlayer p)})               = s{allPlayers = map (\x-&gt;<B><FONT COLOR="#A020F0">if</FONT></B> playerID x == playerID p <B><FONT COLOR="#A020F0">then</FONT></B> p <B><FONT COLOR="#A020F0">else</FONT></B> x) $ allPlayers s}
+updateObjs (s, Event ServerInput{msg=(<B><FONT COLOR="#A020F0">_, </FONT></B>CSMsgUpdate p)})               = s{allPlayers = map (\x-&gt;<B><FONT COLOR="#A020F0">if</FONT></B> playerID x == playerID p <B><FONT COLOR="#A020F0">then</FONT></B> p <B><FONT COLOR="#A020F0">else</FONT></B> x) $ allPlayers s}
+updateObjs (s, Event ServerInput{msg=(<B><FONT COLOR="#A020F0">_, </FONT></B>CSMsgLaser l)})                = s{allLasers  = insertIL l $ allLasers s}
+updateObjs (s, Event ServerInput{msg=(<B><FONT COLOR="#A020F0">_, </FONT></B>CSMsgKillLaser lid)})          = s{allLasers  = filterIL ((/= lid) . laserID) $ allLasers s}
+updateObjs (s, Event ServerInput{msg=(pid, CSMsgDeath h)})  = s{allPlayers = reInitDead pid (allPlayers s)}
+    <B><FONT COLOR="#A020F0">where</FONT></B> reInitDead pid (p:ps) = <B><FONT COLOR="#A020F0">if</FONT></B> playerID p == pid <B><FONT COLOR="#A020F0">then</FONT></B> (initializePlayer pid (playerName p)):ps <B><FONT COLOR="#A020F0">else</FONT></B> p:reInitDead pid ps
+          reInitDead <B><FONT COLOR="#A020F0">_ </FONT></B><B><FONT COLOR="#A020F0">_ </FONT></B>= []
+updateObjs (s, Event ServerInput{msg = (<B><FONT COLOR="#A020F0">_, </FONT></B>CSMsgExit exitPlayerName), handle = Just hand})  = 
+    <B><FONT COLOR="#A020F0">let</FONT></B> newHandles  = filter (\(pid, h) -&gt; h /= hand)  $ handles s
+        (newPlayers, [exitPlayer])  =  partition (\p -&gt; playerName p /= exitPlayerName) $ allPlayers s
+    <B><FONT COLOR="#A020F0">in</FONT></B> s{allPlayers = newPlayers, handles = newHandles, lastExitID = playerID exitPlayer}
+updateObjs (s, Event ServerInput{msg=(<B><FONT COLOR="#A020F0">_, </FONT></B>CSMsgJoin name),handle=Just hand})                 =
+    <B><FONT COLOR="#A020F0">let</FONT></B> pid       = nextID s
+        newPlayer = initializePlayer pid name
+    <B><FONT COLOR="#A020F0">in</FONT></B> s{handles  = handles s ++ [(pid,hand)], nextID = pid+1, allPlayers = allPlayers s ++ [newPlayer]}
+updateObjs (s, NoEvent) = s
+updateObjs (s, <B><FONT COLOR="#A020F0">_) </FONT></B>      = error $ <B><FONT COLOR="#BC8F8F">&quot;updateObjs couldn't find a match for &quot;</FONT></B> ++ (show s)
+
+checkHits <B><FONT COLOR="#228B22">:: (ServerState, ServerState) -&gt; [Hit]
+</FONT></B>checkHits (sprev, s) = catMaybes $ map collisionLP [(lprev,l,p) | (lprev,l) &lt;- map snd $ assocsIL $
+                                                                     zipWithIL (\a b -&gt; (a,b)) (const Nothing) (const Nothing)
+                                                                               (allLasers sprev) (allLasers s),
+                                                                  p &lt;- allPlayers s, laserpID l /= playerID p]
+<I><FONT COLOR="#B22222">{-
+checkCollisions :: ServerState -&gt; [Player]
+checkCollisions s = flatten $ catMaybes $ map collisionPP [(p1,p2) | p1 &lt;- allPlayers s,
+                                                                     p2 &lt;- allPlayers s,
+                                                                     playerID p1 &lt; playerID p2] -- to avoid duplicates
+    where flatten ((p1,p2):ps) = debug (&quot;p1 = &quot; ++ (show $ playerID p1) ++ &quot; &amp;&amp; p2 = &quot; ++ (show $ playerID p2)) $ [p1,p2] ++ (flatten ps)
+          flatten [] = []
+
+collisionUpdates :: (ServerState, [Player]) -&gt; ServerState
+collisionUpdates (s, colliders) = s{allPlayers = map (getCol colliders) $ allPlayers s}
+    where getCol :: [Player] -&gt; Player -&gt; Player
+          getCol (c:cs) p = if playerID c == playerID p then c else getCol cs p
+          getCol [] p = p
+
+updatePlayersPos :: (ServerState, [Position3]) -&gt; ServerState
+updatePlayersPos (s, posList) = s{allPlayers = playersList}
+    where playersList = zipWith (\pos p -&gt; p{playerPos = pos}) posList (allPlayers s)
+-}</FONT></I>
+outputs <B><FONT COLOR="#228B22">:: (ServerState, Event ServerInput, [Hit], [Player]) -&gt; [SCMsg]
+</FONT></B>outputs (s, esi, hits, collisions) =
+    <B><FONT COLOR="#A020F0">let</FONT></B> allIDs = map playerID $ allPlayers s
+        <I><FONT COLOR="#B22222">-- TODO: remove colIDs
+</FONT></I>        colIDs = map playerID $ collisions
+        playerUpdates = event []
+                        (\si -&gt; <B><FONT COLOR="#A020F0">case</FONT></B> msg si <B><FONT COLOR="#A020F0">of</FONT></B> <I><FONT COLOR="#B22222">-- player updates (exclude sender from recips, colliding players from list)
+</FONT></I>                            (pid, CSMsgPlayer p) -&gt; [(i, SCMsgPlayer p) | i &lt;- allIDs, i /= pid, pid `notElem` colIDs]
+                            (pid, CSMsgLaser l ) -&gt; [(i, SCMsgSpawn (LaserObj l)) | i &lt;- allIDs, i /= pid]
+                            (pid, CSMsgDeath h) -&gt; <B><FONT COLOR="#A020F0">let</FONT></B> pl = <B><FONT COLOR="#A020F0">case</FONT></B> find ((pid ==) . playerID) (allPlayers s) <B><FONT COLOR="#A020F0">of</FONT></B>
+                                                                            Nothing -&gt; error <B><FONT COLOR="#BC8F8F">&quot;Couldn't find a player that was just killed...???&quot;</FONT></B>
+                                                                            Just p -&gt; p
+                                                       <I><FONT COLOR="#B22222">{-pl' = case find ((player1ID h ==) . playerID) (allPlayers s) of
+                                                                            Nothing -&gt; error &quot;Couldn't find a player that just killed someone...???&quot;
+                                                                            Just p' -&gt; p'
+                                                        -}</FONT></I>
+                                                   <B><FONT COLOR="#A020F0">in</FONT></B> [(i, SCMsgSpawn (PlayerObj pl)) | i &lt;- allIDs, i /= playerID pl] ++
+                                                      [(i, SCMsgFrag h) | i &lt;- allIDs] ++
+                                                      [(pid, SCMsgInitialize pl)]
+                            (<B><FONT COLOR="#A020F0">_, </FONT></B>CSMsgJoin <B><FONT COLOR="#A020F0">_) </FONT></B>-&gt; <B><FONT COLOR="#A020F0">let</FONT></B> pl = head $ reverse $ allPlayers s
+                                                  <B><FONT COLOR="#A020F0">in</FONT></B> [(playerID pl, SCMsgInitialize pl)] ++
+                                                     [(playerID pl, SCMsgSpawn (PlayerObj p)) | p &lt;- allPlayers s, playerID p /= playerID pl] ++
+                                                     [(i, SCMsgSpawn (PlayerObj pl)) | i &lt;- allIDs, i /= playerID pl]
+                            <I><FONT COLOR="#B22222">-- Send SCMsgExit so client can delete the object?
+</FONT></I>                            (<B><FONT COLOR="#A020F0">_, </FONT></B>CSMsgExit name) -&gt; [(i, SCMsgRemove (lastExitID s)) | i &lt;- allIDs]
+                                                 
+                            <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; []) esi
+     <B><FONT COLOR="#A020F0">in</FONT></B> (playerUpdates ++ [(i, SCMsgHit h) | i &lt;- allIDs, h &lt;- hits] <I><FONT COLOR="#B22222">-- hit broadcasts
+</FONT></I>                       ++ [(i, SCMsgPlayer p) | i &lt;- allIDs, p &lt;- collisions]) <I><FONT COLOR="#B22222">-- collision broadcasts
+</FONT></I>
+</PRE>
+<HR>
+<A NAME="file19">
+<H1>Sprites.hs 19/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file18">prev</A>][<A HREF="#file20">next</A>]
+<PRE>
+<I><FONT COLOR="#B22222">{-
+This module provides the necessary tools for drawing flat sprites using OpenGL.
+Sprites are simply drawn as quads (sets of four points) with textures applied.  This module provides functions for easily setting up the environment, loading textures, and drawing them to the screen.
+-}</FONT></I>
+
+<B><FONT COLOR="#A020F0">module</FONT></B> Sprites (spriteInit, spriteDisable, createTexture, createTextures, displaySprite, displaySpriteWithFrame, displaySprite3D) <B><FONT COLOR="#A020F0">where</FONT></B>
+
+<B><FONT COLOR="#A020F0">import</FONT></B> ReadImage (readImage)
+<B><FONT COLOR="#A020F0">import</FONT></B> Monad (when)
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.Rendering.OpenGL
+
+<I><FONT COLOR="#B22222">{-
+This function sets the OpenGL environment up to handle translucent sprites.
+This function makes use of some parts of HOpenGL which are changing, and so attempting to compile it with the latest libraries may not work.  We have marked up the parts which may become obsolete in the near future.
+This function should be called after OpenGL has set up its window, but before drawing occurs.
+-}</FONT></I>
+
+spriteInit <B><FONT COLOR="#228B22">:: Int -&gt; Int -&gt; IO ()  -- this function takes two Int's, the screen length and the screen height.  Note that these numbers do not need to corrospond to the window size in any way.
+</FONT></B>spriteInit x y = do
+	blendEquation $= FuncAdd  <I><FONT COLOR="#B22222">--
+</FONT></I>	blend $= Enabled  <I><FONT COLOR="#B22222">-- this may be necessary in the future.  Right now, this functionality is encapsulated in the line above (blendEquation $= Just FuncAdd).
+</FONT></I>	blendFunc $= (SrcAlpha, OneMinusSrcAlpha)  <I><FONT COLOR="#B22222">-- this defines how colors will be blended when they are drawn to the framebuffer.  This means that transparent colors will let the background show through and opaque colors will be drawn over it.
+</FONT></I>	textureFunction $= Replace  <I><FONT COLOR="#B22222">-- when textures are applied to our polygons, we would like for their color and alpha information to replace.
+</FONT></I>	texture Texture2D $= Enabled  <I><FONT COLOR="#B22222">-- enable 2D textures.
+</FONT></I>	clearColor $= Color4 0.0 0.0 0.0 0.0  <I><FONT COLOR="#B22222">-- we want the framebuffer's clear color to be black (we're really just doing this for the alpha information).
+</FONT></I>	color (Color4 0.0 0.0 0.0 (1.0 <B><FONT COLOR="#228B22">:: GLfloat))  -- we define the color that all of the quads will be before textures are applied.  We want it to have an alpha value of 1.0.
+</FONT></B>	ortho 0.0 (fromIntegral x) 0.0 (fromIntegral y) (-1.0) (1.0)  <I><FONT COLOR="#B22222">-- this is somewhat of a hack.  Think of it as defining how many pixels large the screen is.
+</FONT></I>
+spriteDisable <B><FONT COLOR="#228B22">:: IO ()
+</FONT></B>spriteDisable = do
+    blend $= Disabled
+    texture Texture2D $= Disabled
+    return ()
+<I><FONT COLOR="#B22222">{-
+This function provides a way to load a raw image file into memory.  If the load fails, this function will return Nothing.
+The readImage function called in this routine is part of a module called ReadImage which was written by Sven Panne.  The function has been slightly modified to read alpha data.
+-}</FONT></I>
+
+createTexture <B><FONT COLOR="#228B22">:: FilePath -&gt; (Bool, Bool) -&gt; IO (Maybe TextureObject)  -- the user must pass a FilePath to the desired image and a Bool tuple which determines whether the texture is repeated in the x and y directions.
+</FONT></B>createTexture filename (repeatX, repeatY) = preservingMatrix $ do
+	[texName] &lt;- genObjectNames 1  <I><FONT COLOR="#B22222">-- generate our texture.
+</FONT></I>	textureBinding Texture2D $= Just texName  <I><FONT COLOR="#B22222">-- make our new texture the current texture.
+</FONT></I>	when repeatX (textureWrapMode Texture2D S $= (Repeated, Repeat))  <I><FONT COLOR="#B22222">-- define wrapping along the x axis.
+</FONT></I>	when repeatY (textureWrapMode Texture2D T $= (Repeated, Repeat))  <I><FONT COLOR="#B22222">-- define wrapping along the y axis.
+</FONT></I>	textureFilter Texture2D $= ((Nearest, Nothing), Nearest)  <I><FONT COLOR="#B22222">-- ?  This is necessary, but I don't know what it does.
+</FONT></I>	((Size x y), pixels) &lt;- readImage filename  <I><FONT COLOR="#B22222">-- read our image into a PixelData structure.
+</FONT></I>	texImage2D Nothing NoProxy 0 RGBA' (TextureSize2D x y) 0 pixels  <I><FONT COLOR="#B22222">-- associate our image with our new texture.  Since we are dealing with sprites, we do not wish to create mipmaps.
+</FONT></I>	return (Just texName)  <I><FONT COLOR="#B22222">-- return our (Maybe TextureObject) for later use.
+</FONT></I>
+
+<I><FONT COLOR="#B22222">{-
+This function is provided as a convenience, and can be used to load multiple textures at once.
+-}</FONT></I>
+
+createTextures <B><FONT COLOR="#228B22">:: [(FilePath, (Bool, Bool))] -&gt; IO [(Maybe TextureObject)]
+</FONT></B>createTextures parameters = mapM (uncurry createTexture) parameters
+
+
+<I><FONT COLOR="#B22222">{-
+This function will draw a sprite to the screen, but by displaying only a certain part of the sprite's texture.
+This function is meant for animation whose frames are all stored in a single texture.
+This function uses the user-provided indexing-function to translate an animation frame number into a rectangle on the texture.
+-}</FONT></I>
+
+displaySpriteWithFrame <B><FONT COLOR="#228B22">:: Maybe TextureObject -&gt; (Int, Int) -&gt; (Int, Int) -&gt; (Int -&gt; ((GLfloat, GLfloat), (GLfloat, GLfloat))) -&gt; Int -&gt; GLfloat -&gt; IO ()
+</FONT></B>displaySpriteWithFrame image minn maxx func frame angle = displaySpriteBackend image (findCenterBackend minn maxx) (findSizeBackend minn maxx) texMin texMax angle
+	<B><FONT COLOR="#A020F0">where</FONT></B> (texMin, texMax) = func frame
+
+
+<I><FONT COLOR="#B22222">{-
+This function will draw a sprite to the screen.  It is provided as a useful frontend.
+The user must provide the lower-left hand Integer coordinates of the sprite and the upper-right hand coordinates as well as the lower-left and upper-right texture coordinates to draw from.  A rotation angle can also be specified.
+-}</FONT></I>
+
+displaySprite <B><FONT COLOR="#228B22">:: Maybe TextureObject -&gt; (Int, Int) -&gt; (Int, Int) -&gt; (GLfloat, GLfloat) -&gt; (GLfloat, GLfloat) -&gt; GLfloat -&gt; IO ()
+</FONT></B>displaySprite image min max texMin texMax angle = displaySpriteBackend image (findCenterBackend min max) (findSizeBackend min max) texMin texMax angle
+
+
+<I><FONT COLOR="#B22222">{-
+This function is called by both displaySpriteWithFrame and displaySprite, and it does all of the hard work.
+
+In order, this function takes a (Maybe TextureObject), which is our texture,
+a GLfloat pair which is screen coordinates of the sprite's center,
+a GLfloat pair which is half of the sprite's size in each dimension,
+two GLfloat pairs which are the lower-left and upper-right texture coordinates,
+and a GLfloat which is the sprite's angle of rotation.
+-}</FONT></I>
+
+displaySpriteBackend <B><FONT COLOR="#228B22">:: Maybe TextureObject -&gt; (GLfloat, GLfloat) -&gt; (GLfloat, GLfloat) -&gt; (GLfloat, GLfloat) -&gt; (GLfloat, GLfloat) -&gt; GLfloat -&gt; IO ()
+</FONT></B>displaySpriteBackend image (cx, cy) (sx, sy) (tx0, ty0) (tx1, ty1) angle = do
+	textureBinding Texture2D $= image  <I><FONT COLOR="#B22222">-- set our (Maybe TextureObject) as our current texture.
+</FONT></I>	preservingMatrix $ do  <I><FONT COLOR="#B22222">-- since our screen coordinates and rotation angle are specific to this sprite, we wish for the drawing operations to take place while preserving our original matrix.
+</FONT></I>		translate $ Vector3 cx cy 0  <I><FONT COLOR="#B22222">-- set the sprite's translated coordinates.
+</FONT></I>		rotate angle $ Vector3 0 0 1  <I><FONT COLOR="#B22222">-- set the sprite's rotation.
+</FONT></I>		<B><FONT COLOR="#A020F0">let</FONT></B> verts = [(Vertex3 (-sx) (-sy) 0), (Vertex3 (-sx) (sy) 0), (Vertex3 (sx) (sy) 0), (Vertex3 (sx) (-sy) 0)]  <I><FONT COLOR="#B22222">-- define the verticies of our quad.
+</FONT></I>		    texs = [(TexCoord2 tx0 ty1), (TexCoord2 tx0 ty0), (TexCoord2 tx1 ty0), (TexCoord2 tx1 ty1)]  <I><FONT COLOR="#B22222">-- define the corrosponding texture coordinates.
+</FONT></I>		renderPrimitive Quads $ do mapVerticies texs verts  <I><FONT COLOR="#B22222">-- draw the entire quad, textures and all.
+</FONT></I>
+displaySprite3D <B><FONT COLOR="#228B22">:: Maybe TextureObject
+</FONT></B>                        -&gt; Vertex3 GLfloat -&gt; Vertex3 GLfloat -&gt; Vertex3 GLfloat -&gt; Vertex3 GLfloat
+                        -&gt; (GLfloat, GLfloat) -&gt; (GLfloat, GLfloat) -&gt; IO ()
+displaySprite3D image p1 p2 p3 p4 (tx0, ty0) (tx1, ty1) = do
+	textureBinding Texture2D $= image  <I><FONT COLOR="#B22222">-- set our (Maybe TextureObject) as our current texture.
+</FONT></I>	preservingMatrix $ do
+		<B><FONT COLOR="#A020F0">let</FONT></B> verts = [p1, p2, p3, p4]    <I><FONT COLOR="#B22222">-- verticies of our quad.
+</FONT></I>		    texs = [(TexCoord2 tx0 ty1), (TexCoord2 tx0 ty0), (TexCoord2 tx1 ty0), (TexCoord2 tx1 ty1)]  <I><FONT COLOR="#B22222">-- define the corrosponding texture coordinates.
+</FONT></I>		renderPrimitive Quads $ do mapVerticies texs verts  <I><FONT COLOR="#B22222">-- draw the entire quad, textures and all.
+</FONT></I>
+
+<I><FONT COLOR="#B22222">{-
+This function takes the lower-left hand and upper-right hand coordinates of a sprite rectangle and determines where the center of the rectangle is.
+The result of this function is passed into displaySpriteBackend.
+-}</FONT></I>
+
+findCenterBackend <B><FONT COLOR="#228B22">:: (Int, Int) -&gt; (Int, Int) -&gt; (GLfloat, GLfloat)
+</FONT></B>findCenterBackend (x0, y0) (x1, y1) = (((fromIntegral (x1 - x0)) / 2) + (fromIntegral x0), ((fromIntegral (y1 - y0)) / 2) + (fromIntegral y0))
+
+
+<I><FONT COLOR="#B22222">{-
+This function takes the lower-left hand and upper-right hand coordinates of a sprite rectangle and determines the rectangle's size.
+The result of this function is passed into displaySpriteBackend.
+-}</FONT></I>
+
+findSizeBackend <B><FONT COLOR="#228B22">:: (Int, Int) -&gt; (Int, Int) -&gt; (GLfloat, GLfloat)
+</FONT></B>findSizeBackend (x0, y0) (x1, y1) = ((fromIntegral (x1 - x0)) / 2, (fromIntegral (y1 - y0)) / 2)
+
+
+<I><FONT COLOR="#B22222">{-
+A routine used to set coordinates.  Called by mapVerticies.
+-}</FONT></I>
+
+setVertex <B><FONT COLOR="#228B22">:: (TexCoord2 GLfloat, Vertex3 GLfloat) -&gt; IO ()
+</FONT></B>setVertex (texCoordinates, vertexCoordinates) = do texCoord texCoordinates; vertex vertexCoordinates;
+
+
+<I><FONT COLOR="#B22222">{-
+A routine used to draw a list of coordinates.  Called by displaySpriteBackend.
+-}</FONT></I>
+
+mapVerticies <B><FONT COLOR="#228B22">:: [(TexCoord2 GLfloat)] -&gt; [(Vertex3 GLfloat)] -&gt; IO ()
+</FONT></B>mapVerticies texs verts = mapM_ setVertex (zip texs verts)
+</PRE>
+<HR>
+<A NAME="file20">
+<H1>TerrainData.hs 20/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file19">prev</A>][<A HREF="#file21">next</A>]
+<PRE>
+<B><FONT COLOR="#A020F0">module</FONT></B> TerrainData <B><FONT COLOR="#A020F0">where</FONT></B>
+
+<B><FONT COLOR="#A020F0">import</FONT></B> Vec3d
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.Rendering.OpenGL <B><FONT COLOR="#A020F0">hiding</FONT></B> (Texture)
+<B><FONT COLOR="#A020F0">import</FONT></B> GHC.Float
+<B><FONT COLOR="#A020F0">import</FONT></B> Colors
+<B><FONT COLOR="#A020F0">import</FONT></B> Terrain
+<B><FONT COLOR="#A020F0">import</FONT></B> Textures
+<B><FONT COLOR="#A020F0">import</FONT></B> Data.Maybe
+<B><FONT COLOR="#A020F0">import</FONT></B> System.IO.Unsafe
+<B><FONT COLOR="#A020F0">import</FONT></B> Data.Complex
+
+<I><FONT COLOR="#B22222">-------------------------------------------------------------------------------------------------------------
+</FONT></I><I><FONT COLOR="#B22222">-- Mandelfall aka Waterbrot
+</FONT></I><I><FONT COLOR="#B22222">--      by Alex
+</FONT></I>
+dr, mdepth, msize, mxoffset, myoffset <B><FONT COLOR="#228B22">:: Float
+</FONT></B>dr = 0.1
+mdepth = 48
+msize = 23
+mxoffset = -2.3
+myoffset = -2.3
+
+mkcol <B><FONT COLOR="#228B22">:: GLfloat -&gt; Surface
+</FONT></B>mkcol x = <B><FONT COLOR="#A020F0">let</FONT></B> r = x-0.75
+              g = 0.25
+              b = 0.25+x
+              a = 1-x
+           <B><FONT COLOR="#A020F0">in</FONT></B> Terrain.Color (Col {cdiffuse=(Color4 r g b a),
+                                  cspecular=(Color4 r g b a),
+                                  cambient=(Color4 r g b a),
+                                  cemissive=(Color4 r g b a),
+                                  cshininess=100})
+
+mand <B><FONT COLOR="#228B22">:: Float -&gt; Float -&gt; Float
+</FONT></B>mand x y = mand' (x:+y) 0 0
+mand' <B><FONT COLOR="#228B22">:: Complex Float -&gt; Complex Float -&gt; Float -&gt; Float
+</FONT></B>mand' xy z i = <B><FONT COLOR="#A020F0">if</FONT></B> magnitude z &gt; 2 <B><FONT COLOR="#A020F0">then</FONT></B> i
+               <B><FONT COLOR="#A020F0">else</FONT></B> <B><FONT COLOR="#A020F0">if</FONT></B> i &gt;= dr*mdepth <B><FONT COLOR="#A020F0">then</FONT></B> dr*mdepth
+               <B><FONT COLOR="#A020F0">else</FONT></B> mand' xy (z*z+xy) (i + dr)
+
+surfaceSegment <B><FONT COLOR="#228B22">:: (Float -&gt; Float -&gt; Float) -&gt; Float -&gt; Float -&gt; TerrainElement
+</FONT></B>surfaceSegment f x y = CompoundTerrain nullTransform $
+    <B><FONT COLOR="#A020F0">let</FONT></B> f00 = f x y
+        f10 = f (x+dr) y
+        f01 = f x (y+dr)
+        f11 = f (x+dr) (y+dr)
+     <B><FONT COLOR="#A020F0">in</FONT></B> [SimpleTerrain (Tri (Vec3d (x,y,f00)) (Vec3d (x+dr,y,f10)) (Vec3d (x,y+dr,f01)) nullTransform)
+                       (mkcol $ (f00 + f10 + f01) / (3*mdepth*dr)),
+         SimpleTerrain (Tri (Vec3d (x+dr,y+dr,f11)) (Vec3d (x,y+dr,f01)) (Vec3d (x+dr,y,f10)) nullTransform)
+                       (mkcol $ (f11 + f10 + f01) / (3*mdepth*dr))]
+
+waterfall <B><FONT COLOR="#228B22">:: TerrainElement
+</FONT></B>waterfall = CompoundTerrain nullTransform{toffset=Vec3d(76,-15,53),tscale=Vec3d(4,4,-15),ttheta=90}
+    [surfaceSegment mand x y | x &lt;- map ((mxoffset +).(dr *)) [0..msize-1], y &lt;- map ((myoffset +).(dr *)) [0..msize-1]]
+
+
+<I><FONT COLOR="#B22222">--------------------------------------------------------------------------------------------------------------
+</FONT></I><I><FONT COLOR="#B22222">-- Some transforms for testing
+</FONT></I>
+nullTransform <B><FONT COLOR="#228B22">:: Transform
+</FONT></B>nullTransform = Transform{toffset=(Vec3d(0.0,0.0,0.0)), tscale=(Vec3d(1.0,1.0,1.0)), ttheta=0.0, tphi=0.0}
+
+testTransform <B><FONT COLOR="#228B22">:: Transform
+</FONT></B>testTransform = Transform{toffset=(Vec3d(5.0,1.0,0.0)), tscale=(Vec3d(1.0,1.0,1.0)), ttheta=90.0, tphi=90.0}
+
+moveBack <B><FONT COLOR="#228B22">:: Transform
+</FONT></B>moveBack = Transform (Vec3d(20, 0,0)) (Vec3d(1,1,1)) 0 0
+<I><FONT COLOR="#B22222">{-
+glutObjectExample :: Geometry
+glutObjectExample = GLUTObject (Teapot 0.5) nullTransform
+-}</FONT></I>
+quadExample <B><FONT COLOR="#228B22">:: Geometry
+</FONT></B>quadExample = Quad (Vec3d(9,-1,-1)) (Vec3d(9,-1,1)) (Vec3d(9,1,1)) (Vec3d(9,1,-1)) nullTransform
+
+quad0 <B><FONT COLOR="#228B22">:: TerrainElement
+</FONT></B>quad0 = SimpleTerrain quadExample surfaceExample
+
+floorDepth <B><FONT COLOR="#228B22">:: Float
+</FONT></B>floorDepth = -20
+floorExample <B><FONT COLOR="#228B22">:: Geometry
+</FONT></B>floorExample = Quad (Vec3d(0,-100,floorDepth)) (Vec3d(100,-100,floorDepth)) (Vec3d(100,100,floorDepth)) (Vec3d(0,100,floorDepth)) nullTransform
+<I><FONT COLOR="#B22222">{-
+vertex $ (Vertex3 ((5)::GLfloat) (-1) (-1))
+        vertex $ (Vertex3 ((5)::GLfloat) (-1) 1)
+        vertex $ (Vertex3 ((5)::GLfloat) 1 (1))
+        vertex $ (Vertex3 (5::GLfloat) 1 (-1))
+-}</FONT></I>
+
+surfaceExample <B><FONT COLOR="#228B22">:: Surface
+</FONT></B>surfaceExample = Terrain.Color (Col {cdiffuse=(Color4 0.5 0.0 0.0 1.0),cspecular=(Color4 0.2 0.2 0.0 1.0),cambient=(Color4 0.0 0.0 0.0 0.0),cemissive=(Color4 1.0 0.0 0.0 1.0),cshininess=100})
+
+<I><FONT COLOR="#B22222">--
+</FONT></I>makeTextureUnsafe <B><FONT COLOR="#228B22">:: String -&gt; Surface
+</FONT></B>makeTextureUnsafe str = Terrain.Texture (fromJust $ unsafePerformIO (getAndCreateTexture str))
+
+
+<I><FONT COLOR="#B22222">--- BAD ---
+</FONT></I>akwTexture <B><FONT COLOR="#228B22">:: Surface
+</FONT></B>akwTexture = makeTextureUnsafe <B><FONT COLOR="#BC8F8F">&quot;bricks&quot;</FONT></B>
+
+bectonTexture <B><FONT COLOR="#228B22">:: Surface
+</FONT></B>bectonTexture = makeTextureUnsafe <B><FONT COLOR="#BC8F8F">&quot;stone_small&quot;</FONT></B>
+
+floorTexture <B><FONT COLOR="#228B22">:: Surface
+</FONT></B>floorTexture = makeTextureUnsafe <B><FONT COLOR="#BC8F8F">&quot;concrete&quot;</FONT></B>
+
+skyTexture <B><FONT COLOR="#228B22">:: Surface
+</FONT></B>skyTexture = makeTextureUnsafe <B><FONT COLOR="#BC8F8F">&quot;blue_sky3&quot;</FONT></B>
+
+hamsterTexture <B><FONT COLOR="#228B22">:: Maybe TextureObject
+</FONT></B>hamsterTexture = unsafePerformIO (getAndCreateTexture <B><FONT COLOR="#BC8F8F">&quot;hamTex&quot;</FONT></B>)
+
+explodeTexture <B><FONT COLOR="#228B22">:: Maybe TextureObject
+</FONT></B>explodeTexture = unsafePerformIO (getAndCreateTexture <B><FONT COLOR="#BC8F8F">&quot;explode_texture&quot;</FONT></B>)
+
+crosshairTexture <B><FONT COLOR="#228B22">:: Maybe TextureObject
+</FONT></B>crosshairTexture = unsafePerformIO (getAndCreateTexture <B><FONT COLOR="#BC8F8F">&quot;crosshaira&quot;</FONT></B>)
+
+bloodTexture <B><FONT COLOR="#228B22">:: Maybe TextureObject
+</FONT></B>bloodTexture = unsafePerformIO (getAndCreateTexture <B><FONT COLOR="#BC8F8F">&quot;blood_texture&quot;</FONT></B>)
+
+glowTexture <B><FONT COLOR="#228B22">:: Maybe TextureObject
+</FONT></B>glowTexture = unsafePerformIO (getAndCreateTexture <B><FONT COLOR="#BC8F8F">&quot;glow_texture&quot;</FONT></B>)
+
+<I><FONT COLOR="#B22222">--------------------------------------------------------------------------------------------------------------
+</FONT></I><I><FONT COLOR="#B22222">-- Demo Terrain
+</FONT></I>
+surfacef <B><FONT COLOR="#228B22">:: Colors.Color -&gt; Surface
+</FONT></B>surfacef x = Terrain.Color (Col {cdiffuse=(colorf x),cspecular=(Color4 0.0 0.0 0.0 1.0),cambient=(colorf x),cemissive=(Color4 0.0 0.0 0.0 1.0),cshininess=50})
+
+
+mt <B><FONT COLOR="#228B22">:: Vec3d -&gt; Transform
+</FONT></B>mt x = Transform{toffset=x, tscale=(Vec3d(1.0,1.0,1.0)), ttheta=0.0, tphi=0.0}
+
+pillarColor <B><FONT COLOR="#228B22">:: Surface
+</FONT></B>pillarColor = Terrain.Color (Col {cdiffuse=(Color4 0.7 0.7 0.7 1.0),cspecular=(Color4 0.1 0.1 0.1 1.0),cambient=(Color4 1.0 1.0 1.0 1.0),cemissive=(Color4 0.0 0.0 0.0 1.0),cshininess=100})
+
+buildingColor <B><FONT COLOR="#228B22">:: Surface
+</FONT></B>buildingColor = Terrain.Color (Col {cdiffuse=(Color4 0.5 0.0 0.0 1.0),cspecular=(Color4 0.2 0.2 0.0 1.0),cambient=(Color4 0.0 0.0 0.0 0.0),cemissive=(Color4 1.0 0.0 0.0 1.0),cshininess=100})
+
+boxGeometry <B><FONT COLOR="#228B22">:: Geometry
+</FONT></B>boxGeometry = Cube 1.0 nullTransform
+
+cylinderGeometry <B><FONT COLOR="#228B22">:: Geometry
+</FONT></B>cylinderGeometry = GLUQuadric (Cylinder 1.0 1.0 1.0 10 10) (QuadricStyle (Just Smooth) NoTextureCoordinates Outside FillStyle) nullTransform
+
+bectonBottom <B><FONT COLOR="#228B22">:: TerrainElement
+</FONT></B>bectonBottom = CompoundTerrain Transform{toffset=(Vec3d(3.0,0.0,1.5)), tscale=(Vec3d(7.0,1.0,3.0)), ttheta=0.0, tphi=0.0}
+  [SimpleTerrain boxGeometry bectonTexture]
+
+bectonTop <B><FONT COLOR="#228B22">:: TerrainElement
+</FONT></B>bectonTop = CompoundTerrain Transform{toffset=(Vec3d(3.0,2.0,2.0)), tscale=(Vec3d(7.0,3.0,2.0)), ttheta=0.0, tphi=0.0}
+  [SimpleTerrain boxGeometry bectonTexture]
+
+
+pillar <B><FONT COLOR="#228B22">:: TerrainElement
+</FONT></B>pillar = CompoundTerrain Transform{toffset=(Vec3d(0.0,0.0,0.0)), tscale=(Vec3d(0.25,0.25,1.0)), ttheta=0.0, tphi=0.0}
+  [SimpleTerrain cylinderGeometry (surfacef Grey)]
+
+pillars <B><FONT COLOR="#228B22">:: TerrainElement
+</FONT></B>pillars = CompoundTerrain Transform{toffset=(Vec3d(0.0,1.5,0.0)), tscale=(Vec3d(1,1,1.0)), ttheta=0.0, tphi=0.0}
+  [CompoundTerrain (mt $ Vec3d(0.5,1.0,0.0)) [pillar],
+  CompoundTerrain (mt $ Vec3d(1.5,1.0,0.0)) [pillar],
+  CompoundTerrain (mt $ Vec3d(2.5,1.0,0.0)) [pillar],
+  CompoundTerrain (mt $ Vec3d(3.5,1.0,0.0)) [pillar],
+  CompoundTerrain (mt $ Vec3d(4.5,1.0,0.0)) [pillar],
+  CompoundTerrain (mt $ Vec3d(5.5,1.0,0.0)) [pillar]]
+
+tunnel <B><FONT COLOR="#228B22">:: TerrainElement
+</FONT></B>tunnel = CompoundTerrain Transform{toffset=Vec3d(8,0,1),tscale=Vec3d(10,0.5,0.5), ttheta=0, tphi=0}
+    [SimpleTerrain boxGeometry floorTexture]
+<I><FONT COLOR="#B22222">--}
+</FONT></I>akw, akw1 <B><FONT COLOR="#228B22">:: TerrainElement
+</FONT></B><I><FONT COLOR="#B22222">--akw = SimpleTerrain (GLUTObject (Cube 1.0) trans) akwTexture Solid
+</FONT></I><I><FONT COLOR="#B22222">--    where trans = Transform{toffset = Vec3d (11,0,1), tscale = Vec3d (3,4,2), ttheta = 0, tphi = 0}
+</FONT></I>akw1 = CompoundTerrain Transform{toffset=(Vec3d(11,0,1)), tscale=(Vec3d(3.0,4.0,2.0)), ttheta=0.0, tphi=0.0} [SimpleTerrain boxGeometry akwTexture]
+akw = CompoundTerrain nullTransform [akw1,CompoundTerrain nullTransform{toffset=Vec3d(-0.3,-0.3,0.0001)} [akw1]]
+
+floorGeo <B><FONT COLOR="#228B22">:: Geometry
+</FONT></B>floorGeo = Quad (Vec3d(0,-1,0)) (Vec3d(1,-1,0)) (Vec3d(1,1,0)) (Vec3d(0,1,0)) Transform{toffset=(Vec3d(-250.0,0.0,0.0)), tscale=(Vec3d(1000.0,1000.0,1000.0)), ttheta=0.0, tphi=0.0}
+
+demoFloor <B><FONT COLOR="#228B22">:: TerrainElement
+</FONT></B>demoFloor = SimpleTerrain floorGeo floorTexture
+
+skyGeometry <B><FONT COLOR="#228B22">:: Geometry
+</FONT></B>skyGeometry = Cube 500.0 nullTransform
+
+demoSkybox <B><FONT COLOR="#228B22">:: TerrainElement
+</FONT></B>demoSkybox = SimpleTerrain skyGeometry skyTexture
+
+skyDomeGeo <B><FONT COLOR="#228B22">:: Geometry
+</FONT></B>skyDomeGeo = GLUQuadric (Sphere 500 1000 1000) (QuadricStyle (Just Smooth) GenerateTextureCoordinates Inside FillStyle) nullTransform
+
+demoSkyDome <B><FONT COLOR="#228B22">:: TerrainElement
+</FONT></B>demoSkyDome = SimpleTerrain skyDomeGeo skyTexture
+
+
+buildings <B><FONT COLOR="#228B22">:: TerrainElement
+</FONT></B>buildings = CompoundTerrain Transform{toffset=(Vec3d((-200.0),(-75.0),0.0)), tscale=(Vec3d(30.0,30.0,30.0)), ttheta=0.0, tphi=0.0} [tunnel, bectonBottom, akw, pillars, bectonTop]
+
+demoTerrain, quickTerrain <B><FONT COLOR="#228B22">:: TerrainElement
+</FONT></B>demoTerrain = CompoundTerrain Transform{toffset=(Vec3d(0.0,0.0,-8.0)), tscale=(Vec3d(1.0,1.0,1.0)), ttheta=0.0, tphi=0.0} [buildings, demoFloor, demoSkyDome]
+quickTerrain = CompoundTerrain Transform{toffset=(Vec3d(0.0,0.0,-0.75)), tscale=(Vec3d(1.0,1.0,1.0)), ttheta=0.0, tphi=0.0} [buildings, demoSkybox]
+
+
+<I><FONT COLOR="#B22222">--------------------------------------------------------------------------------------------------------------
+</FONT></I>
+</PRE>
+<HR>
+<A NAME="file21">
+<H1>Terrain.hs 21/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file20">prev</A>][<A HREF="#file22">next</A>]
+<PRE>
+<B><FONT COLOR="#A020F0">module</FONT></B> Terrain <B><FONT COLOR="#A020F0">where</FONT></B>
+
+<B><FONT COLOR="#A020F0">import</FONT></B> Vec3d
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.Rendering.OpenGL <B><FONT COLOR="#A020F0">hiding</FONT></B> (Texture)
+<B><FONT COLOR="#A020F0">import</FONT></B> GHC.Float
+<B><FONT COLOR="#A020F0">import</FONT></B> WallRender
+<B><FONT COLOR="#A020F0">import</FONT></B> BoundingVolume
+<B><FONT COLOR="#A020F0">import</FONT></B> Data.Maybe
+<I><FONT COLOR="#B22222">{---------------------------------------------------------------------------------------------------------------
+TO DO:
+Add orientation and scale to definition of TerrainElement
+
+Existential types for the bounding boxes
+
+Apply transformations to bounding boxes
+
+Restore colors (do not need this, for now)
+
+Only allow compound terrains to have associated transforms
+  This ways is much cleaner, but either way should be fine.
+
+MAYBE:
+Generate commands instead of executing them (easier for textures). Then, in
+renderTerrainElement, just generate commands and execute them.
+---------------------------------------------------------------------------------------------------------------}</FONT></I>
+<B><FONT COLOR="#A020F0">data</FONT></B> Col = Col{cspecular <B><FONT COLOR="#228B22">:: Color4 GLfloat,
+</FONT></B>               cdiffuse <B><FONT COLOR="#228B22">:: Color4 GLfloat,
+</FONT></B>               cambient <B><FONT COLOR="#228B22">:: Color4 GLfloat,
+</FONT></B>               cemissive <B><FONT COLOR="#228B22">:: Color4 GLfloat,
+</FONT></B>               cshininess <B><FONT COLOR="#228B22">:: GLfloat}
+</FONT></B>    <B><FONT COLOR="#A020F0">deriving</FONT></B> Show
+
+<B><FONT COLOR="#A020F0">data</FONT></B> Transform = Transform{toffset <B><FONT COLOR="#228B22">:: Vec3d,
+</FONT></B>                           tscale <B><FONT COLOR="#228B22">:: Vec3d, -- Also let orientation be set
+</FONT></B>                           ttheta <B><FONT COLOR="#228B22">:: Float,
+</FONT></B>                           tphi <B><FONT COLOR="#228B22">:: Float}
+</FONT></B>    <B><FONT COLOR="#A020F0">deriving</FONT></B> Show
+
+
+<B><FONT COLOR="#A020F0">data</FONT></B> Surface = Color Col
+             | Texture TextureObject <I><FONT COLOR="#B22222">-- Has how to render as well
+</FONT></I>             | Mirror <I><FONT COLOR="#B22222">-- Mirror and Transparent are essentially the same (get the framebuffer?)
+</FONT></I>             | Transparent
+             | NoSurface
+    <B><FONT COLOR="#A020F0">deriving</FONT></B> Show
+
+<I><FONT COLOR="#B22222">{-
+-- Hmm lazy way: orphan instance
+instance Show QuadricPrimitive where
+  show _ = &quot;QuadricPrimitive&quot;
+
+instance Show QuadricStyle where
+  show _ = &quot;QuadricStyle&quot;
+-}</FONT></I>
+
+<I><FONT COLOR="#B22222">-- Maybe not best form (only CompoundTerrain should have transform). But saves lots of work
+</FONT></I><B><FONT COLOR="#A020F0">data</FONT></B> Geometry = GLUQuadric QuadricPrimitive QuadricStyle Transform
+                  | Cube Height Transform
+                  | Quad Vec3d Vec3d Vec3d Vec3d Transform
+                  | Tri Vec3d Vec3d Vec3d Transform
+                  | Plane <I><FONT COLOR="#B22222">-- For later
+</FONT></I>                  | Trimesh <I><FONT COLOR="#B22222">-- For later
+</FONT></I><I><FONT COLOR="#B22222">--    deriving Show
+</FONT></I>
+<B><FONT COLOR="#A020F0">data</FONT></B> TerrainElement = SimpleTerrain Geometry Surface <I><FONT COLOR="#B22222">-- Is Flavour part of TerrainElement or of Geometry?
+</FONT></I>                    | CompoundTerrain Transform [TerrainElement]
+<I><FONT COLOR="#B22222">--    deriving Show
+</FONT></I><B><FONT COLOR="#A020F0">instance</FONT></B> Show TerrainElement <B><FONT COLOR="#A020F0">where</FONT></B>
+    show <B><FONT COLOR="#A020F0">_ </FONT></B>= <B><FONT COLOR="#BC8F8F">&quot;TerrainElement&quot;</FONT></B>
+
+<I><FONT COLOR="#B22222">-- Restore surface color properties
+</FONT></I>restoreSurfaceColor <B><FONT COLOR="#228B22">:: IO()
+</FONT></B>restoreSurfaceColor = do
+  materialDiffuse FrontAndBack $= Color4 0.0 0.0 0.0 1.0 <I><FONT COLOR="#B22222">-- For now, always FrontAndBack
+</FONT></I>  materialSpecular FrontAndBack $= Color4 0.0 0.0 0.0 1.0
+  materialAmbient FrontAndBack $= Color4 0.0 0.0 0.0 1.0
+  materialEmission FrontAndBack $= Color4 0.0 0.0 0.0 1.0
+
+
+
+
+<I><FONT COLOR="#B22222">-- Execute commands while preserving surface characteristics
+</FONT></I><I><FONT COLOR="#B22222">-- Still have issues for texturing
+</FONT></I>
+preservingSurface <B><FONT COLOR="#228B22">:: Surface -&gt; IO() -&gt; IO()
+</FONT></B>preservingSurface (Terrain.Color (Col{cspecular=spec, cdiffuse=diff, cambient=amb,cemissive=emis,cshininess=shin})) commands = do
+  <I><FONT COLOR="#B22222">-- clear [ColorBuffer]
+</FONT></I>  <I><FONT COLOR="#B22222">{-
+  let curDiff = materialDiffuse FrontAndBack
+      curSpec = materialSpecular FrontAndBack
+      curAmb = materialAmbient FrontAndBack
+      curEmis = materialEmission FrontAndBack
+  -}</FONT></I>  
+    <I><FONT COLOR="#B22222">-- Store colors
+</FONT></I>  materialDiffuse FrontAndBack $= diff <I><FONT COLOR="#B22222">-- For now, always FrontAndBack
+</FONT></I>  materialSpecular FrontAndBack $= spec
+  materialAmbient FrontAndBack $= amb
+  materialEmission FrontAndBack $= emis
+  <I><FONT COLOR="#B22222">-- materialShininess FrontAndBack $= shin
+</FONT></I>  commands <I><FONT COLOR="#B22222">-- Execute commands
+</FONT></I>  restoreSurfaceColor
+  <I><FONT COLOR="#B22222">-- flush
+</FONT></I>  <I><FONT COLOR="#B22222">-- clearColor $= Color4 0.0 0.0 0.0 0.0 -- Reset colors (not working right now)
+</FONT></I>preservingSurface (Terrain.Texture tex) commands = do
+<I><FONT COLOR="#B22222">--  materialDiffuse FrontAndBack $= Color4 0.4 0.5 0.6 1
+</FONT></I>  texture Texture2D $= Enabled
+  textureFunction $= Decal
+  textureBinding Texture2D $= Just tex
+  commands
+  texture Texture2D $= Disabled
+<I><FONT COLOR="#B22222">--  return ()
+</FONT></I>
+preservingSurface NoSurface commands = do
+  commands
+
+preservingSurface <B><FONT COLOR="#A020F0">_ </FONT></B>commands = do
+  print <B><FONT COLOR="#BC8F8F">&quot;Surface functionality not yet implemented&quot;</FONT></B>
+  commands
+<I><FONT COLOR="#B22222">{-
+preservingSurface (Terrain.Texture tex) commands = do
+--  materialDiffuse FrontAndBack $= Color4 0.4 0.5 0.6 1
+  texture Texture2D $= Enabled
+  textureFunction $= Decal
+  textureBinding Texture2D $= Just tex
+  commands
+  texture Texture2D $= Disabled
+--  return ()
+
+-- Then
+renderTerrainElement (SimpleTerrain (Quad p1 p2 p3 p4 transform) (Texture texObj) flav) = do
+--  print &quot;Rendering quad with texture&quot;
+  loadIdentity
+  preservingMatrix $ do
+    preservingSurface (Texture texObj) $ do
+      --loadIdentity
+      applyTransform transform
+      displaySprite3D (Just texObj) (vertex3 p1) (vertex3 p2) (vertex3 p3) (vertex3 p4) (0,0) (1,1)
+      -- renderQuad (Just texObj) (vertex3 p1) (vertex3 p2) (vertex3 p3) (vertex3 p4)
+
+-}</FONT></I>
+
+applyTransform <B><FONT COLOR="#228B22">:: Transform -&gt; IO()
+</FONT></B>applyTransform Transform{toffset=offset, tscale=Vec3d(sx,sy,sz), ttheta = thetaAngle, tphi = phiAngle} = do
+    translate $ vector3 offset
+    Graphics.Rendering.OpenGL.scale sx sy sz
+    rotate thetaAngle $ vector3 (Vec3d(0.0, 0.0, 1.0))
+    rotate phiAngle $ vector3 (Vec3d(1.0, 0.0, 0.0))
+
+
+applyTransform2 <B><FONT COLOR="#228B22">:: Transform -&gt; Vec3d -&gt; Vec3d
+</FONT></B>applyTransform2 Transform{toffset=Vec3d(dx,dy,dz), tscale=Vec3d(sx,sy,sz), ttheta = thetaAngle, tphi = phiAngle} (Vec3d (x,y,z)) =
+    Vec3d (sx*x + dx, sy*y + dy, sz*z + dz) <I><FONT COLOR="#B22222">-- Bounding boxes are axis aligned... but still may need to make slightly larger
+</FONT></I>
+renderTerrainElement <B><FONT COLOR="#228B22">:: TerrainElement -&gt; IO()
+</FONT></B>renderTerrainElement t@(SimpleTerrain (GLUQuadric qprimitive qstyle transform) surf) = do
+<I><FONT COLOR="#B22222">--  print &quot;Rendering GLUQuadric&quot;
+</FONT></I>  preservingMatrix $ do
+    preservingSurface surf $ do
+      applyTransform transform
+      renderQuadric qstyle qprimitive
+<I><FONT COLOR="#B22222">--      renderBoundingVolume $ getTerrainBounds t
+</FONT></I>
+renderTerrainElement (SimpleTerrain (Cube height transform) (Texture texObj)) = do
+<I><FONT COLOR="#B22222">--  print &quot;Rendering glutobject with texture&quot;
+</FONT></I><I><FONT COLOR="#B22222">--  loadIdentity
+</FONT></I>  preservingMatrix $ do
+    preservingSurface (Texture texObj) $ do
+<I><FONT COLOR="#B22222">--      loadIdentity
+</FONT></I>      <B><FONT COLOR="#A020F0">let</FONT></B> h2 = (float height)/2
+          p1 = Vertex3 (h2) (h2) (h2)
+          p2 = Vertex3 (h2) (h2) (-h2)
+          p3 = Vertex3 (h2) (-h2) (-h2)
+          p4 = Vertex3 (h2) (-h2) (h2)
+          p5 = Vertex3 (-h2) (h2) (h2)
+          p6 = Vertex3 (-h2) (h2) (-h2)
+          p7 = Vertex3 (-h2) (-h2) (-h2)
+          p8 = Vertex3 (-h2) (-h2) (h2)
+
+      applyTransform transform
+      renderQuad (Just texObj) p1 p2 p3 p4
+      renderQuad (Just texObj) p1 p5 p8 p4
+      renderQuad (Just texObj) p5 p6 p7 p8
+      renderQuad (Just texObj) p6 p7 p3 p2
+      renderQuad (Just texObj) p1 p2 p6 p5
+      renderQuad (Just texObj) p3 p4 p8 p7
+
+<I><FONT COLOR="#B22222">--handle texture
+</FONT></I>renderTerrainElement (SimpleTerrain (Quad p1 p2 p3 p4 transform) (Texture texObj)) = do
+<I><FONT COLOR="#B22222">--  print &quot;Rendering quad with texture&quot;
+</FONT></I><I><FONT COLOR="#B22222">--  loadIdentity
+</FONT></I>  preservingMatrix $ do
+    preservingSurface (Texture texObj) $ do
+      <I><FONT COLOR="#B22222">--loadIdentity
+</FONT></I>      applyTransform transform
+      renderQuad (Just texObj) (vertex3 p1) (vertex3 p2) (vertex3 p3) (vertex3 p4)
+
+renderTerrainElement (SimpleTerrain (Quad p1 p2 p3 p4 transform) surf) = do
+<I><FONT COLOR="#B22222">--  print &quot;Rendering quad&quot;
+</FONT></I><I><FONT COLOR="#B22222">--  loadIdentity
+</FONT></I>  preservingMatrix $ do
+    preservingSurface surf $ do
+<I><FONT COLOR="#B22222">--      loadIdentity
+</FONT></I>      applyTransform transform
+      renderPrimitive Quads $ do
+        clear [ColorBuffer]
+        <I><FONT COLOR="#B22222">-- color $ (Color3 (1.0::GLfloat) 0 0)
+</FONT></I>        <I><FONT COLOR="#B22222">-- materialDiffuse FrontAndBack $= Color4 1.0 0.0 0.0 1.0
+</FONT></I>        <I><FONT COLOR="#B22222">-- materialEmission FrontAndBack $= Color4 1.0 0.0 0.0 1.0
+</FONT></I>        vertex $ vertex3 p1
+        vertex $ vertex3 p2
+        vertex $ vertex3 p3
+        vertex $ vertex3 p4
+
+renderTerrainElement (SimpleTerrain (Tri p1 p2 p3 transform) surf) = do
+<I><FONT COLOR="#B22222">--  print &quot;Rendering quad&quot;
+</FONT></I><I><FONT COLOR="#B22222">--  loadIdentity
+</FONT></I>  preservingMatrix $ do
+    preservingSurface surf $ do
+<I><FONT COLOR="#B22222">--      loadIdentity
+</FONT></I>      blend $= Enabled
+      blendFunc $= (SrcAlpha, OneMinusSrcAlpha)
+      applyTransform transform
+      renderPrimitive Triangles $ do
+        clear [ColorBuffer]
+        <I><FONT COLOR="#B22222">-- color $ (Color3 (1.0::GLfloat) 0 0)
+</FONT></I>        <I><FONT COLOR="#B22222">-- materialDiffuse FrontAndBack $= Color4 1.0 0.0 0.0 1.0
+</FONT></I>        <I><FONT COLOR="#B22222">-- materialEmission FrontAndBack $= Color4 1.0 0.0 0.0 1.0
+</FONT></I>        vertex $ vertex3 p1
+        vertex $ vertex3 p2
+        vertex $ vertex3 p3
+
+
+renderTerrainElement (SimpleTerrain (Trimesh) <B><FONT COLOR="#A020F0">_) </FONT></B>= do
+  print <B><FONT COLOR="#BC8F8F">&quot;Rendering trimesh terrain&quot;</FONT></B>
+renderTerrainElement (CompoundTerrain transform telements) = do
+  <I><FONT COLOR="#B22222">-- print &quot;Rendering compound terrain&quot;
+</FONT></I><I><FONT COLOR="#B22222">--  loadIdentity
+</FONT></I>  preservingMatrix $ do
+    applyTransform transform
+    foldr (&gt;&gt;) (return ()) $ map renderTerrainElement telements
+renderTerrainElement <B><FONT COLOR="#A020F0">_ </FONT></B>= error <B><FONT COLOR="#BC8F8F">&quot;Undefined terrain element&quot;</FONT></B>
+
+<I><FONT COLOR="#B22222">-- Need to consider transforms
+</FONT></I>getTerrainBounds <B><FONT COLOR="#228B22">:: TerrainElement -&gt; BoundingVolume
+</FONT></B>
+getTerrainBounds (SimpleTerrain (Cube height trans) <B><FONT COLOR="#A020F0">_) </FONT></B>=
+    BoundingBox (applyTransform2 trans (Vec3d (-h2,-h2,-h2))) (applyTransform2 trans (Vec3d (h2,h2,h2)))
+        <B><FONT COLOR="#A020F0">where</FONT></B> h2 = float height/2
+
+getTerrainBounds (SimpleTerrain (GLUQuadric (Cylinder innerRad outerRad height <B><FONT COLOR="#A020F0">_ </FONT></B><B><FONT COLOR="#A020F0">_) </FONT></B><B><FONT COLOR="#A020F0">_ </FONT></B>trans) <B><FONT COLOR="#A020F0">_) </FONT></B>=
+    BoundingBox (applyTransform2 trans (Vec3d (-maxR,-maxR,0.0))) (applyTransform2 trans (Vec3d (maxR,maxR,h)))
+        <B><FONT COLOR="#A020F0">where</FONT></B> h = float height
+              maxR = max (float outerRad) (float innerRad)
+
+<I><FONT COLOR="#B22222">{-
+getTerrainBounds (SimpleTerrain (GLUTObject (Sphere' radius _ _) Transform{toffset=position}) _ _) =
+        BoundingEmpty
+getTerrainBounds (SimpleTerrain (GLUTObject _ Transform{toffset=position}) _ _) = -- Other GLUT objects. Implement later
+        BoundingEmpty
+-}</FONT></I>
+getTerrainBounds (CompoundTerrain trans telements) =
+        MultipleVolumes $ map (bvTransform (applyTransform2 trans) . getTerrainBounds) telements
+getTerrainBounds (SimpleTerrain (Quad p1 p2 p3 p4 trans) <B><FONT COLOR="#A020F0">_) </FONT></B>=
+        BoundingBox (Vec3d (minx,miny,minz)) (Vec3d (maxx,maxy,maxz))
+            <B><FONT COLOR="#A020F0">where</FONT></B> ps = map (applyTransform2 trans) [p1,p2,p3,p4]
+                  minx = minimum $ map getx ps
+                  miny = minimum $ map gety ps
+                  minz = minimum $ map getz ps
+                  maxx = maximum $ map getx ps
+                  maxy = maximum $ map gety ps
+                  maxz = maximum $ map getz ps
+getTerrainBounds <B><FONT COLOR="#A020F0">_ </FONT></B>= BoundingEmpty
+
+<I><FONT COLOR="#B22222">{-
+processSurface :: Surface -&gt; IO()
+processSurface (Terrain.Color (Col{cspecular=spec, cdiffuse=diff, cambient=amb,cemissive=emis,cshininess=shin})) =  do
+  clearColor $= Color4 0.0 0.0 0.0 0.0
+  materialDiffuse FrontAndBack $= diff -- For now, always FrontAndBack
+processSurface (Terrain.Texture) = do
+  print &quot;Processing texture&quot;
+processSurface _ =  do
+  print &quot;Surface functionality not yet implemented&quot;
+  materialDiffuse FrontAndBack $= Color4 1.0 1.0 1.0 1.0 -- Default to white
+-}</FONT></I>
+
+
+<I><FONT COLOR="#B22222">{-
+preservingTransform :: Transform -&gt; IO() -&gt; IO()
+preservingTransform Transform{toffset=offset, tscale=Vec3d(sx,sy,sz), ttheta = thetaAngle, tphi = phiAngle} commands = do
+  translate $ vector3 offset
+  Graphics.Rendering.OpenGL.scale sx sy sz
+  preservingMatrix $ do
+    Graphics.Rendering.OpenGL.scale sx sy sz
+    translate $ vector3 offset
+    rotate thetaAngle $ vector3 (Vec3d(0.0, 0.0, 1.0))
+    rotate phiAngle $ vector3 (Vec3d(1.0, 0.0, 0.0))
+    commands
+-}</FONT></I>
+
+<I><FONT COLOR="#B22222">-- For debugging purposes
+</FONT></I><I><FONT COLOR="#B22222">{-
+tempTex = (Texture (fromJust $ unsafePerformIO (getAndCreateTexture &quot;bricks&quot;)))
+
+renderBoundingVolume (BoundingBox v1 v2) = do
+  renderTerrainElement (SimpleTerrain (Cube 1.0 transform) tempTex)
+  print &quot;Coordinates are:&quot;
+  print v1
+  print v2
+  where height = (getz v2) ^-^ (getz v1)
+        transform = Transform{toffset=Vec3d(0.0,0.0,height/2),tscale=(v2 ^-^ v1), ttheta=0.0,tphi=0.0}
+-}</FONT></I>
+
+</PRE>
+<HR>
+<A NAME="file22">
+<H1>Textures.hs 22/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file21">prev</A>][<A HREF="#file23">next</A>]
+<PRE>
+<I><FONT COLOR="#B22222">{- Textures.hs; Mun Hon Cheong (mhch295@cse.unsw.edu.au) 2005
+
+This module is for loading textures
+
+-}</FONT></I>
+
+<B><FONT COLOR="#A020F0">module</FONT></B> Textures <B><FONT COLOR="#A020F0">where</FONT></B>
+
+<B><FONT COLOR="#A020F0">import</FONT></B> TGA (readTga)
+<B><FONT COLOR="#A020F0">import</FONT></B> Data.Word (Word8)
+<B><FONT COLOR="#A020F0">import</FONT></B> Foreign.Marshal.Alloc (free)
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.Rendering.OpenGL
+
+<I><FONT COLOR="#B22222">-- read a list of images and returns a list of textures
+</FONT></I><I><FONT COLOR="#B22222">-- all images are assumed to be in the TGA image format
+</FONT></I>getAndCreateTextures <B><FONT COLOR="#228B22">:: [String] -&gt; IO [Maybe TextureObject]
+</FONT></B>getAndCreateTextures fileNames = do
+   fileNamesExts &lt;- return (map ((<B><FONT COLOR="#BC8F8F">&quot;tga/&quot;</FONT></B> ++) . (++ <B><FONT COLOR="#BC8F8F">&quot;.tga&quot;</FONT></B>)) fileNames)
+   texData &lt;- mapM readImageC fileNamesExts
+   texObjs &lt;- mapM createTexture texData
+   return texObjs
+
+
+<I><FONT COLOR="#B22222">-- read a single texture
+</FONT></I>getAndCreateTexture <B><FONT COLOR="#228B22">:: String -&gt; IO (Maybe TextureObject)
+</FONT></B>getAndCreateTexture fileName = do
+   texData &lt;- readImageC (<B><FONT COLOR="#BC8F8F">&quot;tga/&quot;</FONT></B> ++ fileName ++ <B><FONT COLOR="#BC8F8F">&quot;.tga&quot;</FONT></B>)
+   texObj &lt;- createTexture texData
+   return texObj
+
+
+<I><FONT COLOR="#B22222">-- read the image data
+</FONT></I>readImageC <B><FONT COLOR="#228B22">:: String -&gt; IO (Maybe (Size, PixelData Word8))
+</FONT></B>readImageC path = catch (readTga path) (\<B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; do print (<B><FONT COLOR="#BC8F8F">&quot;missing texture: &quot;</FONT></B>++path)
+                                                 return Nothing)
+
+
+<I><FONT COLOR="#B22222">-- creates the texture
+</FONT></I>createTexture <B><FONT COLOR="#228B22">:: (Maybe (Size, PixelData a)) -&gt; IO (Maybe TextureObject)
+</FONT></B>createTexture (Just ((Size x y), pixels@(PixelData <B><FONT COLOR="#A020F0">_ </FONT></B><B><FONT COLOR="#A020F0">_ </FONT></B>ptr))) = do
+   [texName] &lt;- genObjectNames 1  <I><FONT COLOR="#B22222">-- generate our texture.
+</FONT></I>   <I><FONT COLOR="#B22222">--rowAlignment  Unpack $= 1
+</FONT></I>   textureBinding Texture2D $= Just texName  <I><FONT COLOR="#B22222">-- make our new texture the current texture.
+</FONT></I>   <I><FONT COLOR="#B22222">--generateMipmap Texture2D $= Enabled
+</FONT></I>   build2DMipmaps Texture2D RGBA' (fromIntegral x) (fromIntegral y) pixels
+   textureFilter  Texture2D $= ((Linear', Just Nearest), Linear')
+   <I><FONT COLOR="#B22222">--textureWrapMode Texture2D S $= (Repeated, Repeat)
+</FONT></I>   <I><FONT COLOR="#B22222">--textureWrapMode Texture2D T $= (Repeated, Repeat)
+</FONT></I>   textureFunction $= Modulate
+   free ptr
+   return (Just texName)
+createTexture Nothing = return Nothing
+
+</PRE>
+<HR>
+<A NAME="file23">
+<H1>TGA.hs 23/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file22">prev</A>][<A HREF="#file24">next</A>]
+<PRE>
+<I><FONT COLOR="#B22222">{- TGA.hs; Mun Hon Cheong (mhch295@cse.unsw.edu.au) 2005
+
+This module was based on lesson 24 from neon helium productions
+http://nehe.gamedev.net/data/lessons/lesson.asp?lesson=24
+
+The TGA format is a used bitmap image file format. They are
+quite easy to load compared to other formats and have
+good support in image editors. All that has to be done is
+read the header to determine the dimensions and pixel format.
+Then the bytes have to be swapped and can be used by OPenGL.
+
+If you see a texture that is upside down, just open it in your
+editor and flip it vertically. Somtimes the TGA file is stored
+with its pixels upside down.
+
+-}</FONT></I>
+
+
+
+<B><FONT COLOR="#A020F0">module</FONT></B> TGA <B><FONT COLOR="#A020F0">where</FONT></B>
+
+<B><FONT COLOR="#A020F0">import</FONT></B> Data.Word ( Word8 )
+<B><FONT COLOR="#A020F0">import</FONT></B> Control.Exception ( bracket )
+<B><FONT COLOR="#A020F0">import</FONT></B> System.IO ( Handle, IOMode(ReadMode), openBinaryFile, hGetBuf, hClose )
+<B><FONT COLOR="#A020F0">import</FONT></B> Foreign.Marshal.Array (peekArray, pokeArray)
+<B><FONT COLOR="#A020F0">import</FONT></B> Foreign.Marshal.Alloc (free, mallocBytes)
+<B><FONT COLOR="#A020F0">import</FONT></B> Foreign.Ptr (plusPtr, Ptr())
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.Rendering.OpenGL
+
+withBinaryFile' <B><FONT COLOR="#228B22">:: FilePath -&gt; (Handle -&gt; IO a) -&gt; IO a
+</FONT></B>withBinaryFile' filePath = bracket (openBinaryFile filePath ReadMode) hClose
+
+<I><FONT COLOR="#B22222">-- reads a *.tga file
+</FONT></I>readTga <B><FONT COLOR="#228B22">:: FilePath -&gt; IO (Maybe (Size, PixelData Word8))
+</FONT></B>readTga filePath =
+   withBinaryFile' filePath $ \handle -&gt; do
+   buf &lt;- mallocBytes 6 <B><FONT COLOR="#228B22">:: IO(Ptr Word8)
+</FONT></B>   <I><FONT COLOR="#B22222">--the first 12 bytes of the header aren't used
+</FONT></I>   hGetBuf handle buf 6
+   hGetBuf handle buf 6
+   hGetBuf handle buf 6
+   header &lt;- peekArray 6 buf
+   <B><FONT COLOR="#A020F0">let</FONT></B> w1       = (fromIntegral (header!!1))*256 <B><FONT COLOR="#228B22">:: Int
+</FONT></B>   <B><FONT COLOR="#A020F0">let</FONT></B> width    = w1 + (fromIntegral (header!!0))
+   <B><FONT COLOR="#A020F0">let</FONT></B> h1       = (fromIntegral (header!!3))*256 <B><FONT COLOR="#228B22">:: Int
+</FONT></B>   <B><FONT COLOR="#A020F0">let</FONT></B> height   = h1 + (fromIntegral (header!!2))
+   <B><FONT COLOR="#A020F0">let</FONT></B> bitspp   = (fromIntegral (header!!4))
+   <B><FONT COLOR="#A020F0">let</FONT></B> numBytes = (bitspp `div` 8) * width * height
+   <I><FONT COLOR="#B22222">--allocate memory for the image
+</FONT></I>   image &lt;- mallocBytes numBytes
+   hGetBuf handle image numBytes
+   <I><FONT COLOR="#B22222">--define whether the pixels are in RGB or RGBA format.
+</FONT></I>   pixelFormat &lt;- getFormat (fromIntegral bitspp)
+   free buf
+   <I><FONT COLOR="#B22222">--convert the pixels which are in BGR/BGRA to RGB/RGBA
+</FONT></I>   swapBytes' image (bitspp `div` 8) (width * height)
+   print (<B><FONT COLOR="#BC8F8F">&quot;loaded &quot;</FONT></B>++filePath)
+   return $ Just (Size (fromIntegral width) (fromIntegral height),
+               PixelData pixelFormat UnsignedByte image)
+
+<I><FONT COLOR="#B22222">-- converts the image from bgr/bgra to rgb/rgba
+</FONT></I><I><FONT COLOR="#B22222">-- perhaps the opengl bgra extension could be
+</FONT></I><I><FONT COLOR="#B22222">-- used to avoid this
+</FONT></I>swapBytes' <B><FONT COLOR="#228B22">:: Ptr Word8 -&gt; Int -&gt; Int -&gt; IO()
+</FONT></B>swapBytes' image bytespp size =
+   <B><FONT COLOR="#A020F0">case</FONT></B> bytespp <B><FONT COLOR="#A020F0">of</FONT></B>
+      3 -&gt; do mapM_ (swapByteRGB.(plusPtr image).(bytespp*)) [0..(size-1)]
+      <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt; do mapM_ (swapByteRGBA.(plusPtr image).(bytespp*)) [0..(size-1)] <I><FONT COLOR="#B22222">-- 4
+</FONT></I>
+<I><FONT COLOR="#B22222">-- converts from bgr to rgb
+</FONT></I>swapByteRGB <B><FONT COLOR="#228B22">:: Ptr Word8 -&gt; IO()
+</FONT></B>swapByteRGB ptr = do
+   [b,g,r] &lt;- peekArray 3 ptr
+   pokeArray ptr [r,g,b]
+
+<I><FONT COLOR="#B22222">-- converts from bgra to rgba
+</FONT></I>swapByteRGBA <B><FONT COLOR="#228B22">:: Ptr Word8 -&gt; IO()
+</FONT></B>swapByteRGBA ptr = do
+   [b,g,r,a] &lt;- peekArray 4 ptr
+   pokeArray ptr [r,g,b,a]
+
+<I><FONT COLOR="#B22222">-- returns the pixel format given the bits per pixel
+</FONT></I>getFormat <B><FONT COLOR="#228B22">:: Int -&gt;  IO(PixelFormat)
+</FONT></B>getFormat bpp = do
+   <B><FONT COLOR="#A020F0">case</FONT></B> bpp <B><FONT COLOR="#A020F0">of</FONT></B>
+      32 -&gt;  return RGBA
+      <B><FONT COLOR="#A020F0">_ </FONT></B>-&gt;  return RGB <I><FONT COLOR="#B22222">-- 24
+</FONT></I>
+
+
+
+
+
+</PRE>
+<HR>
+<A NAME="file24">
+<H1>Vec3d.hs 24/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file23">prev</A>][<A HREF="#file25">next</A>]
+<PRE>
+<B><FONT COLOR="#A020F0">module</FONT></B> Vec3d <B><FONT COLOR="#A020F0">where</FONT></B>
+
+<B><FONT COLOR="#A020F0">import</FONT></B> FRP.Yampa
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.Rendering.OpenGL
+<B><FONT COLOR="#A020F0">import</FONT></B> Text.Printf
+
+<B><FONT COLOR="#A020F0">infixl</FONT></B> 0 .*
+
+<I><FONT COLOR="#B22222">-- NOTE: Eq for GLFloat is probably a BAD idea, hence manually defined below
+</FONT></I><B><FONT COLOR="#A020F0">data</FONT></B> Vec3d = Vec3d !(GLfloat, GLfloat, GLfloat)
+<I><FONT COLOR="#B22222">--	deriving (Eq, Show)
+</FONT></I>
+<B><FONT COLOR="#A020F0">instance</FONT></B> Show Vec3d <B><FONT COLOR="#A020F0">where</FONT></B>
+	show (Vec3d (x, y, z)) = printf <B><FONT COLOR="#BC8F8F">&quot;&lt;%.2f,%.2f,%.2f&gt;&quot;</FONT></B> x y z
+
+<I><FONT COLOR="#B22222">-- Two points being close enough
+</FONT></I><B><FONT COLOR="#A020F0">instance</FONT></B> Eq Vec3d <B><FONT COLOR="#A020F0">where</FONT></B>
+	Vec3d (x1,y1,z1) == Vec3d (x2,y2,z2) = (sqr (x1-x2) + sqr (y1-y2) + sqr (z1-z2)) &lt; 0.01
+		<B><FONT COLOR="#A020F0">where</FONT></B> sqr x = x * x
+
+scale <B><FONT COLOR="#228B22">:: Vec3d -&gt; GLfloat -&gt; Vec3d
+</FONT></B>scale (Vec3d (ax,ay,az)) s = Vec3d (ax*s,ay*s,az*s)
+
+inverseScale <B><FONT COLOR="#228B22">:: Vec3d -&gt; GLfloat -&gt; Vec3d
+</FONT></B>inverseScale (Vec3d (ax,ay,az)) s = Vec3d (ax/s,ay/s,az/s)
+
+(.*) <B><FONT COLOR="#228B22">:: Vec3d -&gt; Vec3d -&gt; GLfloat
+</FONT></B>(.*) (Vec3d (ax,ay,az)) (Vec3d (bx,by,bz)) = ax*bx + ay*by + az*bz
+
+cross <B><FONT COLOR="#228B22">:: Vec3d -&gt; Vec3d -&gt; Vec3d
+</FONT></B>cross (Vec3d (a1,a2,a3)) (Vec3d (b1,b2,b3)) = Vec3d (a2*b3 - a3*b2, a3*b1 - a1*b3, a1*b2 - a2*b1)
+
+len2 <B><FONT COLOR="#228B22">:: Vec3d -&gt; GLfloat
+</FONT></B>len2 a = a .* a
+
+len <B><FONT COLOR="#228B22">:: Vec3d -&gt; GLfloat
+</FONT></B>len = sqrt . len2
+
+getx,gety,getz <B><FONT COLOR="#228B22">:: Vec3d -&gt; GLfloat
+</FONT></B>getx (Vec3d (x,<B><FONT COLOR="#A020F0">_,_</FONT></B>)) = x
+gety (Vec3d (<B><FONT COLOR="#A020F0">_,y,_</FONT></B>)) = y
+getz (Vec3d (<B><FONT COLOR="#A020F0">_,_</FONT></B>,z)) = z
+
+double,float <B><FONT COLOR="#228B22">:: (Real a, Fractional b) =&gt; a -&gt; b
+</FONT></B>double = fromRational.toRational
+float = double
+
+vector3 <B><FONT COLOR="#228B22">:: Vec3d -&gt; Vector3 GLfloat
+</FONT></B>vector3 (Vec3d(a,b,c)) = Vector3 a b c
+
+vertex3 <B><FONT COLOR="#228B22">:: Vec3d -&gt; Vertex3 GLfloat
+</FONT></B>vertex3 (Vec3d(a,b,c)) = Vertex3 a b c
+
+vec3d <B><FONT COLOR="#228B22">:: Vector3 GLfloat -&gt; Vec3d
+</FONT></B>vec3d (Vector3 a b c) = Vec3d (a,b,c)
+
+roundV <B><FONT COLOR="#228B22">:: Vec3d -&gt; (Int,Int,Int)
+</FONT></B>roundV (Vec3d (x,y,z)) = (round x, round y, round z)
+
+zipWith2 <B><FONT COLOR="#228B22">:: (a -&gt; b -&gt; c) -&gt; (a -&gt; c) -&gt; (b -&gt; c) -&gt; [a] -&gt; [b] -&gt; [c]
+</FONT></B>zipWith2 f g h (x:xs) (y:ys) = (f x y) : (zipWith2 f g h xs ys)
+zipWith2 <B><FONT COLOR="#A020F0">_ </FONT></B>g <B><FONT COLOR="#A020F0">_ </FONT></B>xs [] = map g xs
+zipWith2 <B><FONT COLOR="#A020F0">_ </FONT></B><B><FONT COLOR="#A020F0">_ </FONT></B>h [] ys = map h ys
+
+<B><FONT COLOR="#A020F0">instance</FONT></B> VectorSpace Vec3d GLfloat <B><FONT COLOR="#A020F0">where</FONT></B>
+    zeroVector = Vec3d (0.0, 0.0, 0.0)
+    (*^) k (Vec3d (x,y,z)) = Vec3d (k*x,k*y,k*z)
+    (^/) (Vec3d (x,y,z)) k = Vec3d (x/k,y/k,z/k)
+    negateVector (Vec3d (x,y,z)) = Vec3d (-x,-y,-z)
+    (^+^) (Vec3d (x1,y1,z1)) (Vec3d (x2,y2,z2)) = Vec3d (x1+x2,y1+y2,z1+z2)
+    (^-^) (Vec3d (x1,y1,z1)) (Vec3d (x2,y2,z2)) = Vec3d (x1-x2,y1-y2,z1-z2)
+    dot v1 v2 = v1 .* v2
+    norm = len
+    normalize v = v ^/ (norm v)
+	
+showVec3d <B><FONT COLOR="#228B22">:: Vec3d -&gt; String
+</FONT></B>showVec3d (Vec3d (x,y,z)) = (show x) ++ <B><FONT COLOR="#BC8F8F">&quot;,&quot;</FONT></B> ++ (show y) ++ <B><FONT COLOR="#BC8F8F">&quot;,&quot;</FONT></B> ++ (show z)
+
+readVec3d <B><FONT COLOR="#228B22">:: String -&gt; Vec3d
+</FONT></B>readVec3d s = <B><FONT COLOR="#A020F0">let</FONT></B> untilcomma = span (/= <B><FONT COLOR="#BC8F8F">','</FONT></B>)
+                  (x,s1) = untilcomma s
+                  (y,s2) = untilcomma $ drop 1 s1
+               <B><FONT COLOR="#A020F0">in</FONT></B> Vec3d (read x, read y, read $ drop 1 s2)
+
+</PRE>
+<HR>
+<A NAME="file25">
+<H1>WallRender.hs 25/25</H1>
+[<A HREF="#top">top</A>][<A HREF="#file24">prev</A>][next]
+<PRE>
+<B><FONT COLOR="#A020F0">module</FONT></B> WallRender <B><FONT COLOR="#A020F0">where</FONT></B>
+
+<B><FONT COLOR="#A020F0">import</FONT></B> Graphics.Rendering.OpenGL
+<B><FONT COLOR="#A020F0">import</FONT></B> Sprites
+
+renderQuad <B><FONT COLOR="#228B22">::  Maybe TextureObject -&gt; Vertex3 GLfloat -&gt; Vertex3 GLfloat -&gt; Vertex3 GLfloat -&gt; Vertex3 GLfloat -&gt; IO ()
+</FONT></B>renderQuad mbTexObj p1 p2 p3 p4 = do
+    texture Texture2D $= Enabled
+    textureFunction $= Decal
+    textureBinding Texture2D $= mbTexObj
+
+    displaySprite3D mbTexObj p1 p2 p3 p4 (0,0) (1,1)
+    texture Texture2D $= Disabled
+
+displayCB <B><FONT COLOR="#228B22">:: Maybe TextureObject -&gt; IO ()
+</FONT></B>displayCB mbTexObj = do
+    clear [ ColorBuffer, DepthBuffer ]
+    renderQuad mbTexObj (Vertex3 0 0 0) (Vertex3 0 2 0) (Vertex3 2 2 0) (Vertex3 2 0 0)
+    flush
+
+</PRE>
+<HR>
+<ADDRESS>Generated by <A HREF="http://www.iki.fi/~mtr/genscript/">GNU enscript 1.6.4</A>.</ADDRESS>
+</BODY>
+</HTML>

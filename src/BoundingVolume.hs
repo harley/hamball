@@ -1,6 +1,5 @@
 module BoundingVolume where
 
---import Common
 import Vec3d
 
 -- TODO: make collision detector return a normal vector
