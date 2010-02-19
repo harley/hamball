@@ -7,6 +7,10 @@ import Common
 import GameInput
 import Vec3d
 
+class Stringifiable a where
+    stringify :: a -> String
+    destringify :: String -> a
+
 instance Stringifiable Laser where
 
     stringify l = (show $ laserID l) ++ delim ++

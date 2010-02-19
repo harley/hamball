@@ -154,7 +154,7 @@ data SCMsg' = SCMsgInitialize !Player
             | SCMsgHit !Hit
             | SCMsgSpawn !Obj            -- For creating new ones
             | SCMsgFrag !Hit             -- For telling everyone player1 killed player2
-            | SCMsgRemove !Int             -- Remove exiting player    
+            | SCMsgRemove !Int             -- Remove exiting player
     deriving (Show, Eq)
 
 data CSMsg' = CSMsgPlayer !Player        -- For when velocity changes
@@ -193,10 +193,6 @@ data GameData = GameData {
     lastDrawTime :: IORef Double,
     numFrames :: IORef Int
 }
-
-class Stringifiable a where
-    stringify :: a -> String
-    destringify :: String -> a
 
 -- Number of milliseconds between redraws
 redrawTimer :: Double
