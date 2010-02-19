@@ -1,29 +1,24 @@
 name:                HamsterBalls
-version:             0.0
+version:             0.1
 synopsis:            3D FPS Network Game: Players control hamsters flying around in hamster balls and shooting lasers
 description:         3D FPS Network Game: Players control hamsters flying around in hamster balls and shooting lasers
 category:            Game
 license:             BSD3
 license-file:        LICENSE
-author:              Harley Trung, David Constanzo, Alex Thompson, Matt Sills
+author:              David Constanzo, Harley Trung, Alex Thompson, Matt Sills
 maintainer:          harley.trung@yale.edu
 build-type:          Simple
-
-executable:          hamball
-main-is:             Hamball.hs
-ghc-options:         -Wall -fno-warn-name-shadowing -fno-warn-unused-matches -fno-warn-type-defaults
-hs-source-dirs:      src
 build-depends:       base, haskell98
 
 executable:			 hamServer
 main-is:			 Server.hs
-ghc-options:         -Wall -fno-warn-name-shadowing -fno-warn-unused-matches -fno-warn-type-defaults
+ghc-options:         -Wall -fno-warn-name-shadowing -fno-warn-unused-matches -fno-warn-type-defaults -fno-warn-orphans
 hs-source-dirs:      src
 build-depends:       OpenGL <=2.4.0.1, YampaMod, GLFW >= 0.4.1, HTTP, network
 
 executable:			 hamClient
 main-is:			 Client.hs
-ghc-options:         -Wall -fno-warn-name-shadowing -fno-warn-unused-matches -fno-warn-type-defaults
+ghc-options:         -Wall -fno-warn-name-shadowing -fno-warn-unused-matches -fno-warn-type-defaults -fno-warn-orphans
 hs-source-dirs:      src
 build-depends:       OpenGL <=2.4.0.1, YampaMod, GLFW >= 0.4.1, HTTP, network, array >= 0.2.0.0, random >= 1.0.0.2
 
