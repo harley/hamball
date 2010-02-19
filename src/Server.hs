@@ -64,11 +64,7 @@ runServer port sf = withSocketsDo $ do
           -- one thread listens for new players joining
           forkIO $ acceptClient rch sock
 
-          -- TODO: explain this hack
-          -- want the server to simultaneous functions
-          -- * every 100ms, try to update current state of the game
-          -- * also update from the channel
-          --
+          -- write to chan once in a while to keep the server hard at work
           forkIO $ do
                 let loop = do
                       reactWriteChan rch id False
@@ -76,7 +72,8 @@ runServer port sf = withSocketsDo $ do
                       loop
                 loop
 
-          -- main thread process. TODO: is this readChan/unGetChan stuff necessary? It's yampa limitation. should fix in yampa code
+          -- main thread process.
+          -- this readChan/unGetChan makes it more efficent (server idle instead of looping)
           let loop = do
                 a <- readChan rch   -- Makes this loop block when there's no input
                 unGetChan rch a
@@ -187,6 +184,8 @@ updateObjs (s, Event ServerInput{msg=(_, CSMsgJoin name),handle=Just hand})     
 updateObjs (s, NoEvent) = s
 updateObjs (s, _)       = error $ "updateObjs couldn't find a match for " ++ (show s)
 
+-- Data.Maybe catMaybes :: [Maybe a] -> [a]
+-- TODO: isn't this a bit inefficient?
 checkHits :: (ServerState, ServerState) -> [Hit]
 checkHits (sprev, s) = catMaybes $ map collisionLP [(lprev,l,p) | (lprev,l) <- map snd $ assocsIL $
                                                                      zipWithIL (\a b -> (a,b)) (const Nothing) (const Nothing)

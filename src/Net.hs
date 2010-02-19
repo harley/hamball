@@ -7,7 +7,6 @@ import Common
 import GameInput
 import Vec3d
 
-
 instance Stringifiable Laser where
 
     stringify l = (show $ laserID l) ++ delim ++
