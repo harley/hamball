@@ -5,7 +5,7 @@ import Network.HTTP (simpleHTTP, getRequest, getResponseBody)
 import System (getArgs)
 import Control.Monad (when)
 
-import FRP.Yampa ((>>>), arr) -- NOTE that this is our modified YAMPA
+import FRP.Yampa ((>>>), arr)
 import RunGame (glInit, runGame, game)
 import Common (CSMsg'(CSMsgJoin))
 import Object (serverObject, scoreboard, terrain0, renderObsObjState)
@@ -18,7 +18,7 @@ import Net (sendCSMsg)
 main :: IO ()
 main = withSocketsDo $ do -- withSocketsDo is only needed for Windows platform, harmless on others
     args <- getArgs
-    when (null args ) $ error "Wrong syntax.  Syntax: ./Client <play-name>"
+    when (null args ) $ error "Wrong syntax.  Syntax: ./Client <player-name>"
 
     let playerName = head args
     serverHost <- if (null (tail args))

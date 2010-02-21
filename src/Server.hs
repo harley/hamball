@@ -122,7 +122,7 @@ fetchCSMsg rch h = do
 sendSCMsg :: Handle -> SCMsg -> IO ()
 sendSCMsg h msg = do
     --_ <- hIsOpen h  -- The game breaks if we uncomment this line! WTFWTFWTFWTFTWFFFFFFFFFFFFFFFFFFFF
-    hPutStrLn h $ debugShow (stringify msg)
+    hPutStrLn h $ stringify msg -- debugShow (stringify msg)
     hFlush h
 
 objSF :: SF (ServerInput, (ServerState, ServerState)) (IO(), (ServerState, ServerState))
@@ -130,12 +130,12 @@ objSF = proc (si, (sprev, s0)) -> do
     --inputChange <- loopPre dummyServerInput detectChangeSF -< si
     inputChange <- edgeBy (\old new -> if old/=new then Just new else Nothing) dummyServerInput -< si
 
-    let s1 = updateObjs (s0,inputChange)
+    let s1 = updateServerState (s0,inputChange)
 
     lps <- moveObjs allLasers laserPos laserVel -< s1           -- calc current lasers' pos
     let s2 = s1 {allLasers = zipWithIL (\l p -> l {laserPos = p}) (const Nothing) (const Nothing) (allLasers s1) lps}
         hits = checkHits (sprev, s2)
-        scMsgs = outputs (s2, inputChange, hits, [])
+        scMsgs = toMessages (s2, inputChange, hits, [])
 
     returnA -< (sendAll s2 scMsgs, (s2, s1))
 
@@ -162,24 +162,24 @@ moveObjs listFun posFun velFun = proc s0 -> do
     dPs <- integral -< fmap velFun $ listFun s0
     returnA -< (fmap posFun $ listFun s0) ^+^ dPs
 
-updateObjs :: (ServerState, Event ServerInput) -> ServerState
-updateObjs (s, Event ServerInput{msg=(_, CSMsgPlayer p)})               = s{allPlayers = map (\x->if playerID x == playerID p then p else x) $ allPlayers s}
-updateObjs (s, Event ServerInput{msg=(_, CSMsgUpdate p)})               = s{allPlayers = map (\x->if playerID x == playerID p then p else x) $ allPlayers s}
-updateObjs (s, Event ServerInput{msg=(_, CSMsgLaser l)})                = s{allLasers  = insertIL l $ allLasers s}
-updateObjs (s, Event ServerInput{msg=(_, CSMsgKillLaser lid)})          = s{allLasers  = filterIL ((/= lid) . laserID) $ allLasers s}
-updateObjs (s, Event ServerInput{msg=(pid, CSMsgDeath h)})  = s{allPlayers = reInitDead pid (allPlayers s)}
+updateServerState :: (ServerState, Event ServerInput) -> ServerState
+updateServerState (s, Event ServerInput{msg=(_, CSMsgPlayer p)})               = s{allPlayers = map (\x->if playerID x == playerID p then p else x) $ allPlayers s}
+updateServerState (s, Event ServerInput{msg=(_, CSMsgUpdate p)})               = s{allPlayers = map (\x->if playerID x == playerID p then p else x) $ allPlayers s}
+updateServerState (s, Event ServerInput{msg=(_, CSMsgLaser l)})                = s{allLasers  = insertIL l $ allLasers s}
+updateServerState (s, Event ServerInput{msg=(_, CSMsgKillLaser lid)})          = s{allLasers  = filterIL ((/= lid) . laserID) $ allLasers s}
+updateServerState (s, Event ServerInput{msg=(pid, CSMsgDeath h)})  = s{allPlayers = reInitDead pid (allPlayers s)}
     where reInitDead pid (p:ps) = if playerID p == pid then (initializePlayer pid (playerName p)):ps else p:reInitDead pid ps
           reInitDead _ _ = []
-updateObjs (s, Event ServerInput{msg = (_, CSMsgExit exitPlayerName), handle = Just hand})  =
+updateServerState (s, Event ServerInput{msg = (_, CSMsgExit exitPlayerName), handle = Just hand})  =
     let newHandles  = filter (\(pid, h) -> h /= hand)  $ handles s
         (newPlayers, [exitPlayer])  =  partition (\p -> playerName p /= exitPlayerName) $ allPlayers s
     in s{allPlayers = newPlayers, handles = newHandles, lastExitID = playerID exitPlayer}
-updateObjs (s, Event ServerInput{msg=(_, CSMsgJoin name),handle=Just hand})                 =
+updateServerState (s, Event ServerInput{msg=(_, CSMsgJoin name),handle=Just hand})                 =
     let pid       = nextID s
         newPlayer = initializePlayer pid name
     in s{handles  = handles s ++ [(pid,hand)], nextID = pid+1, allPlayers = allPlayers s ++ [newPlayer]}
-updateObjs (s, NoEvent) = s
-updateObjs (s, _)       = error $ "updateObjs couldn't find a match for " ++ (show s)
+updateServerState (s, NoEvent) = s
+updateServerState (s, _)       = error $ "updateServerState couldn't find a match for " ++ (show s)
 
 -- Data.Maybe catMaybes :: [Maybe a] -> [a]
 -- TODO: bug: if yampa rate is too low, fail to detect collisions occasionally
@@ -206,8 +206,8 @@ updatePlayersPos :: (ServerState, [Position3]) -> ServerState
 updatePlayersPos (s, posList) = s{allPlayers = playersList}
     where playersList = zipWith (\pos p -> p{playerPos = pos}) posList (allPlayers s)
 -}
-outputs :: (ServerState, Event ServerInput, [Hit], [Player]) -> [SCMsg]
-outputs (s, esi, hits, collisions) =
+toMessages :: (ServerState, Event ServerInput, [Hit], [Player]) -> [SCMsg]
+toMessages (s, esi, hits, collisions) =
     let allIDs = map playerID $ allPlayers s
         -- TODO: remove colIDs
         colIDs = map playerID $ collisions

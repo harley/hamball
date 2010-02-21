@@ -95,8 +95,8 @@ observer pl = let setFromKey k (gi, prev) = dup $ case (key gi == Just k, keySta
                                                                 (True,Just Release) -> 0
                                                                 (_   ,_        ) -> prev
                   checkMouseWheel (gi, prev)  =  let raw = mWheel gi
-                                                     -- to avoid overflow or casting to big integer 
-                                                     v = if raw < 9 then raw else (raw - 4294967295)-1 
+                                                     -- to avoid overflow or casting to big integer
+                                                     v = if raw < 9 then raw else (raw - 4294967295)-1
                                                      actualV = float v / 4 --if rightClick gi then 0 else float v / 4
                                                  in dup actualV
                   speed = 20
@@ -155,8 +155,10 @@ observer pl = let setFromKey k (gi, prev) = dup $ case (key gi == Just k, keySta
 
     fireLaser <- edge -< leftClick gi
 
-    changeVel <- tagWith () ^<< loopPre (Vec3d (0,0,0)) detectChangeSF -< v
-    changeMsg <- loopPre dummySCMsg detectChangeSF -< message gi
+    --changeVel <- tagWith () ^<< loopPre (Vec3d (0,0,0)) detectChangeSF -< v
+    changeVel <- edgeBy (\prev cur -> if prev /= cur then Just () else Nothing) zeroVector -< v
+    --changeMsg <- loopPre dummySCMsg detectChangeSF -< message gi
+    changeMsg <- edgeBy (\prev cur -> if prev /= cur then Just cur else Nothing) dummySCMsg -< message gi
     let hitEvent = case changeMsg of
                        Event (_,SCMsgHit h) -> if playerID pl == player2ID h then changeMsg else NoEvent
                        _ -> NoEvent
@@ -222,7 +224,8 @@ player0 pid p0 = let setFromKey k (gi, prev) = (\a -> (a,a)) $ (case (key gi == 
 serverObject :: String -> ObjectSF
 serverObject playerNameStr = proc (ObjInput {oiGameInput = gi}) -> do
     spawnWaterfall <- edge <<^ (\gi -> key gi == Just (CharKey 'L')) -< gi
-    changeMsg <- loopPre dummySCMsg detectChangeSF -< message gi
+    --changeMsg <- loopPre dummySCMsg detectChangeSF -< message gi
+    changeMsg <- edgeBy (\prev cur -> if prev /= cur then Just cur else Nothing) dummySCMsg -< message gi
     let processSCMsg NoEvent = ObjOutput {ooObsObjState = OOSNone, ooNetworkMsgs = [], ooKillReq = NoEvent, ooSpawnReq = [], ooBounds = BoundingEmpty}
         processSCMsg (Event (_,msg)) = ObjOutput {ooObsObjState = OOSNone, ooNetworkMsgs = [],
                                                   ooKillReq = NoEvent,
@@ -242,7 +245,8 @@ player pl initMsg = switch (player' pl initMsg) (\(p,msg) -> player p msg)
 
 player' :: Player -> SCMsg -> SF ObjInput (ObjOutput, Event (Player, SCMsg))
 player' pl initMsg = proc ObjInput{oiGameInput=gi} -> do
-    changeMsg <- loopPre initMsg detectChangeSF -< message gi
+    --changeMsg <- loopPre initMsg detectChangeSF -< message gi
+    changeMsg <- edgeBy (\prev cur -> if prev /= cur then Just cur else Nothing) initMsg -< message gi
     let update = event NoEvent (\(i,msg') -> case msg' of
                                                       SCMsgPlayer p -> if playerID pl == playerID p then Event p else NoEvent
                                                       _ -> NoEvent) changeMsg
@@ -260,18 +264,19 @@ player' pl initMsg = proc ObjInput{oiGameInput=gi} -> do
                            ooKillReq = kill `lMerge` exit, -- left-biased merge
                            ooSpawnReq = event [] (\_ -> (map particle $ generatePreloadedParticles pos)) kill,
                            ooBounds = let d = Vec3d (rad, rad, rad)
-                                      in BoundingBox (pos ^-^ d) (pos ^+^ d)}, 
+                                      in BoundingBox (pos ^-^ d) (pos ^+^ d)},
                 fmap (\ev -> (ev,message gi)) update)
 
 scoreboard :: ObjectSF
 scoreboard = let addFrag plID ((pID,s):rest) = if plID == pID then (pID,s+1):rest else (pID,s) : addFrag plID rest
                  addFrag plID [] = [(plID,1)]
              in proc ObjInput{oiGameInput=gi} -> do
-    changeMsg <- loopPre dummySCMsg detectChangeSF -< message gi
+    --changeMsg <- loopPre dummySCMsg detectChangeSF -< message gi
+    changeMsg <- edgeBy (\prev cur -> if prev /= cur then Just cur else Nothing) dummySCMsg -< message gi
     let killAnnounce = event NoEvent (\(i, msg') -> case msg' of
                                                      SCMsgFrag hit -> Event (show (player1ID hit) ++ " just killed " ++ (show (player2ID hit)))
                                                      _ -> NoEvent) changeMsg
-    sb' <- loopPre (ScoreBoard{sbScores=[]}) 
+    sb' <- loopPre (ScoreBoard{sbScores=[]})
                    (arr (\(chmsg,sb) -> dup $ event sb (\(i,msg') -> case msg' of
                                                                               SCMsgFrag hit -> sb {sbScores = addFrag (player1ID hit) $ sbScores sb}
                                                                               _ -> sb) chmsg)) -< changeMsg
@@ -425,3 +430,4 @@ player1 pid p0 = proc (ObjInput {oiGameInput = gi}) -> do
                 'c' -> Vec3d (0,-1,-1)
                 _ -> Vec3d (0,0,0)
               dirToVec _ = Vec3d (0,0,0)
+

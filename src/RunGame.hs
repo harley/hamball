@@ -18,7 +18,16 @@ import Render
 import Common
 import Data.Time.Clock
 
---PLEASE run ./client playerName or ./server scripts instead
+-- Information about the global state of the game
+data GameData = GameData {
+    startTime :: IORef Double,
+    lastDrawTime :: IORef Double,
+    numFrames :: IORef Int
+}
+
+-- Number of milliseconds between redraws
+redrawTimer :: Double
+redrawTimer = 0.005
 
 game :: [ObjectSF] -> SF GameInput ([ObsObjState], [CSMsg])
 game initialObjs = proc gi -> do

@@ -3,7 +3,6 @@ import Vec3d
 import FRP.Yampa
 import Graphics.Rendering.OpenGL
 import Graphics.Rendering.OpenGL.GL.CoordTrans
-import Data.IORef
 import System.IO
 import System.IO.Unsafe
 import Control.Concurrent
@@ -198,21 +197,6 @@ dummyPlayer = Player {playerID = 0,
                       playerColor = Vec3d(0.5, 0.2, 0.7),
                       playerName = "Dummy"}
 
--- Information about the global state of the game
-data GameData = GameData {
-    startTime :: IORef Double,
-    lastDrawTime :: IORef Double,
-    numFrames :: IORef Int
-}
-
--- Number of milliseconds between redraws
-redrawTimer :: Double
-redrawTimer = 0.005
-
--- Number of milliseconds between mouseUpdates
-mouseTimer :: Double
-mouseTimer = 0.001
-
 printFlush :: String -> IO ()
 printFlush s = do
     print s
@@ -237,8 +221,8 @@ computeColor :: Player -> Color4 GLfloat
 computeColor (Player {playerColor = Vec3d (r,g,b),
                       playerLife = life}) = vecToColor (Vec3d ((1 - life/maxLife) * (1-r) + r, g, b))
 
-detectChangeSF :: Eq a => SF (a, a) (Event a, a)
-detectChangeSF = arr (\(new,old) -> (if new == old then NoEvent else Event new, new))
+--detectChangeSF :: Eq a => SF (a, a) (Event a, a)
+--detectChangeSF = arr (\(new,old) -> (if new == old then NoEvent else Event new, new))
 
 
 -- selfKill e = (print "Socket closed." >> myThreadId >>= killThread >> return ())

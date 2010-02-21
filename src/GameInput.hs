@@ -17,6 +17,10 @@ data GameInput = GameInput {key :: Maybe Key,
                             rightClick :: Bool}
     deriving Show
 
+-- Number of milliseconds between mouseUpdates
+mouseTimer :: Double
+mouseTimer = 0.001
+
 --the following OpenGL types are listed here for convenience
 --data Key = Char Char | SpecialKey SpecialKey | MouseButton MouseButton
 --data KeyState = Down | Up
