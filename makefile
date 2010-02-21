@@ -18,8 +18,8 @@ ns:
 	$(GHC_N_OPTS) $(srcdir)/NoServer.hs
 
 yampa:
+	cd YampaMod; cabal install
 	ghc-pkg unregister Yampa # just in case of module name conflicting with orig Yampa
-	cd Yampa; cabal install
 
 glfw:
 	cabal install GLFW
