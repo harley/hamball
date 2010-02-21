@@ -60,27 +60,25 @@ runServer :: PortID -> SF ServerInput (IO()) -> IO ()
 runServer port sf = withSocketsDo $ do
           sock <- listenOn port
 
-          rh <- reactInit (return dummyServerInput) (\_ _ sendmsgs -> sendmsgs >> return True) sf
+          rh <- reactInit (return dummyServerInput) (\_ _ sendmsgs -> sendmsgs >> return False) sf
           rch <- newChan
 
           -- one thread listens for new players joining
           forkIO $ acceptClient rch sock
 
-          -- write to chan once in a while to keep the server hard at work
-          
+          -- write to chan once in a while to keep the server hard at work, so that server is updated
           forkIO $ do
                 let loop = do
-                      reactWriteChan rch id False
-                      threadDelay 1000000    -- Microseconds
+                      addToReact rch id
+                      threadDelay 1000    -- Microseconds
                       loop
                 loop
-          
+
           startTime <- getCurrentTime
           -- main thread process.
           -- this readChan/unGetChan makes it more efficent (server idle instead of looping)
           let loop lTime lastA = do
-                (f, _) <- readChan rch   -- Makes this loop block when there's no input
-                let newA = f lastA
+                newA <- getReactInput rch lastA
                 curTime <- getCurrentTime
                 react rh (fromRational . toRational $ diffUTCTime curTime lTime, Just newA)
                 loop curTime newA
@@ -119,24 +117,18 @@ server = proc si -> do
 fetchCSMsg :: ReactChan ServerInput -> Handle -> IO ()
 fetchCSMsg rch h = do
     ln <- hGetLine h
-    {-
-    let csMsg = destringify ln :: CSMsg
-        b = case csMsg of
-                (_,CSMsgPlayer p) -> playerLife p < 100
-                (_,CSMsgLaser l) -> True
-                _ -> False
-                -}
-    reactWriteChan rch (\si -> si {msg = destringify ln, handle = Just h}) False
+    addToReact rch (\si -> si {msg = destringify ln, handle = Just h})
 
 sendSCMsg :: Handle -> SCMsg -> IO ()
 sendSCMsg h msg = do
     --_ <- hIsOpen h  -- The game breaks if we uncomment this line! WTFWTFWTFWTFTWFFFFFFFFFFFFFFFFFFFF
-    hPutStrLn h (debugShow (stringify msg))
+    hPutStrLn h $ debugShow (stringify msg)
     hFlush h
 
 objSF :: SF (ServerInput, (ServerState, ServerState)) (IO(), (ServerState, ServerState))
 objSF = proc (si, (sprev, s0)) -> do
-    inputChange <- loopPre dummyServerInput detectChangeSF -< si
+    --inputChange <- loopPre dummyServerInput detectChangeSF -< si
+    inputChange <- edgeBy (\old new -> if old/=new then Just new else Nothing) dummyServerInput -< si
 
     let s1 = updateObjs (s0,inputChange)
 
@@ -190,7 +182,7 @@ updateObjs (s, NoEvent) = s
 updateObjs (s, _)       = error $ "updateObjs couldn't find a match for " ++ (show s)
 
 -- Data.Maybe catMaybes :: [Maybe a] -> [a]
--- TODO: isn't this a bit inefficient?
+-- TODO: bug: if yampa rate is too low, fail to detect collisions occasionally
 checkHits :: (ServerState, ServerState) -> [Hit]
 checkHits (sprev, s) = catMaybes $ map collisionLP [(lprev,l,p) | (lprev,l) <- map snd $ assocsIL $
                                                                      zipWithIL (\a b -> (a,b)) (const Nothing) (const Nothing)

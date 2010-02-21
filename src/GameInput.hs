@@ -1,6 +1,5 @@
 module GameInput where
 
-import FRP.Yampa
 import Common
 import Data.IORef
 import Graphics.Rendering.OpenGL
@@ -26,19 +25,19 @@ data GameInput = GameInput {key :: Maybe Key,
 
 keyboardCallback :: ReactChan GameInput -> IORef Bool -> Key -> KeyButtonState -> IO ()
 keyboardCallback _ quit (SpecialKey ESC) Press = writeIORef quit True
-keyboardCallback rch _ k ks = reactWriteChan rch (\gi -> gi {key = Just k, keyState = Just ks}) True
+keyboardCallback rch _ k ks = addToReact rch (\gi -> gi {key = Just k, keyState = Just ks})
 
 mouseClickCallback :: ReactChan GameInput -> MouseButton -> KeyButtonState -> IO ()
-mouseClickCallback rch ButtonLeft ks = reactWriteChan rch (\gi -> gi {leftClick = (ks == Press)}) True
-mouseClickCallback rch ButtonRight ks = mouseWheel $= 0 >> reactWriteChan rch (\gi -> gi {rightClick = (ks == Press), mWheel = 0}) True
-mouseClickCallback rch _ _ = reactWriteChan rch (\gi -> gi) True
+mouseClickCallback rch ButtonLeft ks = addToReact rch (\gi -> gi {leftClick = (ks == Press)})
+mouseClickCallback rch ButtonRight ks = mouseWheel $= 0 >> addToReact rch (\gi -> gi {rightClick = (ks == Press), mWheel = 0})
+mouseClickCallback rch _ _ = addToReact rch (\gi -> gi)
 
 -- Make sure wheel value does not go to far
 -- default range is 0 -> 4294967295, so we only use first 4 and last 4 values
 mWheelCallback :: ReactChan GameInput -> Int -> IO ()
 mWheelCallback rch i | i == 9  = mouseWheel $= 8
                      | i == 4294967287 = mouseWheel $= 4294967288 -- rep -4
-                     | otherwise = reactWriteChan rch (\gi -> gi {mWheel = i}) True
+                     | otherwise = addToReact rch (\gi -> gi {mWheel = i})
 
 mouseMotionCallback :: ReactChan GameInput -> IORef Double -> IORef Int -> Position -> IO ()
 mouseMotionCallback rch timerRef yPrev (Position x y) = do
@@ -57,5 +56,6 @@ mouseMotionCallback rch timerRef yPrev (Position x y) = do
                 return ()
         writeIORef yPrev $ fromIntegral y
         when needsUpdate performUpdate
-        reactWriteChan rch (\gi -> gi {posMouse = p}) True
+        addToReact rch (\gi -> gi {posMouse = p})
     writeIORef timerRef t
+

@@ -76,11 +76,10 @@ runGame playerName handle sf = do
                 if empty
                     then (react rh (dt, Nothing) >> return cA)
                     else (do
-                        (f, _) <- readChan rch
-                        let !newA = f cA
+                        newA <- getReactInput rch cA
                         react rh (dt, Just newA)
                         reactLoop newA)
-            nA <- reactLoop curA 
+            nA <- reactLoop curA
             q <- readIORef quit
             unless q $ loop rh rch quit curTime nA
 

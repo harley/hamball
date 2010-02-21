@@ -14,11 +14,11 @@ executable:			 hamsterServer
 main-is:			 Server.hs
 ghc-options:         -Wall -fno-warn-name-shadowing -fno-warn-unused-matches -fno-warn-type-defaults
 hs-source-dirs:      src
-build-depends:       OpenGL <=2.4.0.1, Yampa, GLFW >= 0.4.1, HTTP, network
+build-depends:       OpenGL <=2.4.0.1, Yampa, GLFW >= 0.4.1, HTTP, network, time
 
 executable:			 hamster
 main-is:			 Client.hs
 ghc-options:         -Wall -fno-warn-name-shadowing -fno-warn-unused-matches -fno-warn-type-defaults
 hs-source-dirs:      src
-build-depends:       OpenGL <=2.4.0.1, Yampa, GLFW >= 0.4.1, HTTP, network, array >= 0.2.0.0, random >= 1.0.0.2
+build-depends:       OpenGL <=2.4.0.1, Yampa, GLFW >= 0.4.1, HTTP, network, array >= 0.2.0.0, random >= 1.0.0.2, time
 

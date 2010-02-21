@@ -22,11 +22,15 @@ debugMaybe s x = if s /= "" then debug s x else x
 --    show (Event a) = "Event " ++ (show a)
  ----------------------------------------------
 
-type ReactChan a = Chan (a -> a, Bool)
+type ReactChan a = Chan (a -> a)
 
-reactWriteChan :: ReactChan a -> (a -> a) -> Bool -> IO ()
-reactWriteChan rch f bl = do 
-    writeChan rch (f, bl)
+addToReact :: ReactChan a -> (a -> a) -> IO ()
+addToReact rch f  = writeChan rch f
+
+getReactInput :: ReactChan a -> a -> IO a
+getReactInput rch old = do
+    f <- readChan rch
+    return $ f old
 
 -- width MUST be divisible by 4
 -- height MUST be divisible by 3

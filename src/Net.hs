@@ -2,7 +2,6 @@
 module Net where
 
 import System.IO
-import FRP.Yampa
 import Common
 import GameInput
 import Vec3d
@@ -162,7 +161,7 @@ fetchSCMsg :: ReactChan GameInput -> Handle -> IO ()
 fetchSCMsg rch h = do
     ln <- hGetLine h
     printFlush ln -- for debug
-    reactWriteChan rch (\gi -> gi {message = destringify ln}) False
+    addToReact rch (\gi -> gi {message = destringify ln})
 
 -- Send msg from Client to Server
 sendCSMsg :: Handle -> CSMsg -> IO ()
