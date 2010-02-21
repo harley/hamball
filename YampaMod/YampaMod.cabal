@@ -4,12 +4,13 @@ cabal-Version: >= 1.2
 license: BSD3
 license-file: LICENSE
 author: Henrik Nilsson, Antony Courtney
-maintainer: George Giorgidze (GGG at CS dot NOTT dot AC dot UK)
+maintainer: Harley Trung
 homepage: http://www.haskell.org/yampa/
 category: Reactivity, FRP
 synopsis: Library for programming hybrid systems.
 description: Domain-specific language embedded in Haskell for programming hybrid (mixed discrete-time and continuous-time) systems.
              Yampa is based on the concepts of Functional Reactive Programming (FRP) and is structured using arrow combinators.
+             This is a modified version to support threads and auto-adjusting clock rate for SF depending on when they run.
 build-type: Simple
 Tested-With:        GHC
 Extra-Source-Files:
@@ -55,3 +56,4 @@ library
     FRP.Yampa.Internals
   other-modules:
     FRP.Yampa.Diagnostics
+

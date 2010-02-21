@@ -10,13 +10,13 @@ maintainer:          harley.trung@yale.edu
 build-type:          Simple
 build-depends:       base, haskell98
 
-executable:			 hamServer
+executable:			 hamsterServer
 main-is:			 Server.hs
 ghc-options:         -Wall -fno-warn-name-shadowing -fno-warn-unused-matches -fno-warn-type-defaults
 hs-source-dirs:      src
 build-depends:       OpenGL <=2.4.0.1, YampaMod, GLFW >= 0.4.1, HTTP, network
 
-executable:			 hamClient
+executable:			 hamster
 main-is:			 Client.hs
 ghc-options:         -Wall -fno-warn-name-shadowing -fno-warn-unused-matches -fno-warn-type-defaults
 hs-source-dirs:      src

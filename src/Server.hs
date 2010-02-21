@@ -16,7 +16,7 @@ import Monad
 import Data.List
 import System.IO.Error
 --import System (getArgs)
-import Net()
+import Net
 
 -- PlayerID is now name not ID, but server also labels player with ID to use internally
 data ServerState = ServerState {handles :: ![(Int, Handle)],

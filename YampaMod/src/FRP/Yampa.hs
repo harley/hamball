@@ -1,5 +1,9 @@
 {-# LANGUAGE GADTs, Rank2Types, CPP #-}
 -----------------------------------------------------------------------------------------
+-- This is the version modified by David Constanzo, maintained by Harley Trung.
+-- Basically reactimate is not to be used, and the reactInit/react combo is used instead
+-- to give more top level control.  Also, it uses Chan to support threads sharing the
+-- internal state.
 -- |
 -- Module      :  FRP.Yampa
 -- Copyright   :  (c) Antony Courtney and Henrik Nilsson, Yale University, 2003
