@@ -17,6 +17,7 @@ import Data.List
 import System.IO.Error
 --import System (getArgs)
 import Net
+import Data.Time.Clock
 
 -- PlayerID is now name not ID, but server also labels player with ID to use internally
 data ServerState = ServerState {handles :: ![(Int, Handle)],
@@ -59,27 +60,31 @@ runServer :: PortID -> SF ServerInput (IO()) -> IO ()
 runServer port sf = withSocketsDo $ do
           sock <- listenOn port
 
-          (rh,rch) <- reactInit (return dummyServerInput) (\_ sendmsgs -> sendmsgs) sf
+          rh <- reactInit (return dummyServerInput) (\_ _ sendmsgs -> sendmsgs >> return True) sf
+          rch <- newChan
 
           -- one thread listens for new players joining
           forkIO $ acceptClient rch sock
 
           -- write to chan once in a while to keep the server hard at work
+          
           forkIO $ do
                 let loop = do
                       reactWriteChan rch id False
-                      threadDelay 10000    -- Microseconds
+                      threadDelay 1000000    -- Microseconds
                       loop
                 loop
-
+          
+          startTime <- getCurrentTime
           -- main thread process.
           -- this readChan/unGetChan makes it more efficent (server idle instead of looping)
-          let loop = do
-                a <- readChan rch   -- Makes this loop block when there's no input
-                unGetChan rch a
-                react rh rch
-                loop
-          loop
+          let loop lTime lastA = do
+                (f, _) <- readChan rch   -- Makes this loop block when there's no input
+                let newA = f lastA
+                curTime <- getCurrentTime
+                react rh (fromRational . toRational $ diffUTCTime curTime lTime, Just newA)
+                loop curTime newA
+          loop startTime dummyServerInput
       where acceptClient rch sock = do
                 (hand,_,_) <- accept sock
                 open <- hIsOpen hand

@@ -6,6 +6,7 @@ import Graphics.Rendering.OpenGL.GL.CoordTrans
 import Data.IORef
 import System.IO
 import System.IO.Unsafe
+import Control.Concurrent
 
 debug :: (Show a) => a -> t -> t
 debug s x = unsafePerformIO (print s) `seq` x
@@ -20,6 +21,12 @@ debugMaybe s x = if s /= "" then debug s x else x
 --    show NoEvent = "NoEvent"
 --    show (Event a) = "Event " ++ (show a)
  ----------------------------------------------
+
+type ReactChan a = Chan (a -> a, Bool)
+
+reactWriteChan :: ReactChan a -> (a -> a) -> Bool -> IO ()
+reactWriteChan rch f bl = do 
+    writeChan rch (f, bl)
 
 -- width MUST be divisible by 4
 -- height MUST be divisible by 3

@@ -1,4 +1,4 @@
-{-# LANGUAGE Arrows #-}
+{-# LANGUAGE Arrows, BangPatterns #-}
 module RunGame where
 
 import Graphics.Rendering.OpenGL
@@ -16,6 +16,7 @@ import Data.Maybe
 import Net
 import Render
 import Common
+import Data.Time.Clock
 
 --PLEASE run ./client playerName or ./server scripts instead
 
@@ -35,7 +36,8 @@ runGame playerName handle sf = do
         let gd = GameData {startTime = sTime,
                            lastDrawTime = ldTime,
                            numFrames = nFrames}
-        (rh,rch) <- reactInit initGameInput (actuate gd) sf
+        rch <- newChan
+        rh <- reactInit initGameInput (actuate gd) sf
         networkInit rch handle
         tm <- newIORef t
         quit <- newIORef False
@@ -48,8 +50,9 @@ runGame playerName handle sf = do
 
         disableSpecial AutoPollEvent
 
+        startTime <- getCurrentTime
         -- invoke drawing loop
-        loop rh rch quit
+        loop rh rch quit startTime GameInput {key=Nothing, keyState=Nothing, leftClick=False, posMouse=Position 0 0, mWheel = 0, message=dummySCMsg, rightClick = False}
 
         -- if quit, close server handle
         case handle of
@@ -63,16 +66,25 @@ runGame playerName handle sf = do
         closeWindow
         terminate
     where
-        loop rh rch quit = do
+        loop rh rch quit lTime curA = do
             sleep 0.001
             pollEvents
-            empty <- isEmptyChan rch
-            when empty $ reactWriteChan rch id True -- TODO: what is this for? to make sure yampa keeps updating the SF. will clean up by moving to to react
-            react rh rch
+            curTime <- getCurrentTime
+            let reactLoop cA = do
+                empty <- isEmptyChan rch
+                let dt = fromRational.toRational $ diffUTCTime curTime lTime
+                if empty
+                    then (react rh (dt, Nothing) >> return cA)
+                    else (do
+                        (f, _) <- readChan rch
+                        let !newA = f cA
+                        react rh (dt, Just newA)
+                        reactLoop newA)
+            nA <- reactLoop curA 
             q <- readIORef quit
-            unless q $ loop rh rch quit
+            unless q $ loop rh rch quit curTime nA
 
-        actuate gd shouldDraw (renderActions, networkActions) = do
+        actuate gd rch shouldDraw (renderActions, networkActions) = do
             --tid <- myThreadId
             --printFlush ("draw" ++ (show tid))
             st <- readIORef $ startTime gd
@@ -94,6 +106,7 @@ runGame playerName handle sf = do
             networkActions
             nf <- readIORef $ numFrames gd
             writeIORef (numFrames gd) (nf+1)
+            return True
 
 glInit :: IO ()
 glInit = do
