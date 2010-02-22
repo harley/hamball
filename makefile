@@ -20,7 +20,7 @@ ns:
 
 # use this to install missing modules
 yampa:
-    cabal install yampa
+	cabal install yampa
 
 glfw:
 	cabal install GLFW
