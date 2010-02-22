@@ -1,11 +1,11 @@
 name:                HamsterBalls
-version:             0.1
+version:             0.2
 synopsis:            3D FPS Network Game: Players control hamsters flying around in hamster balls and shooting lasers
 description:         3D FPS Network Game: Players control hamsters flying around in hamster balls and shooting lasers
 category:            Game
 license:             BSD3
 license-file:        LICENSE
-author:              David Constanzo, Harley Trung, Alex Thompson, Matt Sills
+author:              Harley Trung, David Costanzo, Alex Thompson, Matt Sills
 maintainer:          harley.trung@yale.edu
 build-type:          Simple
 build-depends:       base, haskell98
