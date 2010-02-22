@@ -3,15 +3,19 @@ Installation instruction
 
 1. Download source code:
     git clone git://github.com/harleyttd/hamball.git
+2a. Install with makefile, run code from bin folder
     cd hamball
-    make all
+    make
+2b. (Preferred) Use cabal.
+    cd hamball
+    cabal install
 
 Instroduction
 =============
 
 This game was written in Haskell, in Spring 2009, by:
-David Constanzo
 Harley Trung
+David Costanzo
 Alexander Thompson
 Matthew Sills
 
@@ -19,7 +23,7 @@ It is currently maintained by Harley Trung.  Please send a github message if you
 
 DEPENDENCIES
 ============
-Yampa (our modified version)
+Yampa (previously we improved Yampa and used that instead; but for portability the code now supports the original Yampa. YampaMod is distributed as a separate package and can easily to be integrated back if desired)
 OpenGL-2.2.2.0 (OpenGL-2.4.0.1 will break because they define their own GLfloat data type)
 GLFW
 HTTP
