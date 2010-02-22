@@ -1,4 +1,12 @@
 {-# LANGUAGE TypeSynonymInstances, Arrows #-}
+{-****************************************************************************
+*                              Hamster Balls                                 *
+*       Purpose:   Stringify messages to send over network                   *
+*                  Inefficient but readable.                                 *
+*                  Potentially write a more efficient version at some point  *
+*       Author:    David, Harley, Alex, Matt                                 *
+*             Copyright (c) Yale University, 2010                            *
+****************************************************************************-}
 module Net where
 
 import System.IO
@@ -153,9 +161,6 @@ instance Stringifiable Player where
                                playerEnergy = read p8,
                                playerColor = readVec3d p9,
                                playerName = read p10}
-
-
-
 
 fetchSCMsg :: ReactChan GameInput -> Handle -> IO ()
 fetchSCMsg rch h = do

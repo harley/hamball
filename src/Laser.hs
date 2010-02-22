@@ -1,3 +1,9 @@
+{-****************************************************************************
+*                              Hamster Balls                                 *
+*       Purpose:   Rendering code for lasers                                 *
+*       Author:    David, Harley, Alex, Matt                                 *
+*             Copyright (c) Yale University, 2010                            *
+****************************************************************************-}
 module Laser where
 
 import Common

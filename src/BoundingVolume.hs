@@ -1,3 +1,9 @@
+{-****************************************************************************
+*                              Hamster Balls                                 *
+*       Purpose:   Bounding Volumes for collision detection                  *
+*       Author:    David, Harley, Alex, Matt                                 *
+*             Copyright (c) Yale University, 2010                            *
+****************************************************************************-}
 module BoundingVolume where
 
 import Vec3d
@@ -22,10 +28,11 @@ collidesWith :: BoundingVolume -> BoundingVolume -> Bool
 collidesWith BoundingEmpty _ = False
 collidesWith _ BoundingEmpty = False
 collidesWith (BoundingBox (Vec3d (minx1,miny1,minz1)) (Vec3d (maxx1,maxy1,maxz1)))
-             (BoundingBox (Vec3d (minx2,miny2,minz2)) (Vec3d (maxx2,maxy2,maxz2))) = {-debug ("CollidesWith called on " ++ (show b1) ++ " ::: " ++ (show b2) ++ " ::: returning " ++
-                                                                                               (show $ minx1 < maxx2 && maxx1 > minx2 &&
-                                                                                                       miny1 < maxy2 && maxy1 > miny2 &&
-                                                                                                       minz1 < maxz2 && maxz1 > minz2)) $-}
+             (BoundingBox (Vec3d (minx2,miny2,minz2)) (Vec3d (maxx2,maxy2,maxz2))) =
+ {-debug ("CollidesWith called on " ++ (show b1) ++ " ::: " ++ (show b2) ++ " ::: returning " ++
+               (show $ minx1 < maxx2 && maxx1 > minx2 &&
+                       miny1 < maxy2 && maxy1 > miny2 &&
+                       minz1 < maxz2 && maxz1 > minz2)) $-}
                    minx1 < maxx2 && maxx1 > minx2 &&
                    miny1 < maxy2 && maxy1 > miny2 &&
                    minz1 < maxz2 && maxz1 > minz2

@@ -1,3 +1,9 @@
+{-****************************************************************************
+*                              Hamster Balls                                 *
+*       Purpose:   Input handling via OpenGL callbacks, used in Client       *
+*       Author:    David, Harley, Alex, Matt                                 *
+*             Copyright (c) Yale University, 2010                            *
+****************************************************************************-}
 module GameInput where
 
 import Common
@@ -6,15 +12,13 @@ import Graphics.Rendering.OpenGL
 import Graphics.UI.GLFW as GLFW
 import Control.Monad
 
---type MyReactHandle = ReactHandle GameInput (IO (), IO ())
-
 data GameInput = GameInput {key :: Maybe Key,
                             keyState :: Maybe KeyButtonState,
                             leftClick :: Bool,
                             mWheel :: Int,
                             posMouse :: Position,
-                            message :: SCMsg,
-                            rightClick :: Bool}
+                            rightClick :: Bool,
+                            message :: SCMsg}
     deriving Show
 
 -- Number of milliseconds between mouseUpdates
@@ -50,14 +54,13 @@ mouseMotionCallback rch timerRef yPrev (Position x y) = do
     when (t-t' >= mouseTimer) $ do
         yp' <- readIORef yPrev
         let yp = fromIntegral yp'
-            -- NOTE: this wraps mouse position horizontally well but not well if we keep pushing mouse cursor up
+            -- NOTE: this wraps mouse position horizontally
+            -- Like in othere FPS game, does not wrap mouse vertically
             p = Position (if x < (width `div` 4) then x+(width `div` 2) else if x >= (3*width `div` 4) then x - (width `div` 2) else x)
                          (if y < (height `div` 3) then (height `div` 3) else if y >= (2*height `div` 3) then (2*height `div` 3 - 1) else y)
             needsUpdate = x < width `div` 4 || x >= 3*width `div` 4 || (y < height `div` 3 && y > yp) || (y >= 2*height `div` 3 && y < yp)
                                     || y < height `div` 6 || y >= 5 * height `div` 6
-            performUpdate = do
-                mousePos $= p
-                return ()
+            performUpdate = mousePos $= p
         writeIORef yPrev $ fromIntegral y
         when needsUpdate performUpdate
         addToReact rch (\gi -> gi {posMouse = p})

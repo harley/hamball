@@ -1,3 +1,9 @@
+{-****************************************************************************
+*                              Hamster Balls                                 *
+*       Purpose:   Preload data from files for terrain rendering             *
+*       Author:    David, Harley, Alex, Matt                                 *
+*             Copyright (c) Yale University, 2010                            *
+****************************************************************************-}
 module TerrainData where
 
 import Vec3d

@@ -1,3 +1,9 @@
+{-****************************************************************************
+*                              Hamster Balls                                 *
+*       Purpose:   Rendering code for players, 1st and 3rd person perspective*
+*       Author:    David, Harley, Alex, Matt                                 *
+*             Copyright (c) Yale University, 2010                            *
+****************************************************************************-}
 module Player where
 
 -- Player move according to keyboard or mouse
@@ -7,7 +13,6 @@ import Common
 import FRP.Yampa
 import Vec3d
 import Graphics.Rendering.OpenGL as OpenGL
-import WallRender
 import TerrainData
 import Render
 import Graphics.UI.GLFW
@@ -112,7 +117,7 @@ renderSelf p = do
         multMatrix rMatrixP
         multMatrix rMatrixT
         multMatrix tMatrix
-			
+
         matrixMode $= Modelview 0
 
 {-
@@ -133,3 +138,4 @@ renderSelf' p =
         lookAt (Vertex3 x y z) (xyz (theta,phi)) (Vector3 0 0 1)--(xyz' (theta, phi+pi/4))
         matrixMode $= Modelview 0
 --}
+

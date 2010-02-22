@@ -1,3 +1,9 @@
+{-****************************************************************************
+*                              Hamster Balls                                 *
+*       Purpose:   Rendering code for explosive particles when a player dies *
+*       Author:    David, Harley, Alex, Matt                                 *
+*             Copyright (c) Yale University, 2010                            *
+****************************************************************************-}
 module Particles where
 import Common
 import Vec3d
@@ -13,33 +19,19 @@ particleNum = 100
 -- Render particles
 renderParticle :: Particle -> IO ()
 renderParticle p = do
-
     preservingMatrix $ do
-    loadIdentity
-    texture Texture2D $= Enabled
-    textureFunction $= Decal
-    textureBinding Texture2D $= bloodTexture
-    translate $ vector3 $ particlePos p
-    -- materialEmission FrontAndBack $= colorf Colors.Blue
-    renderQuadric (QuadricStyle (Just Smooth) GenerateTextureCoordinates Outside FillStyle) (Sphere 0.15 2 2)
-    texture Texture2D $= Disabled
-{-
-  let
-    b :: Color4 Float
-    b = Color4 0.0 0.0 0.0 1.0
-  color b
-  renderPrimitive Points $ vertex $ vertex3 (particlePos p)
--}
-
-
+        loadIdentity
+        texture Texture2D $= Enabled
+        textureFunction $= Decal
+        textureBinding Texture2D $= bloodTexture
+        translate $ vector3 $ particlePos p
+        -- materialEmission FrontAndBack $= colorf Colors.Blue
+        renderQuadric (QuadricStyle (Just Smooth) GenerateTextureCoordinates Outside FillStyle) (Sphere 0.15 2 2)
+        texture Texture2D $= Disabled
 
 renderParticleSystem :: ParticleSystem -> IO()
 renderParticleSystem ps = do
   print "Rendering particle system"
-
-
-
-
 
 -- RANDOM STUFF
 -- From http://en.wikibooks.org/wiki/Haskell/Hierarchical_libraries/Randoms
@@ -77,3 +69,4 @@ generatePreloadedParticles pos = map (\v-> Particle pos v 1.0 0) preloadedRandom
 
 generatePreloadedParticles2 :: Vec3d -> [Particle]
 generatePreloadedParticles2 pos = map (\v-> Particle pos (unsafePerformIO $ randomTriple') 1.0 0) preloadedRandomVecs
+

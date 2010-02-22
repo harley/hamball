@@ -1,4 +1,11 @@
 {-# LANGUAGE Arrows #-}
+{-****************************************************************************
+*                              Hamster Balls                                 *
+*       Purpose:   One of the most important modules                         *
+*                  Define ObjectSF for the game, using Yampa                 *
+*       Author:    David, Harley, Alex, Matt                                 *
+*             Copyright (c) Yale University, 2010                            *
+****************************************************************************-}
 module Object where
 
 import Common
@@ -24,7 +31,7 @@ data ObjInput = ObjInput {
 }
 
 data ObjOutput = ObjOutput {
-    ooObsObjState :: !ObsObjState,         -- Observable Object State
+    ooObsObjState :: !ObsObjState,         -- Observable Object State -- for OpenGL rendering
     ooNetworkMsgs :: ![CSMsg],             -- Messages to send to the server
     ooKillReq :: !(Event ()),              -- When this happens, kill the object itself
     ooSpawnReq :: ![ObjectSF],             -- Spawn these guys pls
@@ -43,7 +50,6 @@ data ObsObjState = OOSPlayer !Player
                  | OOSKillText !String
                  | OOSPowerUp !PowerUp
                  | OOSScoreBoard !ScoreBoard
-                 -- | OOSMan -- not necessarily to be used
                  | OOSNone
     deriving Show
 
@@ -65,7 +71,6 @@ terrain0 = proc oi -> do
                           ooKillReq = NoEvent,
                           ooSpawnReq = [],
                           ooBounds = getTerrainBounds demoTerrain}
-
 
 renderObsObjState :: ObsObjState -> IO ()
 renderObsObjState (OOSPlayer p) = renderPlayer p
@@ -91,9 +96,9 @@ renderObsObjState OOSNone = return ()
 -- TODO: Improve and clean this up
 observer :: Player -> ObjectSF
 observer pl = let setFromKey k (gi, prev) = dup $ case (key gi == Just k, keyState gi) of
-                                                                (True,Just Press) -> 1
-                                                                (True,Just Release) -> 0
-                                                                (_   ,_        ) -> prev
+                                                            (True,Just Press) -> 1
+                                                            (True,Just Release) -> 0
+                                                            (_   ,_        ) -> prev
                   checkMouseWheel (gi, prev)  =  let raw = mWheel gi
                                                      -- to avoid overflow or casting to big integer
                                                      v = if raw < 9 then raw else (raw - 4294967295)-1
@@ -116,18 +121,19 @@ observer pl = let setFromKey k (gi, prev) = dup $ case (key gi == Just k, keySta
         r = speed *^ r'
         up = speed *^ (r' `cross` f') -- actually r cross f can be calculated by hand. im too lazy for now
 
-    fwd  <- loopPre 0 $ arr $ setFromKey (CharKey 'W') -< gi
-    bwd <- loopPre 0 $ arr $ setFromKey (CharKey 'S') -< gi
+    fwd   <- loopPre 0 $ arr $ setFromKey (CharKey 'W') -< gi
+    bwd   <- loopPre 0 $ arr $ setFromKey (CharKey 'S') -< gi
     right <- loopPre 0 $ arr $ setFromKey (CharKey 'D') -< gi
-    left <- loopPre 0 $ arr $ setFromKey (CharKey 'A') -< gi
+    left  <- loopPre 0 $ arr $ setFromKey (CharKey 'A') -< gi
     keyWheel <- loopPre 0 $ arr $ checkMouseWheel -< gi
     stopEvent <- edge -< rightClick gi
     collideEvent <- edge <<^ (/= Nothing) -< collider
+
     let df = (fwd - bwd) *^ f
         dr = (right - left) *^ r
         du = keyWheel *^ up
         a = df ^+^ dr ^+^ du
-        v = (if isEvent collideEvent then -5 else 1) *^ a
+        v = (if isEvent collideEvent then -4 else 1) *^ a --TODO: fix collision bug
     --v <- integral -< a
     p <- (playerPos pl ^+^) ^<< integral -< v
 
@@ -183,44 +189,7 @@ observer pl = let setFromKey k (gi, prev) = dup $ case (key gi == Just k, keySta
                           ooSpawnReq = event [] (\_ -> [laser lsr]) fireLaser,
                           ooBounds = let v = Vec3d (playerRadius pl', playerRadius pl', playerRadius pl')
                                      in BoundingBox (p ^-^ v) (p ^+^ v)}
-{-
-player0 :: ID -> Velocity3 -> ObjectSF
-player0 pid p0 = let setFromKey k (gi, prev) = (\a -> (a,a)) $ (case (key gi == Just k, keyState gi) of
-                                                                 (True,Just Press) -> 1
-                                                                 (True,Just Release) -> 0
-                                                                 (_   ,_        ) -> prev)
-                  in proc (ObjInput {oiGameInput = gi}) -> do
-    (f,r,u) <- arr id -< (Vec3d (0,0,-0.001), Vec3d (0.001,0,00), Vec3d (0,0.001,0))
-    keyw <- loopPre 0 $ arr $ setFromKey (CharKey 'I') -< gi
-    keys <- loopPre 0 $ arr $ setFromKey (CharKey 'K') -< gi
-    keyd <- loopPre 0 $ arr $ setFromKey (CharKey 'L') -< gi
-    keya <- loopPre 0 $ arr $ setFromKey (CharKey 'J') -< gi
-    arup <- loopPre 0 $ arr $ setFromKey (SpecialKey UP) -< gi
-    ardn <- loopPre 0 $ arr $ setFromKey (SpecialKey DOWN) -< gi
-    let df = (keyw-keys) *^ f
-        dr = (keyd-keya) *^ r
-        du = (arup-ardn) *^ u
-        a = df ^+^ dr ^+^ du
-    v <- integral -< a
-    p <- (p0 ^+^) ^<< integral -< v
-    msg <- arr id -< message gi
-    returnA -< let pUpdate = Player {playerID = pid,
-                                     playerPos = p,
-                                     playerVel = v,
-                                     playerAcc = a,
-                                     playerView = (0,0),
-                                     playerRadius = defRadius,
-                                     playerLife = maxLife,
-                                     playerEnergy = maxEnergy,
-                                     playerColor = Vec3d (0.5,0.5,0.5),
-                                     playerName = "player0"}
-                in ObjOutput {ooObsObjState = case msg of (iden, SCMsgPlayer p) -> if pid == iden then OOSPlayer p else OOSPlayer pUpdate
-                                                          _ -> OOSPlayer pUpdate,
-                              ooNetworkMsgs = [],
-                              ooKillReq = NoEvent,
-                              ooSpawnReq = [],
-                              ooBounds = BoundingEmpty}
--}
+
 serverObject :: String -> ObjectSF
 serverObject playerNameStr = proc (ObjInput {oiGameInput = gi}) -> do
     spawnWaterfall <- edge <<^ (\gi -> key gi == Just (CharKey 'L')) -< gi
@@ -357,6 +326,8 @@ particle2 part = proc _ -> do
                           ooSpawnReq = spawnreq,
                           ooBounds = BoundingEmpty}
 -}
+
+-- TODO: Change to something like perishable text, for general text display of 3 seconds
 killtext :: String -> ObjectSF
 killtext playerName = proc _ -> do
     kill <- repeatedly 3 () -< ()

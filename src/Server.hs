@@ -1,4 +1,10 @@
 {-# LANGUAGE Arrows #-}
+{-****************************************************************************
+*                              Hamster Balls                                 *
+*       Purpose:   Server code, handling messages & some collision detection *
+*       Author:    David, Harley, Alex, Matt                                 *
+*             Copyright (c) Yale University, 2010                            *
+****************************************************************************-}
 module Main where
 
 import FRP.Yampa

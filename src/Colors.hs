@@ -1,17 +1,23 @@
+{-****************************************************************************
+*                              Hamster Balls                                 *
+*       Purpose:  Color table, adapted from YampaArcade code by Henrik Nilson*
+*       Author:   David, Harley, Alex, Matt                                  *
+*             Copyright (c) Yale University, 2010                            *
+****************************************************************************-}
 module Colors where
 
 import Data.Array
 import Graphics.Rendering.OpenGL hiding (Red, Blue, Green, colorTable, Color)
 
 ------------------------------------------------------------------------------
--- Color definitions.  PLEASE use 'colorf ColarName'
+-- Color definitions.  Usage: 'colorf ColorName'
+-- Note: First 3 values are [0..255] RGB values, 4th is alpha [0..1] value
 ------------------------------------------------------------------------------
 colorf :: Color -> Color4 GLfloat
 colorf x = toF (colorTable ! x)
 
 toF :: Color4 Int -> Color4 GLfloat
 toF (Color4 r g b a) = Color4 (fromIntegral r / 255) (fromIntegral g / 255) (fromIntegral b / 255) (fromIntegral a)
-
 
 -- Pretty arbitrary selection of colours.
 data Color =
@@ -75,7 +81,7 @@ data Color =
 
 colorTable :: Array Colors.Color (Color4 Int)
 colorTable = array (minBound, maxBound) colorList
- where 
+ where
   --colorList :: [(Color, Color4 t)]
   colorList =
     [   -- Basic colours.
@@ -140,3 +146,4 @@ colorTable = array (minBound, maxBound) colorList
 	(BlueViolet,		Color4 138  43 226 1),
 	(Purple,		Color4 160  32 240 1)
     ]
+

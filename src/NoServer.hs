@@ -1,3 +1,9 @@
+{-****************************************************************************
+*                              Hamster Balls                                 *
+*       Purpose:   Simple code to run the game without a server              *
+*       Author:    David, Harley, Alex, Matt                                 *
+*             Copyright (c) Yale University, 2010                            *
+****************************************************************************-}
 module Main where
 
 import Network
@@ -14,6 +20,7 @@ import Vec3d
 main :: IO ()
 main = do
     glInit
-    runGame "NoServer" Nothing (game [observer dummyPlayer, player dummyPlayer dummySCMsg, terrain0] >>> 
+    runGame "NoServer" Nothing (game [observer dummyPlayer, player dummyPlayer dummySCMsg, terrain0] >>>
 					 arr (\(ooss,msgs) -> (renderObsObjStates ooss, return ())))
   where renderObsObjStates = foldl (\io oos -> io >> renderObsObjState oos) (return ())
+

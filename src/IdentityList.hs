@@ -1,4 +1,11 @@
 {-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, UndecidableInstances #-}
+{-****************************************************************************
+*                              Hamster Balls                                 *
+*       Purpose: IdentityList is basically an association list with          *
+*                automatically generated keys. Used to easily route messages *
+*       Author:  David, Harley, Alex, Matt                                   *
+*             Copyright (c) Yale University, 2010                            *
+****************************************************************************-}
 module IdentityList where
 
 import FRP.Yampa

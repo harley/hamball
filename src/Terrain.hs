@@ -1,11 +1,17 @@
+{-****************************************************************************
+*                              Hamster Balls                                 *
+*       Purpose:   Rendering code for terrains in the game                   *
+*       Author:    David, Harley, Alex, Matt                                 *
+*             Copyright (c) Yale University, 2010                            *
+****************************************************************************-}
 module Terrain where
 
 import Vec3d
 import Graphics.Rendering.OpenGL hiding (Texture)
 import GHC.Float
-import WallRender
 import BoundingVolume
 import Data.Maybe
+import Render
 {---------------------------------------------------------------------------------------------------------------
 TO DO:
 Add orientation and scale to definition of TerrainElement
@@ -90,7 +96,7 @@ preservingSurface (Terrain.Color (Col{cspecular=spec, cdiffuse=diff, cambient=am
       curSpec = materialSpecular FrontAndBack
       curAmb = materialAmbient FrontAndBack
       curEmis = materialEmission FrontAndBack
-  -}  
+  -}
     -- Store colors
   materialDiffuse FrontAndBack $= diff -- For now, always FrontAndBack
   materialSpecular FrontAndBack $= spec

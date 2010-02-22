@@ -20,7 +20,6 @@ import Control.Monad ( liftM, when )
 import System.IO ( Handle, IOMode(ReadMode), openBinaryFile, hGetBuf, hClose )
 import System.IO.Error ( mkIOError, eofErrorType )
 import Foreign ( Ptr, alloca, mallocBytes, Storable(..) )
--- import Graphics.UI.GLUT
 import Graphics.Rendering.OpenGL
 
 -- This is probably overkill, but anyway...
@@ -53,7 +52,6 @@ hGetBufFully handle ptr numBytes = do
    when (bytesRead /= numBytes) $
       ioError $ mkIOError eofErrorType "hGetBufFully" (Just handle) Nothing
 
-
 -- Closing a file is nice, even when an error occurs during reading.
 withBinaryFile :: FilePath -> (Handle -> IO a) -> IO a
 withBinaryFile filePath = bracket (openBinaryFile filePath ReadMode) hClose
@@ -67,3 +65,4 @@ readImage filePath =
       buf <- mallocBytes numBytes
       hGetBufFully handle buf numBytes
       return (Size width height, PixelData RGBA UnsignedByte buf)  -- changed the PixelFormat constructor here from RGB to RGBA, to account for our alpha data.
+

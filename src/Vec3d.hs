@@ -1,4 +1,10 @@
 {-# LANGUAGE TypeSynonymInstances, MultiParamTypeClasses #-}
+{-****************************************************************************
+*                              Hamster Balls                                 *
+*       Purpose:   Home-grown vector library                                 *
+*       Author:    David, Harley, Alex, Matt                                 *
+*             Copyright (c) Yale University, 2010                            *
+****************************************************************************-}
 module Vec3d where
 
 import FRP.Yampa

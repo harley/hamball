@@ -1,17 +1,28 @@
+{-****************************************************************************
+*                              Hamster Balls                                 *
+*       Purpose:   Common data types shared by other modules                 *
+*       Author:    David, Harley, Alex, Matt                                 *
+*             Copyright (c) Yale University, 2010                            *
+****************************************************************************-}
 module Common where
 import Vec3d
 import FRP.Yampa
 import Graphics.Rendering.OpenGL
 import Graphics.Rendering.OpenGL.GL.CoordTrans
 import System.IO
-import System.IO.Unsafe
+import System.IO.Unsafe (unsafePerformIO)
 import Control.Concurrent
 
+------------------------------------------------------------------------------
+-- Debugging routines.  Couldn't have made it without these
+------------------------------------------------------------------------------
 debug :: (Show a) => a -> t -> t
 debug s x = unsafePerformIO (print s) `seq` x
+
 debugShow, debugShow2 :: (Show a) => a -> a
-debugShow x = debug ("debug: " ++ show x) x -- only for SHOWable objects
+debugShow x  = debug ("debug: " ++ show x) x -- only for SHOWable objects
 debugShow2 x = debug (show x) x -- only for SHOWable objects
+
 debugMaybe :: String -> t -> t
 debugMaybe s x = if s /= "" then debug s x else x
 
@@ -21,6 +32,9 @@ debugMaybe s x = if s /= "" then debug s x else x
 --    show (Event a) = "Event " ++ (show a)
  ----------------------------------------------
 
+------------------------------------------------------------------------------
+-- ReactChan: queue changes requested from different threads to apply sequentially
+------------------------------------------------------------------------------
 type ReactChan a = Chan (a -> a)
 
 addToReact :: ReactChan a -> (a -> a) -> IO ()
@@ -64,17 +78,11 @@ initFrustum = do
 
 --bound lo hi a = max lo $ min hi a
 
-int :: (Num b, Integral a) => a -> b
-int = fromInteger.toInteger
-
 type ID = Int
 type Position3 = Vec3d
 type Velocity3 = Vec3d
 type Acceleration3 = Vec3d
 type Color3 = Vec3d
-
--- data PowerUp = XRay
-
 
 data Player = Player {
     playerID :: !ID,
@@ -125,6 +133,7 @@ data ParticleSystem = ParticleSystem {
 }
   deriving (Show, Eq)
 
+-- TODO: keep track of previous location of display text
 data ScoreBoard = ScoreBoard {
     sbScores :: ![(Int, Int)] -- PlayerID and Score
 }
@@ -142,34 +151,24 @@ data PowerUp = PowerUp {
 }
     deriving (Show, Eq)
 
--- Values for initializing objects
-defRadius :: Float
-defRadius = 1.5
-
-maxLife :: Float
-maxLife = 100
-
-maxEnergy :: Float
-maxEnergy = 100
-
-defLaserStr :: Float
-defLaserStr = 10
-
 data Obj = PlayerObj !Player
          | LaserObj !Laser
     deriving (Show, Eq)
 
-data SCMsg' = SCMsgInitialize !Player
+------------------------------------------------------------------------------
+-- Network messages between Server and Client
+------------------------------------------------------------------------------
+data SCMsg' = SCMsgInitialize !Player    -- To initiatiate the joining player
             | SCMsgPlayer !Player        -- For updating pos
-            | SCMsgHit !Hit
-            | SCMsgSpawn !Obj            -- For creating new ones
+            | SCMsgHit !Hit              -- Announcing hits
+            | SCMsgSpawn !Obj            -- For creating new objects
             | SCMsgFrag !Hit             -- For telling everyone player1 killed player2
-            | SCMsgRemove !Int             -- Remove exiting player
+            | SCMsgRemove !Int           -- Remove exiting player
     deriving (Show, Eq)
 
-data CSMsg' = CSMsgPlayer !Player        -- For when velocity changes
-            | CSMsgUpdate !Player        -- For periodic updates
-            | CSMsgLaser !Laser          -- For spawning
+data CSMsg' = CSMsgPlayer !Player        -- Send when velocity changes
+            | CSMsgUpdate !Player        -- Send periodic updates
+            | CSMsgLaser !Laser          -- Send when a laser is shot by client
             | CSMsgKillLaser !ID
             | CSMsgDeath !Hit            -- ID of killer and killed
             | CSMsgExit !String          -- Name of player that exits, requires unique player names
@@ -197,18 +196,24 @@ dummyPlayer = Player {playerID = 0,
                       playerColor = Vec3d(0.5, 0.2, 0.7),
                       playerName = "Dummy"}
 
+-- Values for initializing objects
+defRadius :: Float
+defRadius = 1.5
+
+maxLife :: Float
+maxLife = 100
+
+maxEnergy :: Float
+maxEnergy = 100
+
+defLaserStr :: Float
+defLaserStr = 10
+
 printFlush :: String -> IO ()
 printFlush s = do
     print s
     hFlush stdout
     hFlush stderr
-
-{-
- - Removing, duplicate function 'event'
-maybeEvent :: b -> (a -> b) -> Event a -> b
-maybeEvent n _ NoEvent = n
-maybeEvent _ f (Event x) = f x
--}
 
 doIOevent :: Event (IO ()) -> IO ()
 doIOevent (Event io) = io
@@ -221,13 +226,7 @@ computeColor :: Player -> Color4 GLfloat
 computeColor (Player {playerColor = Vec3d (r,g,b),
                       playerLife = life}) = vecToColor (Vec3d ((1 - life/maxLife) * (1-r) + r, g, b))
 
+--deprecated in favor of edgeBy
 --detectChangeSF :: Eq a => SF (a, a) (Event a, a)
 --detectChangeSF = arr (\(new,old) -> (if new == old then NoEvent else Event new, new))
-
-
--- selfKill e = (print "Socket closed." >> myThreadId >>= killThread >> return ())
-               -- else ioError e)
-
--- if you change this, also go to file ./server to change the rm script to remove this file after server closes
--- hostName = ".host_name"
 

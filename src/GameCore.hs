@@ -1,5 +1,7 @@
-{- Most of the code here (except the collision detection) is adapted from Section 5.5 of the Yampa Arcade paper -}
-
+{- Much (except the collision detection) is adapted from Section 5.5 of the Yampa Arcade paper
+ - url: http://www.haskell.org/yale/papers/haskell-workshop03/index.html
+ - or see references/yampa-arcade.pdf
+ - -}
 module GameCore where
 
 import IdentityList
@@ -18,14 +20,25 @@ import Data.List
 -}
 
 gameCore :: IL ObjectSF -> SF (GameInput, IL ObjOutput) (IL ObjOutput)
-gameCore initObjs = dpSwitch route initObjs (arr killOrSpawn >>> notYet) (\sfs f -> gameCore (f sfs))
+gameCore initObjs = dpSwitch route
+                             initObjs
+                             (arr killOrSpawn >>> notYet)
+                             (\sfs f -> gameCore (f sfs))
 
 route :: (GameInput, IL ObjOutput) -> IL sf -> IL (ObjInput, sf)
 route (gi,oos) objs = mapIL (route' oos) objs
-    where route' oos (k,obj) = (ObjInput {oiGameInput = gi, oiColliding = case getIL k oos of
-                                                                              Just oo -> find (collidesWith (ooBounds oo) . ooBounds) $ map snd $ assocsIL $ deleteIL k oos
-                                                                              Nothing -> Nothing}, obj)
+    where route' oos (k,obj) =
+            (ObjInput {oiGameInput = gi,
+                      oiColliding = case getIL k oos of
+                                     Just oo -> find (collidesWith (ooBounds oo) . ooBounds)
+                                                     (map snd $ assocsIL $ deleteIL k oos)
+                                     Nothing -> Nothing
+                     },
+            obj)
 
 killOrSpawn :: (a, IL ObjOutput) -> Event (IL ObjectSF -> IL ObjectSF)
 killOrSpawn (_,oos) = Event $ foldl (.) id funcs
-    where funcs = map (\(k,oo) -> ((event id (\_ -> deleteIL k)) (ooKillReq oo)) . ((foldl (.) id . map insertIL) (ooSpawnReq oo))) (assocsIL oos)
+    where funcs = map (\(k,oo) -> ((event id (\_ -> deleteIL k)) (ooKillReq oo)) .
+                                  ((foldl (.) id . map insertIL) (ooSpawnReq oo)))
+                      (assocsIL oos)
+

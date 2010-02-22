@@ -1,4 +1,10 @@
 {-# LANGUAGE Arrows, BangPatterns #-}
+{-****************************************************************************
+*                              Hamster Balls                                 *
+*       Purpose:   Integrate OpenGL, GLFW and Networking code all together   *
+*       Author:    David, Harley, Alex, Matt                                 *
+*             Copyright (c) Yale University, 2010                            *
+****************************************************************************-}
 module RunGame where
 
 import Graphics.Rendering.OpenGL
