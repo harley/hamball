@@ -9,6 +9,8 @@ author:              David Constanzo, Harley Trung, Alex Thompson, Matt Sills
 maintainer:          harley.trung@yale.edu
 build-type:          Simple
 build-depends:       base, haskell98
+Data-Files:
+    tga/*.tga
 
 executable:			 hamsterServer
 main-is:			 Server.hs

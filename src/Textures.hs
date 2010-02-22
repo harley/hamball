@@ -10,12 +10,14 @@ import TGA (readTga)
 import Data.Word (Word8)
 import Foreign.Marshal.Alloc (free)
 import Graphics.Rendering.OpenGL
+import Paths_HamsterBalls
 
 -- read a list of images and returns a list of textures
 -- all images are assumed to be in the TGA image format
 getAndCreateTextures :: [String] -> IO [Maybe TextureObject]
 getAndCreateTextures fileNames = do
-   fileNamesExts <- return (map (("tga/" ++) . (++ ".tga")) fileNames)
+   fileNamesExts' <- return (map (("tga/" ++) . (++ ".tga")) fileNames)
+   fileNamesExts <- mapM getDataFileName fileNamesExts'
    texData <- mapM readImageC fileNamesExts
    texObjs <- mapM createTexture texData
    return texObjs
