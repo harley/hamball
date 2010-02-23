@@ -13,15 +13,20 @@ import Common
 import Graphics.UI.GLFW
 import Sprites
 
+renderText2D :: Float -> Float -> String -> Float -> IO ()
+renderText2D x y str size =
+    renderOrtho widthf heightf $ do
+        -- the transparency blending only works if OOSSelf is rendered last,
+        -- which is the case because it's first added to list -Harley
+        blend $= Enabled
+        -- transparent colors will let the background show through and opaque colors will be drawn over it.
+        blendFunc $= (SrcAlpha, OneMinusSrcAlpha)
+        textureFunction $= Replace
+        renderText x y str size
+
 -- Technically this renders any text
 renderKillText :: String -> IO()
-renderKillText str = do
-  renderOrtho widthf heightf $ do
-            -- the transparency blending only works if OOSSelf is rendered last, which is the case because it's first added to list -Harley
-            blend $= Enabled
-            blendFunc $= (SrcAlpha, OneMinusSrcAlpha)-- transparent colors will let the background show through and opaque colors will be drawn over it.
-            textureFunction $= Replace
-            renderText 5 200 str 3
+renderKillText str = renderText2D 5 200 str 3
 
 renderScoreBoard :: ScoreBoard -> IO ()
 renderScoreBoard sb =

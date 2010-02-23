@@ -23,6 +23,7 @@ import Net
 import Render
 import Common
 import Data.Time.Clock
+import Text.Printf (printf)
 
 -- Information about the global state of the game
 data GameData = GameData {
@@ -99,8 +100,7 @@ runGame playerName handle sf = do
             unless q $ loop rh rch quit curTime nA
 
         actuate gd rch shouldDraw (renderActions, networkActions) = do
-            --tid <- myThreadId
-            --printFlush ("draw" ++ (show tid))
+            -- Update via IORef because actuate is called in a callback fashion
             st <- readIORef $ startTime gd
             ldt <- readIORef $ lastDrawTime gd
             t <- get GLFW.time
@@ -109,13 +109,7 @@ runGame playerName handle sf = do
                 clear [ColorBuffer, DepthBuffer]
                 renderActions
                 writeIORef (lastDrawTime gd) t
-                --printFlush ("Time = " ++ show (t-ldt))-- ++ (show ((fromIntegral $ nf+1)/(fromIntegral $ t-st)*1000)))
-                renderOrtho widthf heightf $ do
-                    blend $= Enabled
-                    blendFunc $= (SrcAlpha, OneMinusSrcAlpha)-- transparent colors will let the background show through and opaque colors will be drawn over it.
-                    textureFunction $= Replace
-                    renderText 5 60 ("Draw Time: " ++ show (t-ldt)) 2
-                    blend $= Disabled
+                renderText2D 5 60 (printf "Draw Time: %.4f" (t-ldt)) 2
                 swapBuffers
             networkActions
             nf <- readIORef $ numFrames gd
@@ -127,13 +121,12 @@ glInit = do
     initialize
 
     openWindow (Size width height) [DisplayAlphaBits 8] Window --FullScreen
-    -- TODO: mouse wraps horizontally well; not vertically but it's not needed anyway
     disableSpecial MouseCursor
-    windowTitle $= "Hamsters Game version 0.0.2.0"
+    windowTitle $= "Hamsters Balls Game version v0.2"
     stencilTest $= Enabled
 
     matrixMode $= Projection
-    initFrustum -- TODO: explain this
+    initFrustum -- set up player's view
     matrixMode $= Modelview 0
 
     clearColor $= Color4 0 0 0 1

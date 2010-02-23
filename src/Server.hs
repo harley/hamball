@@ -13,7 +13,6 @@ import Common
 import Collision
 import Data.Maybe
 import Network
-import Network.BSD (getHostName)
 import Network.HTTP (getRequest, simpleHTTP, getResponseBody)
 import Control.Concurrent
 import System.IO
@@ -50,9 +49,11 @@ dummyServerInput = ServerInput {msg = dummyCSMsg, handle = Nothing}
 main :: IO ()
 main = do
     -- Tell the online server tracker that I am open and able to accept request
-    hostName <- getHostName
-    putStrLn $ "Informing server tracker about host " ++ hostName
-    r <- simpleHTTP $ getRequest (serverTracker ++ "open?name=" ++ hostName)
+    r0 <- simpleHTTP $ getRequest "http://whatismyip.org/"
+    response <- getResponseBody r0
+    let hostIP = takeWhile (/= '\n') response
+    putStrLn $ "Informing server tracker about host " ++ hostIP
+    r <- simpleHTTP $ getRequest (serverTracker ++ "open?name=" ++ hostIP)
     txt <- getResponseBody r
     putStrLn txt
 
