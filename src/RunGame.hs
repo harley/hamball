@@ -43,17 +43,18 @@ game initialObjs = proc gi -> do
 
 runGame :: String -> Maybe Handle -> SF GameInput (IO (), IO ()) -> IO ()
 runGame playerName handle sf = do
+        -- Use IORef here because they are updated via OpenGL callbacks
         t <- get GLFW.time
         sTime <- newIORef t -- start time
         ldTime <- newIORef t -- last draw time
-        yPrev <- newIORef (fromIntegral $ height `div` 2) -- TODO: explain this
+        yPrev <- newIORef (fromIntegral $ height `div` 2) -- y coord, to wrap mouse around
         nFrames <- newIORef 0
 
         let gd = GameData {startTime = sTime,
                            lastDrawTime = ldTime,
                            numFrames = nFrames}
         rch <- newChan
-        rh <- reactInit initGameInput (actuate gd) sf
+        rh <- reactInit (return initGameInput) (actuate gd) sf
         networkInit rch handle
         tm <- newIORef t
         quit <- newIORef False
@@ -68,7 +69,7 @@ runGame playerName handle sf = do
 
         startTime <- getCurrentTime
         -- invoke drawing loop
-        loop rh rch quit startTime GameInput {key=Nothing, keyState=Nothing, leftClick=False, posMouse=Position 0 0, mWheel = 0, message=dummySCMsg, rightClick = False}
+        loop rh rch quit startTime initGameInput
 
         -- if quit, close server handle
         case handle of
@@ -120,7 +121,7 @@ glInit :: IO ()
 glInit = do
     initialize
 
-    openWindow (Size width height) [DisplayAlphaBits 8] Window --FullScreen
+    openWindow (Size width height) [DisplayAlphaBits 8] Window -- FullScreen
     disableSpecial MouseCursor
     windowTitle $= "Hamsters Balls Game version v0.2"
     stencilTest $= Enabled
@@ -139,8 +140,8 @@ glInit = do
     diffuse (Light 0) $= Color4 1 1 1 1
     position (Light 0) $= Vertex4 1 1 1 0
 
-initGameInput :: IO GameInput
-initGameInput = return $ GameInput {key=Nothing, keyState=Nothing, leftClick=False, posMouse=Position 0 0, mWheel = 0, message=dummySCMsg, rightClick = False}
+initGameInput :: GameInput
+initGameInput = GameInput {key=Nothing, keyState=Nothing, leftClick=False, posMouse=Position 0 0, mWheel = 0, message=dummySCMsg, rightClick = False}
 
 networkInit :: ReactChan GameInput -> Maybe Handle -> IO ()
 networkInit rch Nothing = return ()
