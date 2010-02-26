@@ -48,11 +48,15 @@ getReactInput rch old = do
 -- width MUST be divisible by 4
 -- height MUST be divisible by 3
 
-fullscreen :: Bool
-fullscreen = False
+data GameConfig = GameConfig {
+    gcFullscreen :: Bool,
+    gcPlayerName :: String,
+    -- width MUST be divisible by 4
+    -- height MUST be divisible by 3
+    gcTracker :: String}
 
 width, height :: GLint
-(width,height) = if fullscreen then (1600,1200) else (640,480)
+(width,height) = (640, 480) --if fullscreen then (1600,1200) else (640,480)
 
 widthf, heightf :: GLdouble
 widthf = fromRational $ toRational width

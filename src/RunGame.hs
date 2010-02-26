@@ -32,6 +32,13 @@ data GameData = GameData {
     numFrames :: IORef Int
 }
 
+defaultConfigs :: GameConfig
+defaultConfigs = GameConfig {
+    gcFullscreen = False,
+    gcPlayerName = "uninitialized",
+    gcTracker = "http://hamsterver.heroku.com/last"
+  }
+
 -- Number of milliseconds between redraws
 redrawTimer :: Double
 redrawTimer = 0.005
@@ -41,8 +48,8 @@ game initialObjs = proc gi -> do
     oos <- loopPre emptyIL (arr dup <<< gameCore (listToIL initialObjs)) -< gi
     returnA -< (map ooObsObjState $ elemsIL oos, concatMap ooNetworkMsgs $ elemsIL oos)
 
-runGame :: String -> Maybe Handle -> SF GameInput (IO (), IO ()) -> IO ()
-runGame playerName handle sf = do
+runGame :: GameConfig -> Maybe Handle -> SF GameInput (IO (), IO ()) -> IO ()
+runGame GameConfig{gcPlayerName=playerName, gcFullscreen=fullscreen} handle sf = do
         -- Use IORef here because they are updated via OpenGL callbacks
         t <- get GLFW.time
         sTime <- newIORef t -- start time

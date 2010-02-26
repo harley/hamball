@@ -13,29 +13,39 @@ import Control.Monad (when)
 
 import FRP.Yampa ((>>>), arr)
 import RunGame (glInit, runGame, game)
-import Common (CSMsg'(CSMsgJoin))
 import Object (serverObject, scoreboard, terrain0, renderObsObjState)
 import Net (sendCSMsg)
+import System.Console.GetOpt
+import Common
 
--- Client triggers the game with:
--- ./Client <player-name> <optional:host-name>
+defaultConfigs :: GameConfig
+defaultConfigs = GameConfig {
+    gcFullscreen = False,
+    gcPlayerName = "uninitialized",
+    gcTracker = "http://hamsterver.heroku.com/last"
+  }
+
+options :: [OptDescr (GameConfig -> IO GameConfig)]
+options = [
+    Option ['f'] ["fullscreen"] (NoArg (\gc -> return gc{gcFullscreen=True} ))        "show version number",
+    Option ['n'] ["name"]   (ReqArg (\arg gc -> return gc{gcPlayerName=arg}) "FILE")        "input file to read"
+  ]
+
 -- Use host-name only leaving it out fails.
 -- Server hostname is kept track by the remote serverTracker
 main :: IO ()
 main = withSocketsDo $ do -- withSocketsDo is only needed for Windows platform, harmless on others
     args <- getArgs
-    when (null args ) $ error "Wrong syntax.  Syntax: ./Client <player-name>"
+    let ( actions, _, _) = getOpt Permute options args
+    config <- foldl (>>=) (return defaultConfigs) actions
 
-    let playerName = head args
-    serverHost <- if (null (tail args))
-                  then do
-                    -- Ask remote server tracker which server is on
-                    r <- simpleHTTP (getRequest "http://hamsterver.heroku.com/last")
-                    sh <- getResponseBody r
-                    if sh == "NOSERVER" then error "No server is open." else return sh
-                  else
-                    -- Game server is specified, then use it
-                    return (args !! 1)
+    let playerName = gcPlayerName config
+    when (playerName == "uninitialized" ) $ error "Wrong syntax.  Syntax: ./Client -n <player-name>"
+
+    -- Ask remote server tracker which server is on
+    r <- simpleHTTP (getRequest $ gcTracker config)
+    serverHost <- getResponseBody r
+    if serverHost == "NOSERVER" then error "No server is open." else return serverHost
 
     print ("Connecting player " ++ playerName ++ " to " ++ serverHost)
 
@@ -51,7 +61,7 @@ main = withSocketsDo $ do -- withSocketsDo is only needed for Windows platform, 
     let initialObjs = [serverObject playerName, scoreboard, terrain0]
 
     -- TODO: Explain runGame
-    runGame playerName (Just handle) (game initialObjs >>> (arr (\(ooss,msgs) -> (renderObsObjStates ooss, sendNetworkMsgs handle msgs))))
+    runGame config (Just handle) (game initialObjs >>> (arr (\(ooss,msgs) -> (renderObsObjStates ooss, sendNetworkMsgs handle msgs))))
   where renderObsObjStates = foldl (\io oos -> io >> renderObsObjState oos) (return ())
         sendNetworkMsgs h = foldl (\io msg -> io >> sendCSMsg h msg) (return ())
 
