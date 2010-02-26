@@ -56,7 +56,7 @@ main = withSocketsDo $ do -- withSocketsDo is only needed for Windows platform, 
     sendCSMsg handle $ (-1, CSMsgJoin playerName)
 
     -- Prepare some OpenGL intialization and windows management
-    glInit
+    glInit config
 
     let initialObjs = [serverObject playerName, scoreboard, terrain0]
 

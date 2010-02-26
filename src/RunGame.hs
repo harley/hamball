@@ -124,11 +124,11 @@ runGame GameConfig{gcPlayerName=playerName, gcFullscreen=fullscreen} handle sf =
             writeIORef (numFrames gd) (nf+1)
             return True
 
-glInit :: IO ()
-glInit = do
+glInit :: GameConfig -> IO ()
+glInit GameConfig{gcFullscreen=fullscreen} = do
     initialize
 
-    openWindow (Size width height) [DisplayAlphaBits 8] Window -- FullScreen
+    openWindow (Size width height) [DisplayAlphaBits 8] (if fullscreen then FullScreen else Window)
     disableSpecial MouseCursor
     windowTitle $= "Hamsters Balls Game version v0.2"
     stencilTest $= Enabled

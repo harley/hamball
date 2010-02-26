@@ -45,16 +45,13 @@ getReactInput rch old = do
     f <- readChan rch
     return $ f old
 
--- width MUST be divisible by 4
--- height MUST be divisible by 3
-
 data GameConfig = GameConfig {
     gcFullscreen :: Bool,
     gcPlayerName :: String,
-    -- width MUST be divisible by 4
-    -- height MUST be divisible by 3
     gcTracker :: String}
 
+-- width MUST be divisible by 4
+-- height MUST be divisible by 3
 width, height :: GLint
 (width,height) = (640, 480) --if fullscreen then (1600,1200) else (640,480)
 
