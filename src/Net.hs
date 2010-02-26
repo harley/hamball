@@ -76,7 +76,7 @@ instance Stringifiable SCMsg' where
     stringify (SCMsgPlayer p) = "player:" ++ (stringify p)
     stringify (SCMsgHit h) = "hit:" ++ (stringify h)
     stringify (SCMsgSpawn obj) = "spawn:" ++ (stringify obj)
-    stringify (SCMsgFrag finalHit) = "frag:" ++ (stringify finalHit)
+    stringify (SCMsgFrag killer killed) = "frag:" ++ "player:" ++ (stringify killer) ++ "|player:" ++ (stringify killed)
     stringify (SCMsgRemove pID)   = "remove:" ++ (show pID)
 
     destringify s = let untildelim = span (/= ':')
@@ -86,7 +86,12 @@ instance Stringifiable SCMsg' where
                           "player"     -> SCMsgPlayer $ destringify $ drop 1 s1
                           "hit"        -> SCMsgHit $ destringify $ drop 1 s1
                           "spawn"      -> SCMsgSpawn $ destringify $ drop 1 s1
-                          "frag"       -> SCMsgFrag $ destringify $ drop 1 s1
+                          "frag"       -> let (p2, s2) = span (/= '|') $ drop 1 s1
+                                              p3 = drop 1 s2
+                                              (killer, killed) = case (destringify p2, destringify p3) of
+                                                                       (SCMsgPlayer kl, CSMsgPlayer kd) -> (kl, kd)
+                                                                       _ -> error "invalid frag match"
+                                          in SCMsgFrag killer killed
                           "remove"     -> SCMsgRemove $ read $ drop 1 s1
                           _ -> error $ "Bad msg format for SCMsg': " ++ p1
 

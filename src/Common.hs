@@ -136,21 +136,29 @@ data ParticleSystem = ParticleSystem {
 
 -- TODO: keep track of previous location of display text
 data ScoreBoard = ScoreBoard {
-    sbScores :: ![(Int, Int)] -- PlayerID and Score
+    sbScores :: ![(Player, Int)] -- Player and Score
 }
     deriving (Show, Eq)
 
 data PowerUpType = StrengthenLaser !Float
                  | XRayVision
                  | DecreaseRadius !Float
-    deriving (Show, Eq)
+    deriving Eq
 
 data PowerUp = PowerUp {
     powerupPos :: !Position3,
     powerupRadius :: !Float,
-    powerupType :: !PowerUpType
+    powerupType :: !PowerUpType,
+    powerupView :: !(Float,Float) -- theta, phi -- make it spin
 }
-    deriving (Show, Eq)
+    deriving Eq
+
+instance Show PowerUp where
+    show PowerUp{powerupType=t} = "^" ++ show t ++ "^"
+instance Show PowerUpType where
+    show (StrengthenLaser f) = "Plus " ++ show f
+    show XRayVision = "XRay"
+    show (DecreaseRadius f) = "Smaller by " ++ show f
 
 data Obj = PlayerObj !Player
          | LaserObj !Laser
@@ -163,7 +171,7 @@ data SCMsg' = SCMsgInitialize !Player    -- To initiatiate the joining player
             | SCMsgPlayer !Player        -- For updating pos
             | SCMsgHit !Hit              -- Announcing hits
             | SCMsgSpawn !Obj            -- For creating new objects
-            | SCMsgFrag !Hit             -- For telling everyone player1 killed player2
+            | SCMsgFrag !Player !Player  -- For telling everyone player1 killed player2
             | SCMsgRemove !Int           -- Remove exiting player
     deriving (Show, Eq)
 

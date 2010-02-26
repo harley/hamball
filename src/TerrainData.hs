@@ -129,6 +129,9 @@ bloodTexture = unsafePerformIO (getAndCreateTexture "blood_texture")
 glowTexture :: Maybe TextureObject
 glowTexture = unsafePerformIO (getAndCreateTexture "glow_texture")
 
+powerupTexture :: Maybe TextureObject
+powerupTexture = unsafePerformIO (getAndCreateTexture "powerup")
+
 --------------------------------------------------------------------------------------------------------------
 -- Demo Terrain
 

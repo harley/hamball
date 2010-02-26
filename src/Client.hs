@@ -17,6 +17,7 @@ import Object (serverObject, scoreboard, terrain0, renderObsObjState)
 import Net (sendCSMsg)
 import System.Console.GetOpt
 import Common
+import System.Random
 
 defaultConfigs :: GameConfig
 defaultConfigs = GameConfig {
@@ -59,7 +60,8 @@ main = withSocketsDo $ do -- withSocketsDo is only needed for Windows platform, 
     -- Prepare some OpenGL intialization and windows management
     glInit config
 
-    let initialObjs = [serverObject playerName, scoreboard, terrain0]
+    let g = mkStdGen 2
+    let initialObjs = [serverObject g playerName, scoreboard, terrain0]
 
     -- TODO: Explain runGame
     runGame config (Just handle) (game initialObjs >>> (arr (\(ooss,msgs) -> (renderObsObjStates ooss, sendNetworkMsgs handle msgs))))

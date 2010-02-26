@@ -41,8 +41,8 @@ renderScoreBoard sb =
            blend $= Enabled
            blendFunc $= (SrcAlpha, OneMinusSrcAlpha)
            textureFunction $= Replace
-           let loop n ((plID,s):rest) = do
-                   renderText 10 (double heightf - n*64) (show plID ++ ": " ++ show s) 4
+           let loop n ((pl,s):rest) = do
+                   renderText 10 (double heightf - n*64) (playerName pl ++ ": " ++ show s) 4
                    loop (n+1) rest
                loop _ [] = return ()
            loop 1 $ mergeSort $ sbScores sb

@@ -222,16 +222,15 @@ toMessages (s, esi, hits, collisions) =
                         (\si -> case msg si of -- player updates (exclude sender from recips, colliding players from list)
                             (pid, CSMsgPlayer p) -> [(i, SCMsgPlayer p) | i <- allIDs, i /= pid, pid `notElem` colIDs]
                             (pid, CSMsgLaser l ) -> [(i, SCMsgSpawn (LaserObj l)) | i <- allIDs, i /= pid]
-                            (pid, CSMsgDeath h) -> let pl = case find ((pid ==) . playerID) (allPlayers s) of
+                            (pid, CSMsgDeath h) -> let killed = case find ((pid ==) . playerID) (allPlayers s) of
                                                                             Nothing -> error "Couldn't find a player that was just killed...???"
                                                                             Just p -> p
-                                                       {-pl' = case find ((player1ID h ==) . playerID) (allPlayers s) of
+                                                       killer = case find ((player1ID h ==) . playerID) (allPlayers s) of
                                                                             Nothing -> error "Couldn't find a player that just killed someone...???"
                                                                             Just p' -> p'
-                                                        -}
-                                                   in [(i, SCMsgSpawn (PlayerObj pl)) | i <- allIDs, i /= playerID pl] ++
-                                                      [(i, SCMsgFrag h) | i <- allIDs] ++
-                                                      [(pid, SCMsgInitialize pl)]
+                                                   in [(i, SCMsgSpawn (PlayerObj killed)) | i <- allIDs, i /= playerID killed] ++
+                                                      [(i, SCMsgFrag killer killed) | i <- allIDs] ++
+                                                      [(pid, SCMsgInitialize killed)]
                             (_, CSMsgJoin _) -> let pl = head $ reverse $ allPlayers s
                                                   in [(playerID pl, SCMsgInitialize pl)] ++
                                                      [(playerID pl, SCMsgSpawn (PlayerObj p)) | p <- allPlayers s, playerID p /= playerID pl] ++

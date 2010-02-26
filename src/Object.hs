@@ -22,6 +22,7 @@ import Data.Maybe
 import BoundingVolume
 import Render
 import Particles
+import PowerUp
 
 type ObjectSF = SF ObjInput ObjOutput
 
@@ -80,16 +81,7 @@ renderObsObjState (OOSTerrain ts) = (foldr (>>) (return ()) $ map renderTerrainE
 renderObsObjState (OOSParticle p) = renderParticle p
 renderObsObjState (OOSKillText str) = renderKillText str
 renderObsObjState (OOSScoreBoard sb) = renderScoreBoard sb
-renderObsObjState (OOSPowerUp pow) = renderPlayer $ Player {playerID = 0,
-                                                            playerPos = powerupPos pow,
-                                                            playerVel = zeroVector,
-                                                            playerAcc = zeroVector,
-                                                            playerView = (0,0),
-                                                            playerRadius = defRadius,
-                                                            playerLife = maxLife,
-                                                            playerEnergy = maxEnergy,
-                                                            playerColor = Vec3d(0.5, 0.2, 0.7),
-                                                            playerName = "Dummy"}
+renderObsObjState (OOSPowerUp pow) = renderPowerUp pow
 renderObsObjState OOSNone = return ()
 
 -- observer is the player that is being controlled at each client
@@ -145,7 +137,7 @@ observer pl = let setFromKey k (gi, prev) = dup $ case (key gi == Just k, keySta
                                                    StrengthenLaser str -> Event str
                                                    _ -> NoEvent) pow
         radiusPowEvent = maybe NoEvent (\pow -> case powerupType pow of
-                                                    DecreaseRadius r -> Event (-r)
+                                                    DecreaseRadius r -> Event (r * playerRadius pl)
                                                     _ -> NoEvent) pow
 
     laserstr <- powerupSF -< (defLaserStr, laserPowEvent)
@@ -190,9 +182,11 @@ observer pl = let setFromKey k (gi, prev) = dup $ case (key gi == Just k, keySta
                           ooBounds = let v = Vec3d (playerRadius pl', playerRadius pl', playerRadius pl')
                                      in BoundingBox (p ^-^ v) (p ^+^ v)}
 
-serverObject :: String -> ObjectSF
-serverObject playerNameStr = proc (ObjInput {oiGameInput = gi}) -> do
+serverObject :: RandomGen g => g -> String -> ObjectSF
+serverObject g playerNameStr = proc (ObjInput {oiGameInput = gi}) -> do
     spawnWaterfall <- edge <<^ (\gi -> key gi == Just (CharKey 'L')) -< gi
+    spawnPowerup <- edge <<^ (\gi -> key gi == Just (CharKey 'P')) -< gi
+    spawnPeriodically <- repeatedly 20 () -< gi
     --changeMsg <- loopPre dummySCMsg detectChangeSF -< message gi
     changeMsg <- edgeBy (\prev cur -> if prev /= cur then Just cur else Nothing) dummySCMsg -< message gi
     let processSCMsg NoEvent = ObjOutput {ooObsObjState = OOSNone, ooNetworkMsgs = [], ooKillReq = NoEvent, ooSpawnReq = [], ooBounds = BoundingEmpty}
@@ -207,7 +201,11 @@ serverObject playerNameStr = proc (ObjInput {oiGameInput = gi}) -> do
     let oo = processSCMsg changeMsg
     returnA -< oo {ooSpawnReq = ooSpawnReq oo ++ (case spawnWaterfall of
                                                       NoEvent -> []
-                                                      Event () -> [terrainW])}
+                                                      Event () -> [terrainW])
+                                              ++ (case spawnPowerup `lMerge` spawnPeriodically of
+                                                      NoEvent -> []
+                                                      Event () -> [powerup $ genPow 3])
+                                                      }
 
 player :: Player -> SCMsg -> ObjectSF
 player pl initMsg = switch (player' pl initMsg) (\(p,msg) -> player p msg)
@@ -237,18 +235,18 @@ player' pl initMsg = proc ObjInput{oiGameInput=gi} -> do
                 fmap (\ev -> (ev,message gi)) update)
 
 scoreboard :: ObjectSF
-scoreboard = let addFrag plID ((pID,s):rest) = if plID == pID then (pID,s+1):rest else (pID,s) : addFrag plID rest
-                 addFrag plID [] = [(plID,1)]
+scoreboard = let addFrag pl ((p,s):rest) = if playerID pl == playerID p then (p,s+1):rest else (p,s) : addFrag pl rest
+                 addFrag pl [] = [(pl,1)]
              in proc ObjInput{oiGameInput=gi} -> do
     --changeMsg <- loopPre dummySCMsg detectChangeSF -< message gi
     changeMsg <- edgeBy (\prev cur -> if prev /= cur then Just cur else Nothing) dummySCMsg -< message gi
     let killAnnounce = event NoEvent (\(i, msg') -> case msg' of
-                                                     SCMsgFrag hit -> Event (show (player1ID hit) ++ " just killed " ++ (show (player2ID hit)))
+                                                     SCMsgFrag killer killed -> Event (playerName killer ++ " just killed " ++ playerName killed)
                                                      _ -> NoEvent) changeMsg
     sb' <- loopPre (ScoreBoard{sbScores=[]})
                    (arr (\(chmsg,sb) -> dup $ event sb (\(i,msg') -> case msg' of
-                                                                              SCMsgFrag hit -> sb {sbScores = addFrag (player1ID hit) $ sbScores sb}
-                                                                              _ -> sb) chmsg)) -< changeMsg
+                                                                      SCMsgFrag killer killed -> sb {sbScores = addFrag killer $ sbScores sb}
+                                                                      _ -> sb) chmsg)) -< changeMsg
     returnA -< ObjOutput {ooObsObjState = OOSScoreBoard sb',
                           ooNetworkMsgs = [],
                           ooKillReq = NoEvent,
@@ -265,7 +263,9 @@ powerup pow = proc ObjInput{oiColliding = collider} -> do
                             OOSSelf p -> True
                             _ -> False
                      _ -> False
-    returnA -< ObjOutput {ooObsObjState = OOSPowerUp pow,
+    newTheta <- ((fst.powerupView $ pow) ^+^) ^<< integral -< 0.4 -- spinning horizontally
+    let oldPhi = snd.powerupView $ pow
+    returnA -< ObjOutput {ooObsObjState = OOSPowerUp pow{powerupView=(newTheta, oldPhi)},
                           ooNetworkMsgs = [],
                           ooKillReq = if collected then Event () else kill,
                           ooSpawnReq = [],
