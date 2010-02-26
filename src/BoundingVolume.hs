@@ -5,7 +5,6 @@
 *             Copyright (c) Yale University, 2010                            *
 ****************************************************************************-}
 module BoundingVolume where
-
 import Vec3d
 
 -- TODO: make collision detector return a normal vector

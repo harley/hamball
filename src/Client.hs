@@ -23,12 +23,13 @@ defaultConfigs = GameConfig {
     gcFullscreen = False,
     gcPlayerName = "uninitialized",
     gcTracker = "http://hamsterver.heroku.com/last"
-  }
+}
 
 options :: [OptDescr (GameConfig -> IO GameConfig)]
 options = [
     Option ['f'] ["fullscreen"] (NoArg (\gc -> return gc{gcFullscreen=True} ))        "show version number",
-    Option ['n'] ["name"]   (ReqArg (\arg gc -> return gc{gcPlayerName=arg}) "FILE")        "input file to read"
+    Option ['n'] ["name"]   (ReqArg (\arg gc -> return gc{gcPlayerName=arg}) "FILE")  "input file to read",
+    Option ['t'] ["tracker"] (ReqArg (\arg gc -> return gc{gcTracker=arg}) "FILE")    "address of server tracker"
   ]
 
 -- Use host-name only leaving it out fails.
