@@ -3,27 +3,26 @@ Installation instruction
 
 1. Download source code:
     git clone git://github.com/harleyttd/hamball.git
-2a. Install with makefile, run code from bin folder
     cd hamball
-    make
-2b. (Preferred) Use cabal.
-    cd hamball
+2a. (Preferred) Use cabal.
     cabal install
+2b. (Only if you're too lazy to use cabal and are advanterous -- you may need to manually install additional dependencies)
+    make
 
 Instroduction
 =============
 
-This game was written in Haskell, in Spring 2009, by:
+v0.1 of this game was written in Haskell, in Spring 2009, by:
 Harley Trung
 David Costanzo
 Alexander Thompson
 Matthew Sills
 
-It is currently maintained by Harley Trung.  Please send a github message if you have any question/comment/suggestion.
+v0.2 was released and is currently maintained by Harley Trung.  Please send a github message if you have any question/comment/suggestion.
 
 DEPENDENCIES
 ============
-Yampa (previously we improved Yampa and used that instead; but for portability the code now supports the original Yampa. YampaMod is distributed as a separate package and can easily to be integrated back if desired)
+Yampa (v0.1 used YampaMod, our customized version of Yampa, but v0.2 now uses the original Yampa)
 OpenGL-2.2.2.0 (OpenGL-2.4.0.1 will break because they define their own GLfloat data type)
 GLFW
 HTTP
@@ -31,11 +30,12 @@ HTTP
 ISSUES
 ======
 
-Currently this breaks with OpenGL-2.4.0.1 because they define GLfloat as a newtype instead of Float like before.
-Thus you may need to
+Currently this breaks with OpenGL-2.4.0.1 because they define GLfloat as a newtype instead of Float like before. I haven't looked much into fixing this.  Maybe in the future or if you already have an idea, please let me know (github message!)
+
+Cabal dependencies should take care of this, but otherwise juse:
     cabal install OpenGL-2.2.2.0
 
-If GLFW installation gets error, make sure you have libxrandr-dev installed.
+If you get -lXrandr or -lGLU error, make sure you have libxrandr-dev and libghc-opengl-dev installed.
 Eg. For Ubuntu:
     sudo apt-get install libxrandr-dev libghc6-opengl-dev
 
