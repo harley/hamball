@@ -49,7 +49,7 @@ game initialObjs = proc gi -> do
     returnA -< (map ooObsObjState $ elemsIL oos, concatMap ooNetworkMsgs $ elemsIL oos)
 
 runGame :: GameConfig -> Maybe Handle -> SF GameInput (IO (), IO ()) -> IO ()
-runGame GameConfig{gcPlayerName=playerName, gcFullscreen=fullscreen} handle sf = do
+runGame GameConfig{gcPlayerName=playerName, gcFullscreen=fullscreen} handle gameSF = do
         -- Use IORef here because they are updated via OpenGL callbacks
         t <- get GLFW.time
         sTime <- newIORef t -- start time
@@ -61,8 +61,11 @@ runGame GameConfig{gcPlayerName=playerName, gcFullscreen=fullscreen} handle sf =
                            lastDrawTime = ldTime,
                            numFrames = nFrames}
         rch <- newChan
-        rh <- reactInit (return initGameInput) (actuate gd) sf
+        rh <- reactInit (return initGameInput) (actuate gd) gameSF
+
+        -- spawn ListenToServer thread to listen for network messages from Server        
         networkInit rch handle
+
         tm <- newIORef t
         quit <- newIORef False
 
@@ -75,7 +78,9 @@ runGame GameConfig{gcPlayerName=playerName, gcFullscreen=fullscreen} handle sf =
         disableSpecial AutoPollEvent
 
         startTime <- getCurrentTime
+        
         -- invoke drawing loop
+        -- process the game by clearing up the queued network messages, compute game state
         loop rh rch quit startTime initGameInput
 
         -- if quit, close server handle
@@ -150,6 +155,7 @@ glInit GameConfig{gcFullscreen=fullscreen} = do
 initGameInput :: GameInput
 initGameInput = GameInput {key=Nothing, keyState=Nothing, leftClick=False, posMouse=Position 0 0, mWheel = 0, message=dummySCMsg, rightClick = False}
 
+-- spawn ListenToServer thread in here
 networkInit :: ReactChan GameInput -> Maybe Handle -> IO ()
 networkInit rch Nothing = return ()
 networkInit rch (Just handle) = do
